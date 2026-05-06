@@ -1,0 +1,9 @@
+node_modules
+.next
+.git
+.claude
+*.md
+db/
+supabase/
+Documents/
+study/

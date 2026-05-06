@@ -1,0 +1,9 @@
+name,client,budget,monthlyCeiling,priority,skills,teamSize,margin
+Network Expansion South,Client A,180000000,500000,critical,NET_DEL;PM;ENTERPRISE,6,15
+IoT Airport,Client B,45000000,250000,medium,NET_DEL;DIGITAL;PUB_SAFETY,4,22
+Cybersecurity Gov,Client C,320000000,800000,critical,PUB_SAFETY;DIGITAL;NET_DEL;PM,8,12
+DC Phase 2,Internal,85000000,300000,medium,DIGITAL;NET_DEL,4,25
+Cloud Migration,Client D,120000000,400000,high,ENTERPRISE;DIGITAL;PM,5,20
+Smart City Platform,Client E,250000000,600000,high,BIZ_DEV;DIGITAL;NET_DEL;SALES,7,18
+Smart Hospital,Client F,150000000,450000,high,BIZ_DEV;ENTERPRISE;DIGITAL,5,19
+EduTech Platform,Client G,35000000,200000,medium,SALES;DIGITAL,3,28

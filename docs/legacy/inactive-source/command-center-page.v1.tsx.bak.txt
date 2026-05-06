@@ -1,0 +1,2983 @@
+"use client";
+
+import {
+  type ChangeEvent,
+  type DragEvent,
+  startTransition,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+
+import { ChatSidebar } from "@/components/ChatSidebar";
+import { GameManual } from "@/components/GameManual";
+import { MoneyStack } from "@/components/MoneyStack";
+import { SpiderWeb, characterToSpiderValues } from "@/components/SpiderWeb";
+import { PixelCharacter } from "@/components/rpg/PixelCharacter";
+import { TownSquare } from "@/components/rpg/TownSquare";
+import {
+  TKC_BLIND_SPOTS,
+  TKC_COMPANY_METRICS,
+  TKC_DERIVED_SIGNALS,
+  TKC_FINANCIAL_SERIES,
+  TKC_KPI_FLASHPOINTS,
+  TKC_NEWS_PULSE,
+  TKC_QUARTERLY_REVENUE_2025,
+  getToneColor,
+} from "@/lib/company-intelligence";
+import {
+  TKC_REAL_PROJECTS,
+  TKC_STOCK,
+  calculateOrgHealth,
+  createMockAlerts,
+  createMockInsights,
+} from "@/lib/command-center-data";
+import { parseCSV, parseEmployeeWorkbook } from "@/lib/csv-import";
+import {
+  calculateBudgetCeiling,
+  calculateBudgetUsed,
+  getBudgetStatus,
+  validateTeamFormation,
+  calculate10xViability,
+  calculateMoneyballValue,
+} from "@/lib/game-loop";
+import { PROJECT_DEMANDS, SKILL_KEYS, SKILL_LABELS, scoreTeamForProject, suggestNextSnap, canSnap, previewSnapDelta, getPersonSkillProfile, calculateCapabilityHeatmap } from "@/lib/snap-engine";
+import {
+  TEAM_CONSOLE_STORAGE_KEY,
+  applyImportToRosterCollection,
+  buildFormationBoard,
+  buildInitialProjectDrafts,
+  createConsoleCharacters,
+  createEmptyRosterCollection,
+  createImportedConsoleCharacters,
+  getCharacterImportance,
+  getCoachCandidates,
+  getFieldSizeForProject,
+  getMissingProjectSkills,
+  getProjectFitScore,
+  isCoachEligible,
+  parseStoredRosterCollection,
+  reconcileProjectDrafts,
+  type ConsoleCharacter,
+  type ConsoleRosterCollection,
+  type ConsoleScreen,
+  type FormationKey,
+  type ProjectDraftState,
+  type SandboxCardState,
+} from "@/lib/team-console";
+import { getDeptColor } from "@/lib/tkc-org";
+
+type OpsMode = "god" | "hrt" | "moneyball";
+
+const ROSTER_STORAGE_KEY = TEAM_CONSOLE_STORAGE_KEY;
+const DRAFT_STORAGE_KEY = `${TEAM_CONSOLE_STORAGE_KEY}:drafts`;
+const SCREEN_STORAGE_KEY = `${TEAM_CONSOLE_STORAGE_KEY}:screen`;
+const MODE_STORAGE_KEY = `${TEAM_CONSOLE_STORAGE_KEY}:mode`;
+const PROJECT_STORAGE_KEY = `${TEAM_CONSOLE_STORAGE_KEY}:project`;
+
+const SCREEN_LABELS: Record<ConsoleScreen, string> = {
+  table: "Team Builder",
+  overview: "All Teams",
+  heatmap: "Heatmap",
+  history: "History",
+  square: "Check-in",
+  formation: "Formation",
+  cards: "Cards",
+  list: "List",
+  console: "Console",
+};
+
+const MODE_META: Record<
+  OpsMode,
+  { label: string; accent: string; summary: string; promise: string }
+> = {
+  god: {
+    label: "God's Mode",
+    accent: "#86D1FF",
+    summary: "Whole-company view. Watch check-ins, chemistry, load, and team shape in one glance.",
+    promise: "Holistic visibility beats delegated gossip.",
+  },
+  hrt: {
+    label: "HRT Game",
+    accent: "#86CD7E",
+    summary: "People mechanics first. Track belonging, growth, health, and manager bridges.",
+    promise: "Make HR feel like a live operating system, not dead paperwork.",
+  },
+  moneyball: {
+    label: "Moneyball",
+    accent: "#F3C567",
+    summary: "Rank talent by value density, project fit, and disruption shield under a hard cap.",
+    promise: "Fight disruption with smarter allocation, not louder meetings.",
+  },
+};
+
+function formatClock(value: Date): string {
+  return value.toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+}
+
+function formatMoment(value: string | null | undefined): string {
+  if (!value) return "Not yet";
+
+  return new Date(value).toLocaleString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function formatCompactMoney(value: number): string {
+  return new Intl.NumberFormat("en", {
+    notation: "compact",
+    maximumFractionDigits: 1,
+  }).format(value);
+}
+
+function getStatusTone(character: ConsoleCharacter): string {
+  if (character.status === "critical") return "#F87171";
+  if (character.status === "at_risk") return "#FB923C";
+  if (character.status === "watch") return "#FACC15";
+  return "#86CD7E";
+}
+
+function getImportanceTone(tier: "anchor" | "core" | "support"): string {
+  if (tier === "anchor") return "#F3C567";
+  if (tier === "core") return "#86D1FF";
+  return "#9CB4E8";
+}
+
+function getModeScore(
+  character: ConsoleCharacter,
+  mode: OpsMode,
+  projectFit: number,
+): number {
+  const hpPct = (character.hp / character.maxHp) * 100;
+
+  if (mode === "hrt") {
+    return Math.round(
+      hpPct * 0.35 +
+        character.fourC.community * 0.2 +
+        character.fourC.career * 0.2 +
+        character.fourC.cause * 0.15 +
+        (100 - character.utilization) * 0.1
+    );
+  }
+
+  if (mode === "moneyball") {
+    return Math.round(
+      projectFit * 0.4 +
+        character.ica.overall * 0.3 +
+        character.form * 6 +
+        character.investmentValue * 0.18 -
+        character.capacityCost * 0.28 +
+        character.demandCount * 5
+    );
+  }
+
+  return Math.round(
+    projectFit * 0.45 +
+      character.ica.overall * 0.25 +
+      character.form * 6 +
+      (character.isPresent ? 12 : 0) +
+      (character.isRemote ? -4 : 6)
+  );
+}
+
+function getModeLabel(mode: OpsMode): string {
+  if (mode === "hrt") return "Human signal";
+  if (mode === "moneyball") return "Value index";
+  return "Board signal";
+}
+
+function getActionLabel(character: ConsoleCharacter): string {
+  return isCoachEligible(character) ? "Set Coach" : "Add To Field";
+}
+
+type DragOrigin = "roster" | "sandbox" | "team" | "coach";
+
+interface DragPayload {
+  id: string;
+  origin: DragOrigin;
+}
+
+function clampPercentage(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function resolveDropPosition(
+  event: DragEvent<HTMLElement>,
+  padding = { x: 6, y: 10 },
+) {
+  const rect = event.currentTarget.getBoundingClientRect();
+  const rawX = ((event.clientX - rect.left) / rect.width) * 100;
+  const rawY = ((event.clientY - rect.top) / rect.height) * 100;
+
+  return {
+    x: clampPercentage(rawX, padding.x, 100 - padding.x),
+    y: clampPercentage(rawY, padding.y, 100 - padding.y),
+  };
+}
+
+export default function Page() {
+  const mockCharacters = useMemo(() => createConsoleCharacters(), []);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [rosterCollection, setRosterCollection] = useState<ConsoleRosterCollection>(
+    createEmptyRosterCollection
+  );
+  const [drafts, setDrafts] = useState<Record<string, ProjectDraftState>>(() =>
+    buildInitialProjectDrafts(mockCharacters)
+  );
+  const [projectId, setProjectId] = useState(TKC_REAL_PROJECTS[0]?.id ?? "");
+  const [screen, setScreen] = useState<ConsoleScreen>("formation");
+  const [mode, setMode] = useState<OpsMode>("god");
+  const [detailId, setDetailId] = useState<string | null>(null);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [manualOpen, setManualOpen] = useState(false);
+  const [importStatus, setImportStatus] = useState("Waiting for the employee workbook.");
+  const [now, setNow] = useState(() => new Date());
+  const [dragPayload, setDragPayload] = useState<DragPayload | null>(null);
+  const [hoveredCandidateId, setHoveredCandidateId] = useState<string | null>(null);
+  const [recentlyAddedId, setRecentlyAddedId] = useState<string | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => setNow(new Date()), 30_000);
+    return () => window.clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const storedCollection = parseStoredRosterCollection(
+      window.localStorage.getItem(ROSTER_STORAGE_KEY)
+    );
+    const nextCharacters = storedCollection.employees.length
+      ? createImportedConsoleCharacters(storedCollection.employees)
+      : mockCharacters;
+    const storedDraftsRaw = window.localStorage.getItem(DRAFT_STORAGE_KEY);
+    const storedDrafts = storedDraftsRaw
+      ? (JSON.parse(storedDraftsRaw) as Record<string, ProjectDraftState>)
+      : undefined;
+    const storedScreen = window.localStorage.getItem(SCREEN_STORAGE_KEY) as ConsoleScreen | null;
+    const storedMode = window.localStorage.getItem(MODE_STORAGE_KEY) as OpsMode | null;
+    const storedProject = window.localStorage.getItem(PROJECT_STORAGE_KEY);
+
+    startTransition(() => {
+      setRosterCollection(storedCollection);
+      setDrafts(reconcileProjectDrafts(storedDrafts, nextCharacters));
+
+      if (storedScreen && storedScreen in SCREEN_LABELS) setScreen(storedScreen);
+      if (storedMode && storedMode in MODE_META) setMode(storedMode);
+      if (storedProject && TKC_REAL_PROJECTS.some((project) => project.id === storedProject)) {
+        setProjectId(storedProject);
+      }
+
+      // Onboarding — show once
+      if (!window.localStorage.getItem("tkc:onboarded")) {
+        setShowOnboarding(true);
+      }
+
+      if (storedCollection.employees.length > 0) {
+        setImportStatus(
+          `Collected ${storedCollection.employees.length} people across ${storedCollection.snapshots.length} imports.`
+        );
+      }
+
+      setIsHydrated(true);
+    });
+  }, [mockCharacters]);
+
+  const characters = useMemo(
+    () =>
+      rosterCollection.employees.length > 0
+        ? createImportedConsoleCharacters(rosterCollection.employees)
+        : mockCharacters,
+    [mockCharacters, rosterCollection.employees]
+  );
+
+  useEffect(() => {
+    if (!isHydrated) return;
+    window.localStorage.setItem(ROSTER_STORAGE_KEY, JSON.stringify(rosterCollection));
+  }, [isHydrated, rosterCollection]);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+    window.localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(drafts));
+  }, [drafts, isHydrated]);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+    window.localStorage.setItem(SCREEN_STORAGE_KEY, screen);
+  }, [isHydrated, screen]);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+    window.localStorage.setItem(MODE_STORAGE_KEY, mode);
+  }, [isHydrated, mode]);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+    window.localStorage.setItem(PROJECT_STORAGE_KEY, projectId);
+  }, [isHydrated, projectId]);
+
+  const project = useMemo(
+    () => TKC_REAL_PROJECTS.find((item) => item.id === projectId) ?? TKC_REAL_PROJECTS[0],
+    [projectId]
+  );
+
+  const draft = useMemo(
+    () => drafts[project.id] ?? buildInitialProjectDrafts(characters, [project])[project.id],
+    [characters, drafts, project]
+  );
+
+  const fieldSize = useMemo(() => getFieldSizeForProject(project), [project]);
+
+  const coach = useMemo(
+    () => characters.find((character) => character.id === draft.coachId) ?? null,
+    [characters, draft.coachId]
+  );
+
+  const squad = useMemo(
+    () =>
+      draft.playerIds
+        .map((id) => characters.find((character) => character.id === id))
+        .filter((character): character is ConsoleCharacter => Boolean(character)),
+    [characters, draft.playerIds]
+  );
+
+  const sandboxCards = useMemo(
+    () =>
+      draft.sandboxCards
+        .map((card) => {
+          const character = characters.find((candidate) => candidate.id === card.playerId);
+          return character ? { ...card, character } : null;
+        })
+        .filter(
+          (
+            card,
+          ): card is SandboxCardState & {
+            character: ConsoleCharacter;
+          } => Boolean(card),
+        ),
+    [characters, draft.sandboxCards]
+  );
+
+  const selectedIds = useMemo(
+    () => new Set<string>([...(draft.coachId ? [draft.coachId] : []), ...draft.playerIds]),
+    [draft.coachId, draft.playerIds]
+  );
+
+  const sandboxIds = useMemo(
+    () => new Set(sandboxCards.map((card) => card.playerId)),
+    [sandboxCards]
+  );
+
+  const allTeam = useMemo(
+    () => (coach ? [coach, ...squad] : [...squad]),
+    [coach, squad]
+  );
+
+  const managerBridge = useMemo(
+    () => squad.find((character) => character.role === "manager") ?? null,
+    [squad]
+  );
+
+  const staffMembers = useMemo(
+    () => squad.filter((character) => character.id !== managerBridge?.id),
+    [managerBridge?.id, squad]
+  );
+
+  const formationBoard = useMemo(
+    () => buildFormationBoard(squad, draft.formation, fieldSize),
+    [draft.formation, fieldSize, squad]
+  );
+
+  const budgetCeiling = useMemo(() => calculateBudgetCeiling(project), [project]);
+  const budgetUsed = useMemo(() => calculateBudgetUsed(allTeam), [allTeam]);
+  const budgetStatus = useMemo(
+    () => getBudgetStatus(budgetUsed, budgetCeiling),
+    [budgetCeiling, budgetUsed]
+  );
+  const viability = useMemo(
+    () => calculate10xViability(budgetUsed, project),
+    [budgetUsed, project]
+  );
+
+  const projectScore = useMemo(
+    () =>
+      allTeam.length >= 2
+        ? scoreTeamForProject(allTeam, project, PROJECT_DEMANDS[project.id])
+        : null,
+    [allTeam, project]
+  );
+
+  const validation = useMemo(
+    () => (coach ? validateTeamFormation(coach, managerBridge, staffMembers, project) : null),
+    [coach, managerBridge, project, staffMembers]
+  );
+
+  const missingSkills = useMemo(
+    () => getMissingProjectSkills(allTeam, project),
+    [allTeam, project]
+  );
+
+  const coachCandidates = useMemo(
+    () => getCoachCandidates(characters, project).slice(0, 6),
+    [characters, project]
+  );
+
+  const checkedInCount = useMemo(
+    () => characters.filter((character) => character.isPresent && !character.isRemote).length,
+    [characters]
+  );
+
+  const remoteCount = useMemo(
+    () => characters.filter((character) => character.isPresent && character.isRemote).length,
+    [characters]
+  );
+
+  const orgHealth = useMemo(() => calculateOrgHealth(characters), [characters]);
+  const alerts = useMemo(() => createMockAlerts(characters).slice(0, 4), [characters]);
+  const insights = useMemo(() => createMockInsights(characters).slice(0, 5), [characters]);
+
+  const rankedRoster = useMemo(
+    () =>
+      characters
+        .map((character) => {
+          const importance = getCharacterImportance(
+            character,
+            project,
+            squad,
+            draft.coachId ?? null
+          );
+          const projectFit = getProjectFitScore(character, project);
+          const modeScore = getModeScore(character, mode, projectFit);
+
+          return {
+            character,
+            importance,
+            projectFit,
+            modeScore,
+            selected: selectedIds.has(character.id),
+            staged: sandboxIds.has(character.id),
+          };
+        })
+        .sort((left, right) => {
+          if (left.selected !== right.selected) return left.selected ? -1 : 1;
+          if (left.staged !== right.staged) return left.staged ? -1 : 1;
+          if (left.importance.tier !== right.importance.tier) {
+            const tierRank = { anchor: 0, core: 1, support: 2 };
+            return tierRank[left.importance.tier] - tierRank[right.importance.tier];
+          }
+          return right.modeScore - left.modeScore || right.projectFit - left.projectFit;
+        }),
+    [characters, draft.coachId, mode, project, sandboxIds, selectedIds, squad]
+  );
+
+  const rosterPool = useMemo(
+    () => rankedRoster.filter((entry) => !selectedIds.has(entry.character.id) && !sandboxIds.has(entry.character.id)),
+    [rankedRoster, sandboxIds, selectedIds]
+  );
+
+  const playerPool = useMemo(
+    () =>
+      characters.filter(
+        (character) =>
+          character.id !== draft.coachId &&
+          !draft.playerIds.includes(character.id) &&
+          !sandboxIds.has(character.id) &&
+          !isCoachEligible(character)
+      ),
+    [characters, draft.coachId, draft.playerIds, sandboxIds]
+  );
+
+  const suggestions = useMemo(
+    () => suggestNextSnap(allTeam, playerPool, project).slice(0, 4),
+    [allTeam, playerPool, project]
+  );
+
+  const detail = useMemo(
+    () =>
+      characters.find((character) => character.id === detailId) ??
+      coach ??
+      squad[0] ??
+      rankedRoster[0]?.character ??
+      null,
+    [characters, coach, detailId, rankedRoster, squad]
+  );
+
+  const importWarnings = useMemo(() => {
+    if (rosterCollection.employees.length === 0) return [];
+
+    const warnings: string[] = [];
+    if (coachCandidates.length === 0) warnings.push("No director-level records imported yet.");
+    if (new Set(characters.map((character) => character.deptCode)).size < 4) {
+      warnings.push("Department coverage is still thin. Keep importing.");
+    }
+    if (characters.length < 12) warnings.push("Roster volume is low for stable Moneyball rankings.");
+    return warnings;
+  }, [characters, coachCandidates.length, rosterCollection.employees.length]);
+
+  const updateCurrentDraft = useCallback(
+    (updater: (draft: ProjectDraftState) => ProjectDraftState) => {
+      setDrafts((current) => {
+        const baseDraft =
+          current[project.id] ?? buildInitialProjectDrafts(characters, [project])[project.id];
+
+        return reconcileProjectDrafts(
+          {
+            ...current,
+            [project.id]: updater(baseDraft),
+          },
+          characters
+        );
+      });
+    },
+    [characters, project]
+  );
+
+  const setCoachId = useCallback(
+    (coachId: string | null) => {
+      updateCurrentDraft((current) => ({
+        ...current,
+        coachId,
+        playerIds: current.playerIds.filter((playerId) => playerId !== coachId),
+        sandboxCards: current.sandboxCards.filter((card) => card.playerId !== coachId),
+      }));
+    },
+    [updateCurrentDraft]
+  );
+
+  const addPlayer = useCallback(
+    (playerId: string) => {
+      const character = characters.find((candidate) => candidate.id === playerId);
+      if (!character || isCoachEligible(character)) return;
+
+      updateCurrentDraft((current) => {
+        if (current.playerIds.includes(playerId)) return current;
+        if (current.playerIds.length >= fieldSize) return current;
+
+        return {
+          ...current,
+          playerIds: [...current.playerIds, playerId],
+          sandboxCards: current.sandboxCards.filter((card) => card.playerId !== playerId),
+        };
+      });
+
+      // Snap animation feedback
+      setRecentlyAddedId(playerId);
+      setTimeout(() => setRecentlyAddedId(null), 400);
+    },
+    [characters, fieldSize, updateCurrentDraft]
+  );
+
+  const removePlayer = useCallback(
+    (playerId: string) => {
+      updateCurrentDraft((current) => ({
+        ...current,
+        playerIds: current.playerIds.filter((candidate) => candidate !== playerId),
+      }));
+    },
+    [updateCurrentDraft]
+  );
+
+  const removeSandboxCard = useCallback(
+    (playerId: string) => {
+      updateCurrentDraft((current) => ({
+        ...current,
+        sandboxCards: current.sandboxCards.filter((card) => card.playerId !== playerId),
+      }));
+    },
+    [updateCurrentDraft]
+  );
+
+  const upsertSandboxCard = useCallback(
+    (playerId: string, position: { x: number; y: number }) => {
+      updateCurrentDraft((current) => {
+        const nextCard: SandboxCardState = {
+          playerId,
+          x: clampPercentage(position.x, 6, 94),
+          y: clampPercentage(position.y, 10, 88),
+        };
+        const existingIndex = current.sandboxCards.findIndex((card) => card.playerId === playerId);
+
+        if (existingIndex === -1) {
+          return {
+            ...current,
+            sandboxCards: [...current.sandboxCards, nextCard],
+          };
+        }
+
+        return {
+          ...current,
+          sandboxCards: current.sandboxCards.map((card, index) =>
+            index === existingIndex ? nextCard : card
+          ),
+        };
+      });
+    },
+    [updateCurrentDraft]
+  );
+
+  const stageCharacter = useCallback(
+    (playerId: string, position = { x: 50, y: 50 }) => {
+      const candidate = characters.find((character) => character.id === playerId);
+      if (!candidate) return;
+
+      if (draft.coachId === playerId) {
+        setCoachId(null);
+      } else if (draft.playerIds.includes(playerId)) {
+        removePlayer(playerId);
+      }
+
+      upsertSandboxCard(playerId, position);
+    },
+    [characters, draft.coachId, draft.playerIds, removePlayer, setCoachId, upsertSandboxCard]
+  );
+
+  const setFormation = useCallback(
+    (formation: FormationKey) => {
+      updateCurrentDraft((current) => ({
+        ...current,
+        formation,
+      }));
+    },
+    [updateCurrentDraft]
+  );
+
+  const setSelectorMode = useCallback(
+    (selectorMode: ProjectDraftState["selectorMode"]) => {
+      updateCurrentDraft((current) => ({
+        ...current,
+        selectorMode,
+      }));
+    },
+    [updateCurrentDraft]
+  );
+
+  const resetProjectDraft = useCallback(() => {
+    const fresh = buildInitialProjectDrafts(characters, [project])[project.id];
+    setDrafts((current) => ({
+      ...current,
+      [project.id]: fresh,
+    }));
+  }, [characters, project]);
+
+  const resetImports = useCallback(() => {
+    const freshDrafts = buildInitialProjectDrafts(mockCharacters);
+    setRosterCollection(createEmptyRosterCollection());
+    setDrafts(freshDrafts);
+    setDetailId(null);
+    setImportStatus("Cleared imported data. Dashboard is back on the simulation roster.");
+  }, [mockCharacters]);
+
+  const openImportDialog = useCallback(() => {
+    fileInputRef.current?.click();
+  }, []);
+
+  const handleImportFile = useCallback(
+    async (event: ChangeEvent<HTMLInputElement>) => {
+      const input = event.target;
+      const [file] = Array.from(input.files ?? []);
+      input.value = "";
+
+      if (!file) return;
+
+      try {
+        const fileName = file.name.toLowerCase();
+        const isCsv = fileName.endsWith(".csv");
+        const fileType = isCsv ? "csv" : "workbook";
+        const importedAt = new Date().toISOString();
+        const parsed = isCsv
+          ? {
+              employees: parseCSV(await file.text()),
+              sheetNames: [file.name],
+            }
+          : parseEmployeeWorkbook(await file.arrayBuffer());
+
+        if (parsed.employees.length === 0) {
+          setImportStatus(`No employee rows found in ${file.name}.`);
+          return;
+        }
+
+        setRosterCollection((current) => {
+          const next = applyImportToRosterCollection(current, {
+            employees: parsed.employees,
+            fileName: file.name,
+            fileType,
+            sheetNames: parsed.sheetNames,
+            importedAt,
+          });
+
+          setDrafts((draftState) =>
+            reconcileProjectDrafts(draftState, createImportedConsoleCharacters(next.employees))
+          );
+
+          return next;
+        });
+
+        setImportStatus(
+          `Imported ${parsed.employees.length} rows from ${file.name}. Canonical roster updated.`
+        );
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Unknown import failure.";
+        setImportStatus(`Import failed for ${file.name}: ${message}`);
+      }
+    },
+    []
+  );
+
+  const handleDragStart = useCallback((payload: DragPayload) => {
+    setDragPayload(payload);
+  }, []);
+
+  const handleDragEnd = useCallback(() => {
+    setDragPayload(null);
+  }, []);
+
+  const onDropToSandbox = useCallback(
+    (event: DragEvent<HTMLElement>) => {
+      event.preventDefault();
+      if (!dragPayload) return;
+
+      const position = resolveDropPosition(event);
+
+      if (dragPayload.origin === "team") {
+        removePlayer(dragPayload.id);
+      }
+
+      if (dragPayload.origin === "coach") {
+        setCoachId(null);
+      }
+
+      upsertSandboxCard(dragPayload.id, position);
+      setDetailId(dragPayload.id);
+      setDragPayload(null);
+    },
+    [dragPayload, removePlayer, setCoachId, upsertSandboxCard]
+  );
+
+  const onDropToFormation = useCallback(
+    (event: DragEvent<HTMLElement>) => {
+      event.preventDefault();
+      if (!dragPayload) return;
+
+      const candidate = characters.find((character) => character.id === dragPayload.id);
+      if (!candidate) return;
+
+      if (dragPayload.origin === "sandbox") {
+        removeSandboxCard(dragPayload.id);
+      }
+
+      if (isCoachEligible(candidate)) {
+        setCoachId(candidate.id);
+      } else {
+        addPlayer(candidate.id);
+      }
+
+      setDetailId(candidate.id);
+      setDragPayload(null);
+    },
+    [addPlayer, characters, dragPayload, removeSandboxCard, setCoachId]
+  );
+
+  const screenContent = (() => {
+    // ── OVERVIEW: All 8 teams at a glance (God's Mode) ──
+    if (screen === "overview") {
+      return (
+        <div className="h-full min-h-0 overflow-y-auto p-4">
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-4">
+            {TKC_REAL_PROJECTS.map((proj) => {
+              const projDraft = drafts[proj.id];
+              const projCoach = projDraft?.coachId ? characters.find((c) => c.id === projDraft.coachId) : null;
+              const projSquad = (projDraft?.playerIds ?? []).map((pid) => characters.find((c) => c.id === pid)).filter(Boolean) as ConsoleCharacter[];
+              const projAllTeam = projCoach ? [projCoach, ...projSquad] : projSquad;
+              const projScore = projAllTeam.length > 0 ? scoreTeamForProject(projAllTeam.map((c) => c as ConsoleCharacter), proj) : null;
+              const projFieldSize = getFieldSizeForProject(proj);
+              const projBudgetUsed = calculateBudgetUsed(projAllTeam.map((c) => c as ConsoleCharacter));
+              const projBudgetCeiling = calculateBudgetCeiling(proj);
+              const projBudgetPct =
+                projBudgetCeiling > 0 ? Math.round((projBudgetUsed / projBudgetCeiling) * 100) : 0;
+              const isActive = proj.id === project.id;
+
+              return (
+                <button
+                  key={proj.id}
+                  onClick={() => { setProjectId(proj.id); setScreen("formation"); }}
+                  className="border p-3 text-left transition-colors hover:bg-[rgba(255,255,255,0.03)]"
+                  style={{ borderColor: isActive ? "#F3C567" : "#1a1a1a" }}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="type-data text-[12px]">{proj.name}</span>
+                    {proj.priority === "critical" && <span className="text-[8px] text-[#F87171]">CRIT</span>}
+                  </div>
+                  {/* Mini skill bars */}
+                  {(() => {
+                    const demand = PROJECT_DEMANDS[proj.id];
+                    if (!demand || !projScore) return <div className="text-[9px] text-[#444]">No team assigned</div>;
+                    return (
+                      <div className="space-y-0.5 mb-2">
+                        {(["technical", "softSkill", "outsource", "inHouse"] as const).map((key) => {
+                          const needed = demand[key];
+                          const have = projScore.demandCoverage[key];
+                          const pct = needed > 0 ? Math.min(100, Math.round((have / needed) * 100)) : 100;
+                          return (
+                            <div key={key} className="flex items-center gap-1">
+                              <div className="h-[3px] flex-1 bg-[#111]">
+                                <div className="h-full transition-all" style={{ width: `${pct}%`, background: pct >= 100 ? "#86CD7E" : pct >= 60 ? "#F3C567" : "#F87171" }} />
+                              </div>
+                              <span className="text-[7px] w-[20px] text-right tabular-nums" style={{ color: pct >= 100 ? "#86CD7E" : "#555" }}>{pct}%</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
+                  {/* Team members */}
+                  <div className="flex flex-wrap gap-1 mb-1">
+                    {projCoach && (
+                      <span className="text-[8px] text-[#F3C567]">{projCoach.nickname}</span>
+                    )}
+                    {projSquad.map((m) => (
+                      <span key={m.id} className="text-[8px] text-[#888]">{m.nickname}</span>
+                    ))}
+                  </div>
+                  <div className="flex items-center justify-between text-[8px]">
+                    <span style={{ color: projScore ? (projScore.overallScore >= 70 ? "#86CD7E" : "#F3C567") : "#555" }}>
+                      Fit {projScore?.overallScore ?? "--"}
+                    </span>
+                    <span className="tabular-nums text-[#555]">
+                      {projDraft?.playerIds.length ?? 0}/{projFieldSize} · ฿{(projBudgetUsed * 1000).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="mt-1 flex items-center justify-between text-[8px] text-[#555]">
+                    <span>Budget room</span>
+                    <span>{projBudgetPct}% of cap</span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+
+    // ── HEATMAP: Org capability supply vs project demand ──
+    if (screen === "heatmap") {
+      const heatmapData = calculateCapabilityHeatmap(characters, TKC_REAL_PROJECTS);
+      return (
+        <div className="h-full overflow-y-auto p-6">
+          <div className="max-w-[900px] mx-auto">
+            <div className="type-label mb-1">Capability Heatmap</div>
+            <div className="text-[11px] mb-6" style={{ color: "var(--text-secondary)" }}>
+              What the org can do (supply) vs what projects need (demand). Negative gap = skill shortage.
+            </div>
+            <div className="space-y-4">
+              {heatmapData.map((dim) => {
+                const maxVal = Math.max(dim.supply, dim.demand, 1);
+                const supplyPct = (dim.supply / maxVal) * 100;
+                const demandPct = (dim.demand / maxVal) * 100;
+                const gapColor = dim.gap >= 0 ? "var(--accent-green)" : "var(--accent-red)";
+                return (
+                  <div key={dim.key} className="card-stock-flat p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="type-data">{dim.label}</span>
+                      <span className="text-[12px] font-semibold tabular-nums" style={{ color: gapColor }}>
+                        {dim.gap >= 0 ? "+" : ""}{dim.gap}
+                      </span>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="w-[60px] text-[9px] text-right" style={{ color: "var(--text-muted)" }}>Supply</span>
+                        <div className="h-[8px] flex-1" style={{ background: "var(--bg-elevated)" }}>
+                          <div className="h-full transition-all" style={{ width: `${supplyPct}%`, background: "var(--accent-blue)" }} />
+                        </div>
+                        <span className="w-[30px] text-[9px] tabular-nums" style={{ color: "var(--text-secondary)" }}>{dim.supply}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="w-[60px] text-[9px] text-right" style={{ color: "var(--text-muted)" }}>Demand</span>
+                        <div className="h-[8px] flex-1" style={{ background: "var(--bg-elevated)" }}>
+                          <div className="h-full transition-all" style={{ width: `${demandPct}%`, background: "var(--accent-gold)" }} />
+                        </div>
+                        <span className="w-[30px] text-[9px] tabular-nums" style={{ color: "var(--text-secondary)" }}>{dim.demand}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="mt-6 card-stock-flat p-4">
+              <div className="type-label mb-2">Bottlenecks</div>
+              {heatmapData.filter((d) => d.gap < -5).map((d) => (
+                <div key={d.key} className="text-[10px] mb-1" style={{ color: "var(--accent-red)" }}>
+                  {d.label}: demand exceeds supply by {Math.abs(d.gap)} points
+                </div>
+              ))}
+              {heatmapData.every((d) => d.gap >= -5) && (
+                <div className="text-[10px]" style={{ color: "var(--accent-green)" }}>No critical skill gaps detected</div>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ── HISTORY: Deployment log ──
+    if (screen === "history") {
+      return (
+        <div className="h-full overflow-y-auto p-6">
+          <div className="max-w-[1100px] mx-auto">
+            <div className="type-label mb-1">Deployment History</div>
+            <div className="text-[11px] mb-6" style={{ color: "var(--text-secondary)" }}>
+              Every team ever assembled. Predicted scores vs actual outcomes.
+            </div>
+            <div className="space-y-3">
+              {TKC_REAL_PROJECTS.map((proj) => {
+                const projDraft = drafts[proj.id];
+                const projCoach = projDraft?.coachId ? characters.find((c) => c.id === projDraft.coachId) : null;
+                const projSquad = (projDraft?.playerIds ?? []).map((pid) => characters.find((c) => c.id === pid)).filter(Boolean) as ConsoleCharacter[];
+                const projAllTeam = projCoach ? [projCoach, ...projSquad] : projSquad;
+                const projScore = projAllTeam.length > 0 ? scoreTeamForProject(projAllTeam, proj) : null;
+                const projBudgetUsed = calculateBudgetUsed(projAllTeam);
+
+                return (
+                  <div key={proj.id} className="card-stock-flat p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <span className="type-data">{proj.name}</span>
+                        <span className="ml-2 text-[9px]" style={{ color: "var(--text-muted)" }}>{proj.client}</span>
+                      </div>
+                      <span className="text-[9px]" style={{ color: proj.priority === "critical" ? "var(--accent-red)" : "var(--text-muted)" }}>
+                        {proj.priority}
+                      </span>
+                    </div>
+                    <div className="flex gap-4 mb-2">
+                      <div className="text-[9px]">
+                        <span style={{ color: "var(--text-muted)" }}>Leader: </span>
+                        <span style={{ color: "var(--accent-gold)" }}>{projCoach?.nickname ?? "None"}</span>
+                      </div>
+                      <div className="text-[9px]">
+                        <span style={{ color: "var(--text-muted)" }}>Team: </span>
+                        <span style={{ color: "var(--text-secondary)" }}>{projSquad.map((m) => m.nickname).join(", ") || "Empty"}</span>
+                      </div>
+                    </div>
+                    <div className="flex gap-4 text-[9px]">
+                      <span>Fit: <span style={{ color: projScore ? "var(--accent-blue)" : "var(--text-muted)" }}>{projScore?.overallScore ?? "--"}</span></span>
+                      <span>Chemistry: <span style={{ color: "var(--text-secondary)" }}>{projScore?.chemistryScore ?? "--"}</span></span>
+                      <span>Budget: <span style={{ color: "var(--text-secondary)" }}>฿{(projBudgetUsed * 1000).toLocaleString()}</span></span>
+                    </div>
+                    {/* Outcome placeholder */}
+                    <div className="mt-2 pt-2" style={{ borderTop: "1px solid var(--border-subtle)" }}>
+                      <span className="text-[9px]" style={{ color: "var(--text-muted)" }}>
+                        Outcome: Deploy team to reveal actual results
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (screen === "square") {
+      return (
+        <div className="grid h-full grid-cols-[minmax(0,1.55fr)_320px] gap-4">
+          <div className="relative min-h-0 overflow-hidden  border border-[#2a2a2a]">
+            <TownSquare
+              characters={characters}
+              selectedTeamIds={draft.playerIds}
+              coach={coach}
+            />
+            <div className="pointer-events-none absolute left-4 top-4 flex flex-wrap gap-2">
+              <span className="bg-[#1a1a1a] px-2 py-1 border border-[#222] text-[10px]">Checked In {checkedInCount}</span>
+              <span className="bg-[#1a1a1a] px-2 py-1 border border-[#222] text-[10px]">Remote {remoteCount}</span>
+              <span className="bg-[#1a1a1a] px-2 py-1 border border-[#222] text-[10px]">
+                Squad {draft.playerIds.length}/{fieldSize}
+              </span>
+              <span className="bg-[#1a1a1a] px-2 py-1 border border-[#222] text-[10px]">
+                Missing {missingSkills.length > 0 ? missingSkills.join(", ") : "None"}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex min-h-0 flex-col gap-4">
+            <div className="border border-[#222] p-4">
+              <div className="mb-3 text-[11px] uppercase tracking-[0.18em] text-[#888]">
+                Square Pulse
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <MetricCard label="Org Health" value={String(orgHealth)} tone="#86CD7E" />
+                <MetricCard
+                  label="Team Fit"
+                  value={projectScore ? `${projectScore.overallScore}` : "--"}
+                  tone="#F3C567"
+                />
+                <MetricCard
+                  label="Chemistry"
+                  value={projectScore ? `${projectScore.chemistryScore}` : "--"}
+                  tone="#86D1FF"
+                />
+                <MetricCard
+                  label="Estimated Pts"
+                  value={validation ? `${validation.estimatedPoints}` : "--"}
+                  tone="#FB923C"
+                />
+              </div>
+            </div>
+
+            <div className="min-h-0 flex-1 overflow-y-auto border border-[#222] p-4 pr-3">
+              <div className="mb-3 text-[11px] uppercase tracking-[0.18em] text-[#888]">
+                Check-In Flow
+              </div>
+              <div className="space-y-2">
+                {characters
+                  .filter((character) => character.isPresent)
+                  .sort(
+                    (left, right) =>
+                      (left.checkedInAt ?? "99:99").localeCompare(right.checkedInAt ?? "99:99")
+                  )
+                  .slice(0, 10)
+                  .map((character) => (
+                    <button
+                      key={character.id}
+                      onClick={() => setDetailId(character.id)}
+                      className="flex w-full items-center gap-3 border border-[#1a1a1a] bg-[#111] px-3 py-2 text-left hover:bg-[#151515]"
+                    >
+                      <PixelCharacter
+                        seed={character.seed}
+                        rpgClass={character.rpgClass}
+                        size={22}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-[12px] font-semibold text-[#ddd]">
+                          {character.nickname}
+                        </div>
+                        <div className="text-[10px] text-[#888]">
+                          {character.departmentName} • {character.checkedInAt ?? "offline"}
+                        </div>
+                      </div>
+                      <div className="text-right text-[10px]">
+                        <div style={{ color: getStatusTone(character) }}>{character.status}</div>
+                        <div className="text-[#888]">
+                          {character.isRemote ? "remote" : "onsite"}
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (screen === "formation") {
+      const demand = PROJECT_DEMANDS[project.id];
+      const hoveredCandidate =
+        hoveredCandidateId
+          ? characters.find((candidate) => candidate.id === hoveredCandidateId) ?? null
+          : null;
+
+      return (
+        <div className="grid h-full min-h-0 grid-cols-[minmax(0,1.45fr)_360px] gap-4 p-4">
+          <div className="grid min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] gap-4">
+            <ProjectWarBanner
+              project={project}
+              demand={demand}
+              budgetUsed={budgetUsed}
+              budgetCeiling={budgetCeiling}
+              budgetStatus={budgetStatus}
+              fieldSize={fieldSize}
+              draft={draft}
+              projectScore={projectScore}
+              viability={viability}
+              onSetFormation={setFormation}
+            />
+
+            <div className="grid min-h-0 grid-cols-[minmax(0,1fr)_minmax(320px,0.92fr)] gap-4">
+              <FreeformSandbox
+                cards={sandboxCards}
+                dragPayload={dragPayload}
+                onDrop={onDropToSandbox}
+                onDragOver={(event) => event.preventDefault()}
+                onInspect={setDetailId}
+                onDragStart={(id) => handleDragStart({ id, origin: "sandbox" })}
+                onDragEnd={handleDragEnd}
+                onReturnToPool={removeSandboxCard}
+                onSnap={(id) => {
+                  const candidate = characters.find((character) => character.id === id);
+                  if (!candidate) return;
+                  if (isCoachEligible(candidate)) {
+                    setCoachId(candidate.id);
+                  } else {
+                    addPlayer(candidate.id);
+                  }
+                  setDetailId(candidate.id);
+                }}
+              />
+
+              <SnapFormationDeck
+                coach={coach}
+                formationBoard={formationBoard}
+                selectorMode={draft.selectorMode}
+                fieldSize={fieldSize}
+                playerCount={draft.playerIds.length}
+                onDrop={onDropToFormation}
+                onDragOver={(event) => event.preventDefault()}
+                onUnsetCoach={() => {
+                  if (coach) {
+                    stageCharacter(coach.id, { x: 18, y: 22 });
+                  }
+                }}
+                onStageMember={(id) => stageCharacter(id, { x: 28, y: 56 })}
+                onInspect={setDetailId}
+                onDragCoachStart={(id) => handleDragStart({ id, origin: "coach" })}
+                onDragTeamStart={(id) => handleDragStart({ id, origin: "team" })}
+                onDragEnd={handleDragEnd}
+              />
+            </div>
+
+            <CandidateMarket
+              entries={rosterPool}
+              mode={mode}
+              demand={demand}
+              team={allTeam}
+              project={project}
+              hoveredCandidateId={hoveredCandidateId}
+              onHover={setHoveredCandidateId}
+              onInspect={setDetailId}
+              onDragStart={(id) => handleDragStart({ id, origin: "roster" })}
+              onDragEnd={handleDragEnd}
+              onStage={(id) => stageCharacter(id, { x: 50, y: 52 })}
+              onSnap={(id) => {
+                const candidate = characters.find((character) => character.id === id);
+                if (!candidate) return;
+                if (isCoachEligible(candidate)) {
+                  setCoachId(candidate.id);
+                } else {
+                  addPlayer(candidate.id);
+                }
+              }}
+            />
+          </div>
+
+          <ScoutConsole
+            detail={detail}
+            project={project}
+            projectScore={projectScore}
+            team={allTeam}
+            hoveredCandidate={hoveredCandidate}
+            missingSkills={missingSkills}
+            suggestions={suggestions}
+            onInspect={setDetailId}
+            onStage={stageCharacter}
+            onSnap={(id) => {
+              const candidate = characters.find((character) => character.id === id);
+              if (!candidate) return;
+              if (isCoachEligible(candidate)) {
+                setCoachId(candidate.id);
+              } else {
+                addPlayer(candidate.id);
+              }
+            }}
+          />
+        </div>
+      );
+    }
+
+    if (screen === "cards") {
+      return (
+        <div className="h-full min-h-0 overflow-y-auto pr-1">
+          <div className="grid auto-rows-[105px] grid-cols-12 gap-3">
+            {rankedRoster.map((entry) => (
+              <RosterStoryCard
+                key={entry.character.id}
+                entry={entry}
+                mode={mode}
+                onInspect={setDetailId}
+              />
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    if (screen === "table") {
+      const demand = PROJECT_DEMANDS[project.id];
+      const hoveredCandidate = hoveredCandidateId ? characters.find((c) => c.id === hoveredCandidateId) : null;
+      const hoverDelta = hoveredCandidate && demand ? previewSnapDelta(allTeam, hoveredCandidate, project.id) : null;
+
+      return (
+        <div className="flex h-full min-h-0 flex-col gap-3 p-4">
+          {/* ── ZONE 1: Project Brief + Skill Demand ── */}
+          <div className="flex gap-4 px-2">
+            <div className="min-w-[220px]">
+              <div className="text-[13px] font-semibold text-[#ddd]">{project.name}</div>
+              <div className="text-[10px] text-[#666]">{project.client} · ฿{formatCompactMoney(project.budgetThb ?? 0)} · GM {project.grossMarginPct ?? "--"}%</div>
+              <div className="mt-2 flex gap-3 text-[10px]">
+                <span style={{ color: budgetStatus.status === "over" ? "#F87171" : budgetStatus.status === "tight" ? "#FB923C" : "#86CD7E" }}>
+                  ฿{(budgetUsed * 1000).toLocaleString()} / {(budgetCeiling * 1000).toLocaleString()}
+                </span>
+                <span className="text-[#666]">{draft.playerIds.length}/{fieldSize} people</span>
+                <span style={{ color: viability.viable ? "#86CD7E" : "#F87171" }}>{viability.ratio.toFixed(1)}x</span>
+              </div>
+              {coach && (
+                <div className="mt-2 flex items-center gap-2">
+                  <PixelCharacter seed={coach.seed} rpgClass={coach.rpgClass} size={16} />
+                  <span className="text-[10px] text-[#F3C567]">Leader: {coach.nickname}</span>
+                </div>
+              )}
+            </div>
+            {demand && (
+              <div className="flex-1 space-y-1">
+                <div className="text-[8px] uppercase tracking-wider text-[#444]">Skill Demand vs Coverage</div>
+                {SKILL_KEYS.map((key) => {
+                  const needed = demand[key];
+                  const have = projectScore?.demandCoverage[key] ?? 0;
+                  const pct = needed > 0 ? Math.min(100, Math.round((have / needed) * 100)) : 100;
+                  const hoverItem = hoverDelta?.find((d) => d.key === key);
+                  const ghostPct = hoverItem ? Math.min(100, hoverItem.after) : null;
+                  const dimColors: Record<string, string> = { technical: "#86D1FF", softSkill: "#86CD7E", outsource: "#F3C567", inHouse: "#FB923C" };
+                  return (
+                    <div key={key} className="flex items-center gap-2">
+                      <span className="w-[60px] text-right text-[9px] text-[#555]">{SKILL_LABELS[key]} {needed}%</span>
+                      <div className="relative h-[6px] flex-1 bg-[#1a1a1a]">
+                        {ghostPct !== null && ghostPct > pct && (
+                          <div className="absolute inset-y-0 left-0 opacity-30" style={{ width: `${ghostPct}%`, background: dimColors[key] ?? "#666" }} />
+                        )}
+                        <div className="relative h-full transition-all" style={{ width: `${pct}%`, background: pct >= 100 ? dimColors[key] ?? "#666" : pct >= 60 ? "#F3C567" : "#F87171" }} />
+                      </div>
+                      <span className="w-[32px] text-[9px] tabular-nums" style={{ color: pct >= 100 ? dimColors[key] ?? "#666" : "#666" }}>{pct}%</span>
+                      {hoverItem && hoverItem.delta > 0 && (
+                        <span className="text-[8px] text-[#86CD7E]">+{hoverItem.delta}%</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* ── ZONE 2: Formation Mat ── */}
+          <div className="felt-mat flex items-center gap-0 px-4 py-3 overflow-x-auto">
+            {coach ? (
+              <div className="anim-glow-pulse flex items-center gap-1 border border-[#F3C567] px-2 py-1 mr-1">
+                <PixelCharacter seed={coach.seed} rpgClass={coach.rpgClass} size={18} />
+                <div>
+                  <div className="text-[10px] font-semibold text-[#F3C567]">{coach.nickname}</div>
+                  <div className="text-[8px] text-[#888]">LEAD</div>
+                </div>
+                <button onClick={() => setCoachId(null)} className="ml-1 text-[10px] text-[#555] hover:text-[#F87171] transition-colors">×</button>
+              </div>
+            ) : (
+              <div className="border border-dashed border-[#333] px-3 py-2 mr-1 text-[9px] text-[#444]">Pick leader</div>
+            )}
+            {squad.map((member) => (
+              <div key={member.id} className={`flex items-center ${member.id === recentlyAddedId ? "anim-snap-bounce" : "anim-card-appear"}`}>
+                <span className="jigsaw-connector mx-0.5" />
+                <div className="flex items-center gap-1 border border-[#222] px-2 py-1 transition-all" style={{ borderColor: getDeptColor(member.deptCode) + "66" }}>
+                  <PixelCharacter seed={member.seed} rpgClass={member.rpgClass} size={16} />
+                  <div>
+                    <div className="text-[10px] text-[#ccc]">{member.nickname}</div>
+                    <div className="text-[8px] text-[#666]">{member.roleEn}</div>
+                  </div>
+                  <button onClick={() => removePlayer(member.id)} className="ml-1 text-[10px] text-[#444] hover:text-[#F87171]">×</button>
+                </div>
+              </div>
+            ))}
+            {Array.from({ length: Math.max(0, fieldSize - draft.playerIds.length) }).map((_, i) => (
+              <div key={`empty-${i}`} className="flex items-center">
+                <span className="jigsaw-connector mx-0.5 opacity-30" />
+                <div className="border border-dashed border-[#222] px-3 py-2 text-[8px] text-[#333]">empty</div>
+              </div>
+            ))}
+            <div className="ml-auto flex gap-3 text-[9px] text-[#555]">
+              {projectScore && <span>Chemistry {projectScore.chemistryScore}</span>}
+              {projectScore && <span style={{ color: projectScore.hierarchyValid ? "#86CD7E" : "#F87171" }}>Hierarchy {projectScore.hierarchyValid ? "OK" : "GAP"}</span>}
+              <span>Budget {budgetStatus.pct}%</span>
+            </div>
+          </div>
+
+          {/* ── ZONE 3: Available Roster Grid ── */}
+          <div className="min-h-0 flex-1 overflow-y-auto px-2">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 3xl:grid-cols-8">
+              {rankedRoster.filter((e) => !e.selected).map((entry) => {
+                const mb = calculateMoneyballValue(entry.character);
+                const delta = demand ? previewSnapDelta(allTeam, entry.character, project.id) : [];
+                const bestDelta = delta.reduce((best, d) => d.delta > best.delta ? d : best, { key: "" as keyof typeof demand, label: "", delta: 0, before: 0, after: 0, demand: 0 });
+                const isHovered = hoveredCandidateId === entry.character.id;
+
+                return (
+                  <div
+                    key={entry.character.id}
+                    className="card-stock card-stripe px-3 pt-3 pb-2 transition-all"
+                    style={{
+                      ["--stripe-color" as string]: getDeptColor(entry.character.deptCode),
+                      borderColor: isHovered ? "var(--accent-gold)" : "var(--card-border)",
+                      transform: isHovered ? "translateY(-4px)" : "none",
+                    }}
+                    onMouseEnter={() => setHoveredCandidateId(entry.character.id)}
+                    onMouseLeave={() => setHoveredCandidateId(null)}
+                  >
+                    <button onClick={() => setDetailId(entry.character.id)} className="w-full text-left">
+                      <div className="flex items-center gap-2 mb-1">
+                        <PixelCharacter seed={entry.character.seed} rpgClass={entry.character.rpgClass} size={22} />
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate text-[11px] font-semibold text-[#ddd]">{entry.character.nickname}</div>
+                          <div className="text-[9px] text-[#666]">{entry.character.roleEn} · {entry.character.deptCode}</div>
+                        </div>
+                      </div>
+                    </button>
+                    <div className="flex items-center justify-between text-[9px] mb-1">
+                      <span className="text-[#888]">฿{(entry.character.capacityCost * 1000).toLocaleString()}/mo</span>
+                      <span style={{ color: mb.verdict === "steal" ? "#86CD7E" : mb.verdict === "fair" ? "#888" : "#FB923C" }}>{mb.verdict}</span>
+                    </div>
+                    {bestDelta.delta > 0 && (
+                      <div className="text-[9px] text-[#86CD7E] mb-1">+{bestDelta.delta}% {bestDelta.label}</div>
+                    )}
+                    <button
+                      onClick={() =>
+                        isCoachEligible(entry.character)
+                          ? setCoachId(entry.character.id)
+                          : addPlayer(entry.character.id)
+                      }
+                      className="w-full border border-[#222] px-2 py-1 text-[9px] font-semibold text-[#F3C567] transition-colors hover:border-[#F3C567] hover:bg-[rgba(243,197,103,0.08)]"
+                    >
+                      {isCoachEligible(entry.character) ? "Make Leader" : "Add to Team"}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (screen === "list") {
+      return (
+        <div className="h-full min-h-0 overflow-y-auto pr-1">
+          <div className="space-y-2">
+            {rankedRoster.map((entry) => (
+              <div
+                key={entry.character.id}
+                className="flex items-center gap-3 border border-[#1a1a1a] bg-[#111] px-3 py-3"
+              >
+                <PixelCharacter
+                  seed={entry.character.seed}
+                  rpgClass={entry.character.rpgClass}
+                  size={24}
+                />
+                <button
+                  onClick={() => setDetailId(entry.character.id)}
+                  className="min-w-0 flex-1 text-left"
+                >
+                  <div className="truncate text-[12px] font-semibold text-[#ddd]">
+                    {entry.character.nickname}
+                  </div>
+                  <div className="text-[10px] text-[#888]">
+                    {entry.character.roleEn} • {entry.character.departmentName} • {entry.modeScore}{" "}
+                    {getModeLabel(mode).toLowerCase()}
+                  </div>
+                </button>
+                <div className="hidden text-right text-[10px] text-[#888] xl:block">
+                  <div>ICA {entry.character.ica.overall}</div>
+                  <div>Form {entry.character.form.toFixed(1)}</div>
+                </div>
+                {!entry.selected ? (
+                  <button
+                    onClick={() =>
+                      isCoachEligible(entry.character)
+                        ? setCoachId(entry.character.id)
+                        : addPlayer(entry.character.id)
+                    }
+                    className="border border-[#333] px-3 py-2 text-[10px] font-semibold text-[#f3c567]"
+                  >
+                    {getActionLabel(entry.character)}
+                  </button>
+                ) : (
+                  <span className="text-[10px] font-semibold text-[#86cd7e]">
+                    {entry.character.id === draft.coachId ? "Coach" : "Field"}
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="grid h-full grid-cols-3 gap-4">
+        <ConsoleBoard title="Collector">
+          <ConsoleLine label="Source" value={rosterCollection.employees.length > 0 ? "Workbook collection" : "Mock simulation"} />
+          <ConsoleLine label="Canonical roster" value={`${characters.length} people`} />
+          <ConsoleLine label="Imports received" value={`${rosterCollection.snapshots.length}`} />
+          <ConsoleLine label="Last sync" value={formatMoment(rosterCollection.updatedAt)} />
+          {rosterCollection.snapshots.slice(0, 4).map((snapshot) => (
+            <div
+              key={snapshot.id}
+              className="border border-[#1a1a1a] bg-[#0d0d0d] px-3 py-2"
+            >
+              <div className="text-[11px] font-semibold text-[#ddd]">{snapshot.fileName}</div>
+              <div className="text-[10px] text-[#888]">
+                {snapshot.employeeCount} rows • {snapshot.canonicalCount} canonical • {formatMoment(snapshot.importedAt)}
+              </div>
+            </div>
+          ))}
+        </ConsoleBoard>
+
+        <ConsoleBoard title="Squad Engine">
+          <ConsoleLine label="Selector" value={draft.selectorMode === "director" ? "Director picks" : "HR picks"} />
+          <ConsoleLine label="Coach" value={coach?.nickname ?? "Not assigned"} />
+          <ConsoleLine label="Formation" value={draft.formation === "3511" ? "3-5-1-1" : "4-4-2"} />
+          <ConsoleLine label="Field size" value={`${draft.playerIds.length}/${fieldSize}`} />
+          <ConsoleLine label="Budget" value={`${budgetUsed}/${budgetCeiling} CP`} />
+          <ConsoleLine label="Validation" value={validation?.valid ? "Ready" : "Needs work"} />
+          {validation?.issues.map((issue) => (
+            <div key={issue} className="text-[10px] text-[#f87171]">
+              ! {issue}
+            </div>
+          ))}
+          {validation?.warnings.map((warning) => (
+            <div key={warning} className="text-[10px] text-[#f3c567]">
+              ~ {warning}
+            </div>
+          ))}
+        </ConsoleBoard>
+
+        <ConsoleBoard title="Signals">
+          {alerts.map((alert) => (
+            <div key={alert.id} className="text-[10px] text-[#f87171]">
+              {alert.text}
+            </div>
+          ))}
+          {insights.map((insight) => (
+            <div key={insight.id} className="border border-[#1a1a1a] bg-[#0d0d0d] px-3 py-2">
+              <div className="text-[11px] font-semibold text-[#ddd]">{insight.title}</div>
+              <div className="text-[10px] text-[#888]">{insight.message}</div>
+            </div>
+          ))}
+        </ConsoleBoard>
+      </div>
+    );
+  })();
+
+  return (
+    <div className="tabletop relative h-screen overflow-hidden text-[var(--text-primary)]">
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".csv,.xls,.xlsx"
+        className="hidden"
+        onChange={handleImportFile}
+      />
+
+      {/* ══ THE WORLD — only visible on check-in screen ══ */}
+      {screen === "square" && (
+        <div className="absolute inset-0">
+          <TownSquare
+            characters={characters}
+            selectedTeamIds={draft.playerIds}
+            coach={coach}
+          />
+        </div>
+      )}
+
+      {/* ══ HUD / SCREEN LAYER ══ */}
+      <div className="pointer-events-none relative z-10 flex h-full flex-col">
+
+        {/* ── TOP BAR ── */}
+        <header className="pointer-events-auto flex items-center justify-between gap-4 bg-[rgba(26,18,9,0.92)] px-4 py-2 backdrop-blur-sm" style={{ borderBottom: "1px solid #222" }}>
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="type-label">TKC Digital Twin</span>
+            <div className="flex gap-1">
+              {(Object.keys(MODE_META) as OpsMode[]).map((modeKey) => (
+                <button
+                  key={modeKey}
+                  onClick={() => setMode(modeKey)}
+                  className="px-2 py-1 text-[10px] font-semibold"
+                  style={{
+                    borderBottom: mode === modeKey ? `2px solid ${MODE_META[modeKey].accent}` : "2px solid transparent",
+                    background: "transparent",
+                    color: mode === modeKey ? MODE_META[modeKey].accent : "#666",
+                  }}
+                >
+                  {MODE_META[modeKey].label}
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-1 ml-2">
+              {(Object.keys(SCREEN_LABELS) as ConsoleScreen[]).filter((s) => s !== "square").map((screenKey) => (
+                <button
+                  key={screenKey}
+                  onClick={() => setScreen(screen === screenKey ? "square" : screenKey)}
+                  className="px-2 py-1 text-[9px]"
+                  style={{
+                    background: screen === screenKey ? "rgba(255,255,255,0.08)" : "transparent",
+                    color: screen === screenKey ? "#ccc" : "#555",
+                    border: screen === screenKey ? "1px solid #333" : "1px solid transparent",
+                  }}
+                >
+                  {SCREEN_LABELS[screenKey]}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="flex items-center gap-3 text-[10px] font-mono">
+            <span className="text-[#555]">{formatClock(now)}</span>
+            <span style={{ color: orgHealth >= 70 ? "#86CD7E" : orgHealth >= 50 ? "#F3C567" : "#F87171" }}>Org {orgHealth}%</span>
+            <span className="text-[#555]">{characters.length} people</span>
+            <button
+              onClick={() => setManualOpen(true)}
+              className="ml-1 border border-[#333] px-2 py-0.5 text-[9px] text-[#F3C567] transition-colors hover:bg-[rgba(243,197,103,0.1)] hover:border-[#F3C567]"
+              title="Game Manual"
+            >
+              Manual
+            </button>
+          </div>
+        </header>
+
+        {/* ── MAIN AREA — world shows through, HUD panels float ── */}
+        <div className="flex min-h-0 flex-1">
+
+          {/* ── LEFT: Company Bible ── */}
+          <aside className="pointer-events-auto flex w-[338px] min-w-[338px] flex-col overflow-y-auto bg-[rgba(18,12,6,0.95)] backdrop-blur-sm" style={{ borderRight: "1px solid #2c1f12" }}>
+            <CompanyBibleSidebar
+              projectId={project.id}
+              drafts={drafts}
+              modeAccent={MODE_META[mode].accent}
+              importStatus={importStatus}
+              importWarnings={importWarnings}
+              rosterCollection={rosterCollection}
+              onSelectProject={(nextProjectId) => {
+                setProjectId(nextProjectId);
+                if (screen === "overview") setScreen("formation");
+              }}
+              onOpenImport={openImportDialog}
+              onResetImports={resetImports}
+            />
+          </aside>
+
+          {/* ── CENTER: Open canvas ── */}
+          {screen !== "square" && (
+            <div className="pointer-events-auto flex min-h-0 min-w-0 flex-1 flex-col">
+              <div className="min-h-0 flex-1 overflow-auto">{screenContent}</div>
+            </div>
+          )}
+
+          {/* ── World HUD chips (only on check-in view) ── */}
+          {screen === "square" && (
+            <div className="pointer-events-none absolute left-[402px] top-[48px] z-10 flex flex-wrap gap-1">
+              <span className="hud-chip">{checkedInCount} onsite</span>
+              <span className="hud-chip">{remoteCount} remote</span>
+              <span className="hud-chip" style={{ color: draft.playerIds.length >= fieldSize ? "#86CD7E" : "#F3C567" }}>Team {draft.playerIds.length}/{fieldSize}</span>
+              {missingSkills.length > 0 && <span className="hud-chip" style={{ color: "#FB923C" }}>Missing: {missingSkills.join(", ")}</span>}
+            </div>
+          )}
+
+          {/* ── Spacer (only on check-in view where the world fills the center) ── */}
+          {screen === "square" && <div className="min-w-0 flex-1" />}
+
+          {/* ── RIGHT: Squad Engine (floating HUD) ── */}
+          {screen !== "formation" && (
+          <aside className="pointer-events-auto flex w-[260px] flex-col overflow-y-auto bg-[rgba(26,18,9,0.92)] backdrop-blur-sm" style={{ borderLeft: "1px solid #1a1a1a" }}>
+            <div className="flex items-center justify-between px-3 py-2">
+              <span className="type-label">Team Builder</span>
+              <span className="text-[9px] font-semibold" style={{ color: MODE_META[mode].accent }}>{project.name}</span>
+            </div>
+            {/* ── Market Pulse ── */}
+            <div className="border-b px-3 py-2" style={{ borderColor: "var(--border-subtle)" }}>
+              <div className="flex items-center justify-between">
+                <span className="type-label">SET:TKC</span>
+                <span className="text-[10px] tabular-nums" style={{ color: TKC_STOCK.change >= 0 ? "var(--accent-green)" : "var(--accent-red)" }}>
+                  ฿{TKC_STOCK.price.toFixed(2)} {TKC_STOCK.change >= 0 ? "+" : ""}{TKC_STOCK.changePct.toFixed(1)}%
+                </span>
+              </div>
+              {/* Sparkline */}
+              <div className="mt-1 flex items-end gap-px h-[20px]">
+                {TKC_STOCK.history.map((h, i) => {
+                  const min = Math.min(...TKC_STOCK.history.map((x) => x.price));
+                  const max = Math.max(...TKC_STOCK.history.map((x) => x.price));
+                  const pct = max > min ? ((h.price - min) / (max - min)) * 100 : 50;
+                  return (
+                    <div
+                      key={i}
+                      className="flex-1"
+                      style={{
+                        height: `${Math.max(4, pct)}%`,
+                        background: i === TKC_STOCK.history.length - 1 ? "var(--accent-gold)" : "var(--border-strong)",
+                      }}
+                    />
+                  );
+                })}
+              </div>
+              <div className="mt-1 flex justify-between text-[8px]" style={{ color: "var(--text-muted)" }}>
+                <span>MCap {TKC_STOCK.marketCap}</span>
+                <span>P/E {TKC_STOCK.pe}</span>
+                <span>Yield {TKC_STOCK.dividendYield}%</span>
+              </div>
+            </div>
+
+            <div className="space-y-3 px-3">
+              {/* ── Money Stack ── */}
+              <MoneyStack spent={budgetUsed} cap={budgetCeiling} />
+                <div className="grid grid-cols-2 gap-2">
+                  <MetricCard
+                    label="Team Fit"
+                    value={projectScore ? String(projectScore.overallScore) : "--"}
+                    tone={MODE_META[mode].accent}
+                    compact
+                  />
+                  <MetricCard
+                    label="10x Rule"
+                    value={viability.ratio >= 10 ? "Pass" : `${viability.ratio.toFixed(1)}x`}
+                    tone={viability.viable ? "#86CD7E" : "#F87171"}
+                    compact
+                  />
+                </div>
+
+                {/* ── Skill Coverage Bars ── */}
+                {projectScore && (() => {
+                  const demand = PROJECT_DEMANDS[project.id];
+                  const coverage = projectScore.demandCoverage;
+                  if (!demand) return null;
+                  const dims = [
+                    { key: "technical", label: "Technical", color: "#86D1FF" },
+                    { key: "softSkill", label: "Soft Skill", color: "#86CD7E" },
+                    { key: "outsource", label: "Outsource", color: "#F3C567" },
+                    { key: "inHouse", label: "In-House", color: "#FB923C" },
+                  ] as const;
+                  return (
+                    <div className="space-y-1">
+                      <div className="text-[8px] uppercase tracking-wider text-[#444]">Skill Coverage</div>
+                      {dims.map((d) => {
+                        const needed = demand[d.key];
+                        const have = coverage[d.key];
+                        const pct = needed > 0 ? Math.min(100, Math.round((have / needed) * 100)) : 100;
+                        return (
+                          <div key={d.key} className="flex items-center gap-2">
+                            <span className="w-[52px] text-[8px] text-[#555] text-right">{d.label}</span>
+                            <div className="h-[4px] flex-1 bg-[#1a1a1a]">
+                              <div
+                                className="h-full transition-all"
+                                style={{ width: `${pct}%`, background: pct >= 100 ? d.color : pct >= 60 ? "#F3C567" : "#F87171" }}
+                              />
+                            </div>
+                            <span className="w-[28px] text-[8px] tabular-nums" style={{ color: pct >= 100 ? d.color : "#666" }}>{pct}%</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
+
+                {/* ── AI Insight ── */}
+                {insights.length > 0 && (
+                  <div className="border border-[#1a1a1a] px-2 py-2">
+                    <div className="text-[8px] uppercase tracking-wider text-[#555] mb-1">AI Insight</div>
+                    <div className="text-[10px] text-[#F3C567]">{insights[0].title}</div>
+                    <div className="text-[9px] text-[#666] mt-0.5">{insights[0].message}</div>
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <div className="text-[9px] text-[#555]">
+                    Who assembles the team?
+                  </div>
+                  <div className="flex gap-2">
+                    {(["director", "hr"] as const).map((selector) => (
+                      <button
+                        key={selector}
+                        onClick={() => setSelectorMode(selector)}
+                        className="flex-1 border px-3 py-2 text-[11px] font-semibold transition-colors"
+                        style={{
+                          borderColor:
+                            draft.selectorMode === selector
+                              ? MODE_META[mode].accent
+                              : "#222",
+                          background:
+                            draft.selectorMode === selector
+                              ? `${MODE_META[mode].accent}22`
+                              : "rgba(10,10,10,0.6)",
+                          color:
+                            draft.selectorMode === selector
+                              ? MODE_META[mode].accent
+                              : "#777",
+                        }}
+                      >
+                        {selector === "director" ? "Director" : "HR"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="text-[9px] text-[#555]">
+                    Pick a leader — click to assign
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {coachCandidates.map((candidate) => {
+                      const isSelected = draft.coachId === candidate.id;
+                      return (
+                        <button
+                          key={candidate.id}
+                          onClick={() => setCoachId(candidate.id)}
+                          className="border px-2 py-2 text-left transition-colors hover:bg-[rgba(255,255,255,0.04)]"
+                          style={{
+                            borderColor: isSelected ? "#F3C567" : "#1a1a1a",
+                            background: isSelected ? "rgba(243,197,103,0.08)" : "transparent",
+                          }}
+                        >
+                          <div className="flex items-center gap-2">
+                            <PixelCharacter
+                              seed={candidate.seed}
+                              rpgClass={candidate.rpgClass}
+                              size={18}
+                            />
+                            <div className="min-w-0">
+                              <div className="truncate text-[10px] font-semibold" style={{ color: isSelected ? "#F3C567" : "#aaa" }}>
+                                {candidate.nickname}
+                              </div>
+                              <div className="text-[9px] text-[#666]">
+                                {candidate.roleEn}
+                              </div>
+                            </div>
+                            {isSelected && <span className="ml-auto text-[8px] text-[#F3C567]">LEAD</span>}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="text-[9px] text-[#555]">
+                      Your team — click × to remove
+                    </div>
+                    <button
+                      onClick={resetProjectDraft}
+                      className="text-[9px] text-[#555] hover:text-[#f87171] transition-colors"
+                    >
+                      clear all
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {coach ? (
+                      <SquadChip
+                        label={`Coach • ${coach.nickname}`}
+                        tone="#F3C567"
+                        onRemove={() => setCoachId(null)}
+                      />
+                    ) : (
+                      <span className="text-[10px] text-[#888]">No coach assigned.</span>
+                    )}
+                    {squad.map((member) => (
+                      <SquadChip
+                        key={member.id}
+                        label={member.nickname}
+                        tone={getDeptColor(member.deptCode)}
+                        onRemove={() => removePlayer(member.id)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+            <div className="border-t border-[#1a1a1a] px-2 py-2">
+              <div className="type-label mb-1">Suggestions</div>
+              {suggestions.slice(0, 3).map((candidate) => (
+                <button
+                  key={candidate.person.id}
+                  onClick={() => addPlayer(candidate.person.id)}
+                  className="flex w-full items-center justify-between py-1 text-left hover:bg-[rgba(255,255,255,0.03)]"
+                >
+                  <div className="flex items-center gap-1">
+                    <PixelCharacter seed={candidate.person.seed} rpgClass={candidate.person.rpgClass} size={14} />
+                    <span className="text-[9px] text-[#ccc]">{candidate.person.nickname}</span>
+                  </div>
+                  <span className="text-[9px] text-[#86cd7e]">{candidate.fillsGap ? `+${candidate.gapFilled}` : `${candidate.snapResult.score}`}</span>
+                </button>
+              ))}
+            </div>
+
+            <div className="border-t border-[#1a1a1a] px-2 py-2">
+              <div className="type-label mb-1">Risks</div>
+              {(validation?.issues ?? []).map((issue) => (
+                <div key={issue} className="text-[9px] text-[#f87171]">! {issue}</div>
+              ))}
+              {(validation?.warnings ?? []).map((w) => (
+                <div key={w} className="text-[9px] text-[#f3c567]">~ {w}</div>
+              ))}
+              {missingSkills.map((s) => (
+                <div key={s} className="text-[9px] text-[#FB923C]">Need: {s}</div>
+              ))}
+              {(validation?.issues ?? []).length === 0 && (validation?.warnings ?? []).length === 0 && missingSkills.length === 0 && (
+                <div className="text-[9px] text-[#555]">No issues</div>
+              )}
+            </div>
+
+            {/* ── Company Vibes ── */}
+            <div className="border-t px-2 py-2 mt-auto" style={{ borderColor: "var(--border-subtle)" }}>
+              <div className="type-label mb-1">Company Pulse</div>
+              <div className="space-y-1 text-[9px]">
+                <div className="flex justify-between">
+                  <span style={{ color: "var(--text-secondary)" }}>Revenue Q3</span>
+                  <span style={{ color: "var(--accent-green)" }}>฿566.5M +23.6%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span style={{ color: "var(--text-secondary)" }}>Net Profit</span>
+                  <span style={{ color: "var(--accent-green)" }}>฿56.8M +10.2%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span style={{ color: "var(--text-secondary)" }}>Gross Margin</span>
+                  <span style={{ color: "var(--accent-red)" }}>12.3%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span style={{ color: "var(--text-secondary)" }}>Headcount</span>
+                  <span style={{ color: "var(--text-primary)" }}>~200</span>
+                </div>
+              </div>
+              <div className="mt-2 type-label mb-1">News Vibes</div>
+              <div className="space-y-1 text-[9px]" style={{ color: "var(--text-muted)" }}>
+                <div>5G rollout accelerating in southern Thailand</div>
+                <div>Cybersecurity contracts growing with govt sector</div>
+                <div style={{ color: "var(--accent-red)" }}>Procurement dept turnover elevated — critical</div>
+                <div>Smart city bids pipeline expanding</div>
+              </div>
+            </div>
+
+          </aside>
+          )}
+        </div>
+
+        {/* ── STATUS LINE ── */}
+        <div className="pointer-events-none flex items-center justify-between px-4 py-1 text-[9px] font-mono" style={{ color: "#444" }}>
+          <span>{rosterCollection.employees.length > 0 ? "Live data" : "Simulation"} · {characters.length} people · {checkedInCount} onsite</span>
+          <span>{MODE_META[mode].promise}</span>
+        </div>
+      </div>
+
+      {/* ── Onboarding overlay (shows once) ── */}
+      {showOnboarding && (
+        <div
+          className="tabletop fixed inset-0 z-[60] flex items-center justify-center cursor-pointer"
+          style={{ backdropFilter: "blur(8px)" }}
+          onClick={() => { setShowOnboarding(false); window.localStorage.setItem("tkc:onboarded", "1"); }}
+        >
+          <div className="card-stock-flat px-12 py-10 text-center space-y-6" style={{ maxWidth: 480 }}>
+            <div className="type-label" style={{ fontSize: 11, color: "var(--accent-gold)", letterSpacing: "0.3em" }}>
+              TKC DIGITAL TWIN
+            </div>
+            <div style={{ fontSize: 16, color: "var(--card-text)", letterSpacing: "0.04em", fontFamily: "var(--font-mono)" }}>
+              Pick a project. Build a team. Stay under the cap.
+            </div>
+            <div className="type-meta" style={{ color: "var(--text-muted)", marginTop: 32 }}>
+              Click anywhere to begin
+            </div>
+          </div>
+        </div>
+      )}
+      <GameManual isOpen={manualOpen} onClose={() => setManualOpen(false)} />
+      <ChatSidebar isOpen={chatOpen} onClose={() => setChatOpen(false)} lang="en" />
+      {!chatOpen && (
+        <button
+          onClick={() => setChatOpen(true)}
+          className="fixed bottom-6 left-6 z-40 flex h-10 w-10 items-center justify-center border border-[#333] bg-[rgba(10,10,10,0.9)] text-sm text-[#f3c567]"
+        >
+          ?
+        </button>
+      )}
+    </div>
+  );
+}
+
+function ProjectWarBanner({
+  project,
+  demand,
+  budgetUsed,
+  budgetCeiling,
+  budgetStatus,
+  fieldSize,
+  draft,
+  projectScore,
+  viability,
+  onSetFormation,
+}: {
+  project: (typeof TKC_REAL_PROJECTS)[number];
+  demand: (typeof PROJECT_DEMANDS)[string] | undefined;
+  budgetUsed: number;
+  budgetCeiling: number;
+  budgetStatus: ReturnType<typeof getBudgetStatus>;
+  fieldSize: number;
+  draft: ProjectDraftState;
+  projectScore: ReturnType<typeof scoreTeamForProject> | null;
+  viability: ReturnType<typeof calculate10xViability>;
+  onSetFormation: (formation: FormationKey) => void;
+}) {
+  return (
+    <section className="border border-[#2c1f12] bg-[linear-gradient(180deg,rgba(31,21,12,0.96)_0%,rgba(23,15,8,0.98)_100%)] px-5 py-4">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="space-y-2">
+          <div className="type-label text-[#7a6b54]">Project Mission</div>
+          <div className="text-[18px] font-semibold text-[#f4ecdd]">{project.name}</div>
+          <div className="text-[11px] text-[#9c8b73]">
+            {project.client} · {project.priority.toUpperCase()} · GM target {project.grossMarginPct ?? "--"}%
+          </div>
+          <div className="flex flex-wrap gap-2 text-[10px]">
+            {(project.requiredSkills ?? []).map((skill) => (
+              <span key={skill} className="border border-[#3c2a1b] bg-[rgba(243,197,103,0.08)] px-2 py-1 text-[#f3c567]">
+                {skill}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid min-w-[290px] grid-cols-2 gap-2">
+          <MetricCard
+            label="Budget Burn"
+            value={`${Math.round(budgetStatus.pct)}%`}
+            tone={budgetStatus.status === "over" ? "#F87171" : budgetStatus.status === "tight" ? "#F3C567" : "#86CD7E"}
+            compact
+          />
+          <MetricCard
+            label="Team Fit"
+            value={projectScore ? String(projectScore.overallScore) : "--"}
+            tone="#86D1FF"
+            compact
+          />
+          <MetricCard label="Field" value={`${draft.playerIds.length}/${fieldSize}`} tone="#F3C567" compact />
+          <MetricCard
+            label="10x Check"
+            value={viability.viable ? "PASS" : `${viability.ratio.toFixed(1)}x`}
+            tone={viability.viable ? "#86CD7E" : "#FB923C"}
+            compact
+          />
+        </div>
+      </div>
+
+      <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px]">
+        <div className="space-y-2">
+          <div className="type-label text-[#7a6b54]">Demand Coverage</div>
+          {demand ? (
+            <div className="grid gap-2 md:grid-cols-2">
+              {SKILL_KEYS.map((key) => {
+                const needed = demand[key];
+                const have = projectScore?.demandCoverage[key] ?? 0;
+                const pct = needed > 0 ? Math.min(100, Math.round((have / needed) * 100)) : 100;
+                const tone =
+                  pct >= 100
+                    ? key === "technical"
+                      ? "#86D1FF"
+                      : key === "softSkill"
+                        ? "#86CD7E"
+                        : key === "outsource"
+                          ? "#F3C567"
+                          : "#FB923C"
+                    : pct >= 60
+                      ? "#F3C567"
+                      : "#F87171";
+
+                return (
+                  <div key={key} className="border border-[#312112] bg-[rgba(12,8,4,0.66)] px-3 py-2">
+                    <div className="mb-1 flex items-center justify-between text-[10px] text-[#9f8c74]">
+                      <span>{SKILL_LABELS[key]}</span>
+                      <span>{needed}% needed</span>
+                    </div>
+                    <div className="h-2 bg-[#171009]">
+                      <div className="h-full transition-all" style={{ width: `${pct}%`, background: tone }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-[10px] text-[#7a6b54]">No quantified demand profile for this mission yet.</div>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <div className="type-label text-[#7a6b54]">Snap Mode</div>
+          <div className="flex gap-2">
+            {(["442", "3511"] as FormationKey[]).map((formation) => (
+              <button
+                key={formation}
+                onClick={() => onSetFormation(formation)}
+                className="flex-1 border px-3 py-2 text-[11px] font-semibold transition-colors"
+                style={{
+                  borderColor: draft.formation === formation ? "#F3C567" : "#312112",
+                  background: draft.formation === formation ? "rgba(243,197,103,0.12)" : "rgba(12,8,4,0.66)",
+                  color: draft.formation === formation ? "#F3C567" : "#c7b9a5",
+                }}
+              >
+                {formation === "3511" ? "3-5-1-1" : "4-4-2"}
+              </button>
+            ))}
+          </div>
+          <div className="text-[10px] text-[#7a6b54]">
+            Budget THB {(budgetUsed * 1000).toLocaleString()} of {(budgetCeiling * 1000).toLocaleString()}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function FreeformSandbox({
+  cards,
+  dragPayload,
+  onDrop,
+  onDragOver,
+  onInspect,
+  onDragStart,
+  onDragEnd,
+  onReturnToPool,
+  onSnap,
+}: {
+  cards: Array<SandboxCardState & { character: ConsoleCharacter }>;
+  dragPayload: DragPayload | null;
+  onDrop: (event: DragEvent<HTMLElement>) => void;
+  onDragOver: (event: DragEvent<HTMLElement>) => void;
+  onInspect: (id: string) => void;
+  onDragStart: (id: string) => void;
+  onDragEnd: () => void;
+  onReturnToPool: (id: string) => void;
+  onSnap: (id: string) => void;
+}) {
+  return (
+    <section className="relative min-h-0 overflow-hidden border border-[#2c1f12] bg-[radial-gradient(circle_at_20%_20%,rgba(91,137,181,0.16),transparent_32%),radial-gradient(circle_at_78%_30%,rgba(212,168,67,0.14),transparent_28%),linear-gradient(180deg,#1a1209_0%,#120c07_100%)] px-4 py-4">
+      <div className="mb-3 flex items-center justify-between">
+        <div>
+          <div className="type-label text-[#7a6b54]">Free Space</div>
+          <div className="text-[13px] text-[#e6dccb]">Drag people here to think before you snap them.</div>
+        </div>
+        <div className="text-[10px] text-[#8c7a61]">{cards.length} staged</div>
+      </div>
+
+      <div
+        onDrop={onDrop}
+        onDragOver={onDragOver}
+        className="relative h-full min-h-[360px] border border-dashed border-[#4f3a26] bg-[linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(0deg,rgba(255,255,255,0.02)_1px,transparent_1px),radial-gradient(circle_at_center,rgba(255,255,255,0.03),transparent_70%)] [background-size:28px_28px,28px_28px,100%_100%]"
+        style={{
+          boxShadow: dragPayload ? "inset 0 0 0 1px rgba(243,197,103,0.35)" : "inset 0 0 0 1px rgba(79,58,38,0.4)",
+        }}
+      >
+        {cards.length === 0 && (
+          <div className="absolute inset-0 flex items-center justify-center p-10 text-center text-[11px] text-[#7f6c57]">
+            This is the floating war table. Throw uncertain people here, circle them, inspect them, then pull them into the snapped team when the pattern becomes obvious.
+          </div>
+        )}
+
+        {cards.map((card) => (
+          <div
+            key={card.playerId}
+            draggable
+            onDragStart={() => onDragStart(card.playerId)}
+            onDragEnd={onDragEnd}
+            className="absolute w-[180px] cursor-grab border border-[#4a3726] bg-[rgba(17,12,7,0.95)] px-3 py-2 shadow-[0_10px_24px_rgba(0,0,0,0.28)]"
+            style={{
+              left: `${card.x}%`,
+              top: `${card.y}%`,
+              transform: "translate(-50%, -50%) rotate(-1deg)",
+            }}
+          >
+            <button onClick={() => onInspect(card.playerId)} className="w-full text-left">
+              <div className="flex items-center gap-2">
+                <PixelCharacter seed={card.character.seed} rpgClass={card.character.rpgClass} size={20} />
+                <div className="min-w-0">
+                  <div className="truncate text-[11px] font-semibold text-[#f3ebdc]">{card.character.nickname}</div>
+                  <div className="text-[9px] text-[#9f8c74]">{card.character.roleEn} · {card.character.deptCode}</div>
+                </div>
+              </div>
+            </button>
+            <div className="mt-2 flex items-center justify-between text-[9px] text-[#8b795f]">
+              <span>ICA {card.character.ica.overall}</span>
+              <span>฿{(card.character.capacityCost * 1000).toLocaleString()}/mo</span>
+            </div>
+            <div className="mt-2 flex gap-2">
+              <button onClick={() => onReturnToPool(card.playerId)} className="flex-1 border border-[#3a2a1b] px-2 py-1 text-[9px] text-[#9f8c74]">
+                Pool
+              </button>
+              <button onClick={() => onSnap(card.playerId)} className="flex-1 border border-[#6d542f] bg-[rgba(243,197,103,0.08)] px-2 py-1 text-[9px] font-semibold text-[#f3c567]">
+                Snap
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function SnapFormationDeck({
+  coach,
+  formationBoard,
+  selectorMode,
+  fieldSize,
+  playerCount,
+  onDrop,
+  onDragOver,
+  onUnsetCoach,
+  onStageMember,
+  onInspect,
+  onDragCoachStart,
+  onDragTeamStart,
+  onDragEnd,
+}: {
+  coach: ConsoleCharacter | null;
+  formationBoard: ReturnType<typeof buildFormationBoard>;
+  selectorMode: ProjectDraftState["selectorMode"];
+  fieldSize: number;
+  playerCount: number;
+  onDrop: (event: DragEvent<HTMLElement>) => void;
+  onDragOver: (event: DragEvent<HTMLElement>) => void;
+  onUnsetCoach: () => void;
+  onStageMember: (id: string) => void;
+  onInspect: (id: string) => void;
+  onDragCoachStart: (id: string) => void;
+  onDragTeamStart: (id: string) => void;
+  onDragEnd: () => void;
+}) {
+  return (
+    <section
+      onDrop={onDrop}
+      onDragOver={onDragOver}
+      className="flex min-h-0 flex-col gap-4 border border-[#2c1f12] bg-[linear-gradient(180deg,rgba(15,29,18,0.95)_0%,rgba(10,21,12,0.98)_100%)] px-4 py-4"
+    >
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="type-label text-[#77906b]">Snap Field</div>
+          <div className="text-[13px] text-[#e6dccb]">Restricted team space. Drop here when you want the system to lock composition.</div>
+        </div>
+        <div className="text-[10px] text-[#8aa17d]">{playerCount}/{fieldSize} snapped</div>
+      </div>
+
+      <div className="border border-[#305032] bg-[radial-gradient(circle_at_center,rgba(91,140,74,0.18),transparent_70%),linear-gradient(180deg,#17311b_0%,#102113_100%)] px-4 py-3">
+        {coach ? (
+          <div
+            draggable
+            onDragStart={() => onDragCoachStart(coach.id)}
+            onDragEnd={onDragEnd}
+            className="flex cursor-grab items-center justify-between gap-3 border border-[#5e6830] bg-[rgba(17,19,9,0.86)] px-3 py-2"
+          >
+            <button onClick={() => onInspect(coach.id)} className="flex items-center gap-3 text-left">
+              <PixelCharacter seed={coach.seed} rpgClass={coach.rpgClass} size={24} />
+              <div>
+                <div className="text-[11px] font-semibold text-[#f5efdf]">{coach.nickname}</div>
+                <div className="text-[9px] text-[#acb782]">{coach.roleEn} · {selectorMode === "director" ? "Director picks" : "HR picks"}</div>
+              </div>
+            </button>
+            <button onClick={onUnsetCoach} className="text-[9px] text-[#f3c567]">
+              Move To Space
+            </button>
+          </div>
+        ) : (
+          <div className="border border-dashed border-[#4c633d] px-3 py-4 text-center text-[10px] text-[#8da27d]">
+            Drop a director-level person here to set the leader.
+          </div>
+        )}
+      </div>
+
+      <div className="grid min-h-0 flex-1 grid-rows-3 gap-3">
+        {formationBoard.lanes.map((lane) => (
+          <div key={lane.id} className="flex min-h-[110px] flex-col border border-[#27412a] bg-[rgba(8,14,9,0.46)] px-3 py-3">
+            <div className="mb-2 flex items-center justify-between">
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.18em] text-[#89a37a]">{lane.shortLabel}</div>
+                <div className="text-[12px] font-semibold text-[#eef1e3]">{lane.label}</div>
+              </div>
+              <div className="text-[9px] text-[#90a37f]">{lane.members.length}/{lane.slotCount}</div>
+            </div>
+
+            <div className="flex flex-1 flex-wrap gap-2">
+              {lane.members.map((member) => (
+                <div
+                  key={member.id}
+                  draggable
+                  onDragStart={() => onDragTeamStart(member.id)}
+                  onDragEnd={onDragEnd}
+                  className="flex min-w-[148px] cursor-grab items-center gap-2 border border-[#425d41] bg-[rgba(12,18,11,0.88)] px-2 py-2"
+                >
+                  <button onClick={() => onInspect(member.id)} className="flex min-w-0 flex-1 items-center gap-2 text-left">
+                    <PixelCharacter seed={member.seed} rpgClass={member.rpgClass} size={18} />
+                    <div className="min-w-0">
+                      <div className="truncate text-[10px] font-semibold text-[#f3ebdc]">{member.nickname}</div>
+                      <div className="text-[8px] text-[#8ca080]">ICA {member.ica.overall} · Form {member.form.toFixed(1)}</div>
+                    </div>
+                  </button>
+                  <button onClick={() => onStageMember(member.id)} className="text-[8px] text-[#f3c567]">
+                    Space
+                  </button>
+                </div>
+              ))}
+
+              {Array.from({ length: Math.max(0, lane.slotCount - lane.members.length) }).map((_, index) => (
+                <div key={`${lane.id}-empty-${index}`} className="flex min-w-[120px] items-center justify-center border border-dashed border-[#38503a] px-2 py-2 text-[9px] text-[#67806a]">
+                  system slot
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function CandidateMarket({
+  entries,
+  mode,
+  demand,
+  team,
+  project,
+  hoveredCandidateId,
+  onHover,
+  onInspect,
+  onDragStart,
+  onDragEnd,
+  onStage,
+  onSnap,
+}: {
+  entries: Array<{
+    character: ConsoleCharacter;
+    importance: ReturnType<typeof getCharacterImportance>;
+    projectFit: number;
+    modeScore: number;
+    selected: boolean;
+    staged: boolean;
+  }>;
+  mode: OpsMode;
+  demand: (typeof PROJECT_DEMANDS)[string] | undefined;
+  team: ConsoleCharacter[];
+  project: (typeof TKC_REAL_PROJECTS)[number];
+  hoveredCandidateId: string | null;
+  onHover: (id: string | null) => void;
+  onInspect: (id: string) => void;
+  onDragStart: (id: string) => void;
+  onDragEnd: () => void;
+  onStage: (id: string) => void;
+  onSnap: (id: string) => void;
+}) {
+  return (
+    <section className="border border-[#2c1f12] bg-[rgba(15,10,6,0.92)] px-4 py-3">
+      <div className="mb-3 flex items-center justify-between">
+        <div>
+          <div className="type-label text-[#7a6b54]">Candidate Market</div>
+          <div className="text-[12px] text-[#e4d9c7]">Pull from the roster, stage in free space, or snap straight into the team.</div>
+        </div>
+        <div className="text-[10px] text-[#8e7b63]">{entries.length} available</div>
+      </div>
+
+      <div className="flex gap-3 overflow-x-auto pb-1">
+        {entries.map((entry) => {
+          const delta = demand ? previewSnapDelta(team, entry.character, project.id) : [];
+          const bestDelta = delta.reduce(
+            (best, item) => (item.delta > best.delta ? item : best),
+            { key: "technical", label: "Technical", delta: 0, before: 0, after: 0, demand: 0 } as const,
+          );
+
+          return (
+            <div
+              key={entry.character.id}
+              onMouseEnter={() => onHover(entry.character.id)}
+              onMouseLeave={() => onHover(null)}
+            >
+              <PoolCard
+                entry={entry}
+                mode={mode}
+                canAdd
+                onAdd={() => onSnap(entry.character.id)}
+                onInspect={() => onInspect(entry.character.id)}
+                onDragStart={() => onDragStart(entry.character.id)}
+                onDragEnd={onDragEnd}
+                onStage={() => onStage(entry.character.id)}
+                badge={
+                  bestDelta.delta > 0
+                    ? `+${bestDelta.delta}% ${bestDelta.label}`
+                    : entry.character.id === hoveredCandidateId
+                      ? "Inspect"
+                      : undefined
+                }
+              />
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function ScoutConsole({
+  detail,
+  project,
+  projectScore,
+  team,
+  hoveredCandidate,
+  missingSkills,
+  suggestions,
+  onInspect,
+  onStage,
+  onSnap,
+}: {
+  detail: ConsoleCharacter | null;
+  project: (typeof TKC_REAL_PROJECTS)[number];
+  projectScore: ReturnType<typeof scoreTeamForProject> | null;
+  team: ConsoleCharacter[];
+  hoveredCandidate: ConsoleCharacter | null;
+  missingSkills: string[];
+  suggestions: ReturnType<typeof suggestNextSnap>;
+  onInspect: (id: string) => void;
+  onStage: (id: string, position?: { x: number; y: number }) => void;
+  onSnap: (id: string) => void;
+}) {
+  const focus = hoveredCandidate ?? detail;
+  const skillProfile = focus ? getPersonSkillProfile(focus) : null;
+  const snapRead =
+    focus && !team.some((member) => member.id === focus.id)
+      ? canSnap(focus, team, project)
+      : null;
+
+  return (
+    <aside className="flex min-h-0 flex-col gap-4 overflow-y-auto border border-[#2c1f12] bg-[rgba(17,12,7,0.96)] px-4 py-4">
+      <div>
+        <div className="type-label text-[#7a6b54]">Scout Console</div>
+        <div className="text-[13px] text-[#f1e8da]">Live read on the person under your cursor or currently selected.</div>
+      </div>
+
+      {focus ? (
+        <>
+          <div className="border border-[#352617] bg-[rgba(12,8,4,0.72)] px-3 py-3">
+            <div className="flex items-center gap-3">
+              <PixelCharacter seed={focus.seed} rpgClass={focus.rpgClass} size={28} />
+              <div className="min-w-0">
+                <div className="truncate text-[13px] font-semibold text-[#f5efdf]">{focus.nickname}</div>
+                <div className="text-[10px] text-[#9e8c74]">{focus.roleEn} · {focus.departmentName}</div>
+              </div>
+            </div>
+            <div className="mt-3 flex gap-2">
+              <button onClick={() => onStage(focus.id)} className="flex-1 border border-[#3f2e1c] px-2 py-1 text-[9px] text-[#9f8c74]">
+                Move To Space
+              </button>
+              <button onClick={() => onSnap(focus.id)} className="flex-1 border border-[#6d542f] bg-[rgba(243,197,103,0.08)] px-2 py-1 text-[9px] font-semibold text-[#f3c567]">
+                Snap Now
+              </button>
+            </div>
+          </div>
+
+          <div className="border border-[#2e2113] bg-[rgba(10,7,4,0.76)] px-3 py-3">
+            <SpiderWeb values={characterToSpiderValues(focus.attributes)} size={210} label={focus.nickname} />
+          </div>
+
+          {skillProfile && (
+            <div className="space-y-2 border border-[#2e2113] bg-[rgba(10,7,4,0.76)] px-3 py-3">
+              <div className="type-label text-[#7a6b54]">Project Shape</div>
+              <BarRow label="Technical" value={skillProfile.technical} tone="#86D1FF" />
+              <BarRow label="Soft Skill" value={skillProfile.softSkill} tone="#86CD7E" />
+              <BarRow label="Outsource" value={skillProfile.outsource} tone="#F3C567" />
+              <BarRow label="In-House" value={skillProfile.inHouse} tone="#FB923C" />
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-2">
+            <MetricCard label="ICA" value={String(focus.ica.overall)} tone="#86D1FF" compact />
+            <MetricCard label="Form" value={focus.form.toFixed(1)} tone="#F3C567" compact />
+            <MetricCard label="HP" value={`${Math.round((focus.hp / focus.maxHp) * 100)}%`} tone={getStatusTone(focus)} compact />
+            <MetricCard label="Cost" value={`฿${focus.capacityCost}k`} tone="#FB923C" compact />
+          </div>
+
+          <div className="space-y-2 border border-[#2e2113] bg-[rgba(10,7,4,0.76)] px-3 py-3">
+            <div className="type-label text-[#7a6b54]">Snap Reading</div>
+            {snapRead ? (
+              <>
+                <div className="text-[11px] font-semibold" style={{ color: snapRead.canSnap ? "#86CD7E" : "#F87171" }}>
+                  {snapRead.canSnap ? `Snap score ${snapRead.score}` : "Cannot snap cleanly"}
+                </div>
+                <div className="space-y-1 text-[10px] text-[#9c8b73]">
+                  {snapRead.reasons.length > 0 ? (
+                    snapRead.reasons.map((reason) => <div key={reason}>• {reason}</div>)
+                  ) : (
+                    <div>Already locked into the current team.</div>
+                  )}
+                </div>
+              </>
+            ) : (
+              <div className="text-[10px] text-[#9c8b73]">This person is already part of the snapped team or no focus is selected.</div>
+            )}
+          </div>
+        </>
+      ) : (
+        <div className="border border-dashed border-[#3d2d1d] px-3 py-4 text-[10px] text-[#8d7b64]">
+          Pick anyone from the roster or the sandbox and the scout console will turn into their dossier.
+        </div>
+      )}
+
+      <div className="space-y-2 border border-[#2e2113] bg-[rgba(10,7,4,0.76)] px-3 py-3">
+        <div className="type-label text-[#7a6b54]">Team Pulse</div>
+        <ConsoleLine label="Missing" value={missingSkills.length > 0 ? missingSkills.join(", ") : "None"} />
+        <ConsoleLine label="Chemistry" value={projectScore ? String(projectScore.chemistryScore) : "--"} />
+        <ConsoleLine label="Hierarchy" value={projectScore?.hierarchyValid ? "OK" : "Gap"} />
+      </div>
+
+      <div className="space-y-2 border border-[#2e2113] bg-[rgba(10,7,4,0.76)] px-3 py-3">
+        <div className="type-label text-[#7a6b54]">Suggested Next Snaps</div>
+        {suggestions.slice(0, 4).map((candidate) => (
+          <button
+            key={candidate.person.id}
+            onClick={() => onInspect(candidate.person.id)}
+            className="flex w-full items-center justify-between gap-3 border border-[#2c1f12] px-2 py-2 text-left hover:bg-[rgba(255,255,255,0.03)]"
+          >
+            <div className="flex items-center gap-2">
+              <PixelCharacter seed={candidate.person.seed} rpgClass={candidate.person.rpgClass} size={16} />
+              <div>
+                <div className="text-[10px] text-[#f1e7d8]">{candidate.person.nickname}</div>
+                <div className="text-[8px] text-[#8e7b63]">
+                  {candidate.fillsGap ? `fills ${candidate.gapFilled}` : "quality upgrade"}
+                </div>
+              </div>
+            </div>
+            <span className="text-[9px] text-[#86CD7E]">{candidate.snapResult.score}</span>
+          </button>
+        ))}
+      </div>
+    </aside>
+  );
+}
+
+function CompanyBibleSidebar({
+  projectId,
+  drafts,
+  modeAccent,
+  importStatus,
+  importWarnings,
+  rosterCollection,
+  onSelectProject,
+  onOpenImport,
+  onResetImports,
+}: {
+  projectId: string;
+  drafts: Record<string, ProjectDraftState>;
+  modeAccent: string;
+  importStatus: string;
+  importWarnings: string[];
+  rosterCollection: ConsoleRosterCollection;
+  onSelectProject: (projectId: string) => void;
+  onOpenImport: () => void;
+  onResetImports: () => void;
+}) {
+  return (
+    <div className="flex h-full flex-col">
+      <div className="border-b border-[#2b1d10] px-4 py-4">
+        <div className="type-label text-[#8b785e]">Company Bible</div>
+        <div className="mt-2 text-[18px] font-semibold text-[#f5ecdc]">TKC Command Center</div>
+        <div className="mt-1 text-[11px] text-[#a69379]">
+          Earnings, structural stress, strategic blind spots, and the project queue in one spine.
+        </div>
+      </div>
+
+      <div className="flex-1 space-y-4 overflow-y-auto px-4 py-4">
+        <div className="grid grid-cols-2 gap-2">
+          {TKC_COMPANY_METRICS.map((metric) => (
+            <MetricCard key={metric.label} label={metric.label} value={metric.value} tone={metric.tone} compact />
+          ))}
+        </div>
+
+        <PanelBlock title="Why The Numbers Matter">
+          {TKC_DERIVED_SIGNALS.map((signal) => (
+            <SignalCard key={signal.id} title={signal.title} body={signal.body} tone={getToneColor(signal.tone)} />
+          ))}
+        </PanelBlock>
+
+        <PanelBlock title="Full-Year Trend">
+          <FinanceBars series={TKC_FINANCIAL_SERIES} />
+        </PanelBlock>
+
+        <PanelBlock title="2025 Revenue Tape">
+          <QuarterTape points={TKC_QUARTERLY_REVENUE_2025} />
+        </PanelBlock>
+
+        <PanelBlock title="Operating Flashpoints">
+          {TKC_KPI_FLASHPOINTS.map((signal) => (
+            <SignalCard key={signal.id} title={signal.title} body={signal.body} tone={getToneColor(signal.tone)} />
+          ))}
+        </PanelBlock>
+
+        <PanelBlock title="Public-News Vibe">
+          {TKC_NEWS_PULSE.map((item) => (
+            <div key={item.id} className="border border-[#342414] bg-[rgba(12,8,4,0.6)] px-3 py-2">
+              <div className="flex items-center justify-between gap-3 text-[9px] text-[#8e7b63]">
+                <span>{item.date}</span>
+                <span>{item.source}</span>
+              </div>
+              <div className="mt-1 text-[11px] font-semibold text-[#f5ecd9]">{item.title}</div>
+              <div className="mt-1 text-[10px] text-[#ac987d]">{item.vibe}</div>
+            </div>
+          ))}
+        </PanelBlock>
+
+        <PanelBlock title="Blind Spots">
+          {TKC_BLIND_SPOTS.map((spot) => (
+            <div key={spot.id} className="border border-[#2f2114] px-3 py-2">
+              <div className="text-[11px] font-semibold text-[#eadfce]">{spot.title}</div>
+              <div className="mt-1 text-[10px] text-[#95826a]">{spot.body}</div>
+            </div>
+          ))}
+        </PanelBlock>
+
+        <PanelBlock title="Project Stack">
+          {TKC_REAL_PROJECTS.map((item) => {
+            const itemDraft = drafts[item.id];
+            const activeCount = itemDraft ? itemDraft.playerIds.length : 0;
+            const fieldSize = getFieldSizeForProject(item);
+            const selected = item.id === projectId;
+
+            return (
+              <button
+                key={item.id}
+                onClick={() => onSelectProject(item.id)}
+                className="flex w-full items-start justify-between gap-3 border px-3 py-2 text-left transition-colors hover:bg-[rgba(255,255,255,0.03)]"
+                style={{
+                  borderColor: selected ? modeAccent : "#2f2114",
+                  background: selected ? "rgba(243,197,103,0.06)" : "rgba(12,8,4,0.5)",
+                }}
+              >
+                <div>
+                  <div className="text-[11px] font-semibold text-[#efe6d8]">{item.name}</div>
+                  <div className="text-[9px] text-[#95826a]">{item.client} · {item.priority}</div>
+                </div>
+                <div className="text-right text-[9px]" style={{ color: selected ? modeAccent : "#8d7a62" }}>
+                  <div>{activeCount}/{fieldSize}</div>
+                  <div>{item.grossMarginPct ?? "--"}% GM</div>
+                </div>
+              </button>
+            );
+          })}
+        </PanelBlock>
+      </div>
+
+      <div className="space-y-2 border-t border-[#2b1d10] px-4 py-3">
+        <div className="text-[9px] text-[#9d8a71]">{importStatus}</div>
+        {importWarnings.map((warning) => (
+          <div key={warning} className="text-[9px] text-[#f3c567]">
+            ! {warning}
+          </div>
+        ))}
+        {rosterCollection.snapshots[0] && (
+          <div className="text-[9px] text-[#75654f]">
+            Last import: {rosterCollection.snapshots[0].fileName} · {formatMoment(rosterCollection.snapshots[0].importedAt)}
+          </div>
+        )}
+        <div className="flex gap-2 text-[9px]">
+          <button onClick={onOpenImport} className="border border-[#5f4727] px-2 py-1 text-[#f3c567]">
+            Import
+          </button>
+          <a href="/data" className="border border-[#2f4350] px-2 py-1 text-[#86d1ff] no-underline">
+            Data Room
+          </a>
+          <button onClick={onResetImports} className="border border-[#39261a] px-2 py-1 text-[#8f7d65]">
+            Reset
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PanelBlock({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="space-y-2">
+      <div className="type-label text-[#7a6b54]">{title}</div>
+      <div className="space-y-2">{children}</div>
+    </section>
+  );
+}
+
+function SignalCard({
+  title,
+  body,
+  tone,
+}: {
+  title: string;
+  body: string;
+  tone: string;
+}) {
+  return (
+    <div className="border px-3 py-2" style={{ borderColor: `${tone}55`, background: `${tone}10` }}>
+      <div className="text-[11px] font-semibold" style={{ color: tone }}>{title}</div>
+      <div className="mt-1 text-[10px] text-[#a38f76]">{body}</div>
+    </div>
+  );
+}
+
+function FinanceBars({
+  series,
+}: {
+  series: typeof TKC_FINANCIAL_SERIES;
+}) {
+  const maxRevenue = Math.max(...series.map((point) => point.revenueM));
+  const maxProfit = Math.max(...series.map((point) => Math.max(point.grossProfitM, point.netProfitM)));
+
+  return (
+    <div className="space-y-3 border border-[#322314] bg-[rgba(12,8,4,0.58)] px-3 py-3">
+      {series.map((point) => (
+        <div key={point.period} className="space-y-2">
+          <div className="flex items-center justify-between text-[10px] text-[#a18d73]">
+            <span>{point.period}</span>
+            <span>GM {point.grossMarginPct}% · OCF {point.operatingCashflowM}M</span>
+          </div>
+          <div className="space-y-1">
+            <div>
+              <div className="mb-1 flex items-center justify-between text-[9px] text-[#7f6c57]">
+                <span>Revenue</span>
+                <span>{point.revenueM.toFixed(0)}M</span>
+              </div>
+              <div className="h-2 bg-[#171009]">
+                <div className="h-full" style={{ width: `${(point.revenueM / maxRevenue) * 100}%`, background: "#86D1FF" }} />
+              </div>
+            </div>
+            <div>
+              <div className="mb-1 flex items-center justify-between text-[9px] text-[#7f6c57]">
+                <span>Gross Profit</span>
+                <span>{point.grossProfitM.toFixed(0)}M</span>
+              </div>
+              <div className="h-2 bg-[#171009]">
+                <div className="h-full" style={{ width: `${(point.grossProfitM / maxProfit) * 100}%`, background: "#F3C567" }} />
+              </div>
+            </div>
+            <div>
+              <div className="mb-1 flex items-center justify-between text-[9px] text-[#7f6c57]">
+                <span>Net Profit</span>
+                <span>{point.netProfitM.toFixed(0)}M</span>
+              </div>
+              <div className="h-2 bg-[#171009]">
+                <div className="h-full" style={{ width: `${(point.netProfitM / maxProfit) * 100}%`, background: "#86CD7E" }} />
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function QuarterTape({
+  points,
+}: {
+  points: typeof TKC_QUARTERLY_REVENUE_2025;
+}) {
+  const maxValue = Math.max(...points.map((point) => point.revenueM));
+
+  return (
+    <div className="border border-[#322314] bg-[rgba(12,8,4,0.58)] px-3 py-3">
+      <div className="flex items-end gap-2">
+        {points.map((point) => (
+          <div key={point.period} className="flex flex-1 flex-col items-center gap-2">
+            <div className="flex h-26 w-full items-end bg-[#171009] px-1 py-1">
+              <div
+                className="w-full"
+                style={{
+                  height: `${Math.max(12, (point.revenueM / maxValue) * 100)}%`,
+                  background: point.period === "Q3'25" ? "#F3C567" : "#86D1FF",
+                }}
+              />
+            </div>
+            <div className="text-center text-[9px] text-[#8e7b63]">
+              <div>{point.period}</div>
+              <div>{point.revenueM.toFixed(0)}M</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function MetricCard({
+  label,
+  value,
+  tone,
+  compact = false,
+}: {
+  label: string;
+  value: string;
+  tone: string;
+  compact?: boolean;
+}) {
+  return (
+    <div
+      className={`border border-[#1a1a1a] bg-[rgba(10,10,10,0.6)] px-3 py-2 ${
+        compact ? "" : "min-h-[72px]"
+      }`}
+    >
+      <div className="text-[10px] uppercase tracking-[0.16em] text-[#888]">{label}</div>
+      <div className={`font-semibold ${compact ? "text-[16px]" : "mt-2 text-[22px]"}`} style={{ color: tone }}>
+        {value}
+      </div>
+    </div>
+  );
+}
+
+function PoolCard({
+  entry,
+  mode,
+  canAdd,
+  onAdd,
+  onInspect,
+  onDragStart,
+  onDragEnd,
+  onStage,
+  badge,
+}: {
+  entry: {
+    character: ConsoleCharacter;
+    importance: ReturnType<typeof getCharacterImportance>;
+    projectFit: number;
+    modeScore: number;
+  };
+  mode: OpsMode;
+  canAdd: boolean;
+  onAdd: () => void;
+  onInspect: () => void;
+  onDragStart: () => void;
+  onDragEnd: () => void;
+  onStage: () => void;
+  badge?: string;
+}) {
+  const actionLabel = isCoachEligible(entry.character) ? "Make Leader" : "Snap To Team";
+
+  return (
+    <div
+      draggable={!isCoachEligible(entry.character)}
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
+      className="card-stock flex min-w-[176px] max-w-[200px] flex-shrink-0 flex-col gap-2 border border-[#2a1d11] bg-[rgba(16,10,6,0.92)] px-3 py-3"
+    >
+      <button onClick={onInspect} className="w-full text-left">
+        <div className="mb-1 flex items-center gap-2">
+          <PixelCharacter seed={entry.character.seed} rpgClass={entry.character.rpgClass} size={20} />
+          <div className="min-w-0 flex-1">
+            <div className="truncate text-[11px] font-semibold text-[#f2e8d8]">
+              {entry.character.nickname}
+            </div>
+            <div className="truncate text-[9px] text-[#8f7d65]">
+              {entry.character.roleEn} · {entry.character.deptCode}
+            </div>
+          </div>
+        </div>
+      </button>
+
+      <div className="flex items-center justify-between text-[8px]">
+        <span className="text-[#7f6c57]">฿{(entry.character.capacityCost * 1000).toLocaleString()}/mo</span>
+        {(() => {
+          const mb = calculateMoneyballValue(entry.character);
+          return (
+            <span style={{ color: mb.verdict === "steal" ? "#86CD7E" : mb.verdict === "fair" ? "#888" : mb.verdict === "expensive" ? "#FB923C" : "#F87171" }}>
+              {mb.verdict}
+            </span>
+          );
+        })()}
+      </div>
+
+      <div className="grid grid-cols-2 gap-2 text-[8px]">
+        <div className="border border-[#302214] px-2 py-1">
+          <div className="text-[#73614d]">Project fit</div>
+          <div className="text-[11px] font-semibold text-[#86d1ff]">{entry.projectFit}</div>
+        </div>
+        <div className="border border-[#302214] px-2 py-1">
+          <div className="text-[#73614d]">{getModeLabel(mode)}</div>
+          <div className="text-[11px] font-semibold text-[#f3c567]">{entry.modeScore}</div>
+        </div>
+      </div>
+
+      {badge && (
+        <div className="border border-[#514024] bg-[rgba(243,197,103,0.08)] px-2 py-1 text-[8px] font-semibold text-[#f3c567]">
+          {badge}
+        </div>
+      )}
+
+      <div className="mt-auto flex gap-2">
+        <button
+          onClick={onStage}
+          className="flex-1 border border-[#3a2a1b] px-2 py-1 text-[9px] text-[#9f8c74] transition-colors hover:bg-[rgba(255,255,255,0.03)]"
+        >
+          Float
+        </button>
+        <button
+          onClick={onAdd}
+          disabled={!canAdd && !isCoachEligible(entry.character)}
+          className="flex-1 border border-[#6d542f] bg-[rgba(243,197,103,0.08)] px-2 py-1 text-[9px] font-semibold text-[#f3c567] transition-all hover:bg-[rgba(243,197,103,0.14)] hover:border-[#f3c567] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:border-[#6d542f]"
+        >
+          {actionLabel}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function RosterStoryCard({
+  entry,
+  mode,
+  onInspect,
+}: {
+  entry: {
+    character: ConsoleCharacter;
+    importance: ReturnType<typeof getCharacterImportance>;
+    projectFit: number;
+    modeScore: number;
+    selected: boolean;
+  };
+  mode: OpsMode;
+  onInspect: (id: string) => void;
+}) {
+  const spanClass =
+    entry.selected || entry.importance.tier === "anchor"
+      ? "col-span-6 row-span-2"
+      : entry.importance.tier === "core"
+        ? "col-span-4 row-span-2"
+        : "col-span-3 row-span-1";
+
+  return (
+    <button
+      onClick={() => onInspect(entry.character.id)}
+      className={`${spanClass}  border px-4 py-4 text-left`}
+      style={{
+        borderColor: entry.selected ? "#444" : "#1a1a1a",
+        background: entry.selected ? "#1a1a1a" : "rgba(10,10,10,0.5)",
+      }}
+    >
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <PixelCharacter seed={entry.character.seed} rpgClass={entry.character.rpgClass} size={28} />
+          <div>
+            <div className="text-[13px] font-semibold text-[#ddd]">
+              {entry.character.nickname}
+            </div>
+            <div className="text-[10px] text-[#888]">
+              {entry.character.roleEn} • {entry.character.departmentName}
+            </div>
+          </div>
+        </div>
+        <span
+          className=" px-2 py-1 text-[10px] font-semibold"
+          style={{
+            background: `${getImportanceTone(entry.importance.tier)}22`,
+            color: getImportanceTone(entry.importance.tier),
+          }}
+        >
+          {entry.importance.label}
+        </span>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 text-[10px] text-[#888]">
+        <div>
+          <div>Project fit</div>
+          <div className="text-[18px] font-semibold text-[#ddd]">{entry.projectFit}</div>
+        </div>
+        <div>
+          <div>{getModeLabel(mode)}</div>
+          <div className="text-[18px] font-semibold text-[#f3c567]">{entry.modeScore}</div>
+        </div>
+      </div>
+
+      <div className="mt-3 text-[10px] text-[#888]">
+        ICA {entry.character.ica.overall} • Form {entry.character.form.toFixed(1)} • Cost ฿
+        {entry.character.capacityCost}k
+      </div>
+    </button>
+  );
+}
+
+function SquadChip({
+  label,
+  tone,
+  onRemove,
+}: {
+  label: string;
+  tone: string;
+  onRemove: () => void;
+}) {
+  return (
+    <div
+      className="flex items-center gap-2  border px-3 py-2 text-[10px]"
+      style={{
+        borderColor: `${tone}55`,
+        background: `${tone}14`,
+        color: "#f7efcf",
+      }}
+    >
+      <span>{label}</span>
+      <button onClick={onRemove} className="font-semibold text-[#f87171]">
+        ×
+      </button>
+    </div>
+  );
+}
+
+function BarRow({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: number;
+  tone: string;
+}) {
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between text-[10px] text-[#888]">
+        <span>{label}</span>
+        <span>{value}</span>
+      </div>
+      <div className="dq-meter h-2 ">
+        <div
+          className="dq-meter-fill h-full "
+          style={{ width: `${Math.max(0, Math.min(100, value))}%`, background: tone }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function ConsoleBoard({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="min-h-0 overflow-y-auto  border border-[#1a1a1a] p-4">
+      <div className="mb-4 text-[11px] uppercase tracking-[0.18em] text-[#888]">{title}</div>
+      <div className="space-y-3">{children}</div>
+    </div>
+  );
+}
+
+function ConsoleLine({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3 border-b border-[#151515] pb-2 text-[10px]">
+      <span className="uppercase tracking-[0.16em] text-[#888]">{label}</span>
+      <span className="text-[#ddd]">{value}</span>
+    </div>
+  );
+}

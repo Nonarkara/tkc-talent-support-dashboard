@@ -1,0 +1,321 @@
+employeeId,nickname,fullNameTh,fullNameEn,department,role,level,tenure,salary,division
+10001,Eric,Eric Rodriguez,Eric Rodriguez,DIGITAL,senior,5,24,39000,Operations
+10002,Greg,Greg Baker,Greg Baker,ENTERPRISE,senior,10,24,48000,Sales & Marketing
+10003,Jeff,Jeff Thomas,Jeff Thomas,NETWORK,staff,3,7,26000,Finance & Admin
+10004,Ethan,Ethan Parker,Ethan Parker,SALES,senior,10,18,44000,Operations
+10005,Olivia,Olivia Clark,Olivia Clark,BD,staff,3,25,23000,Sales & Marketing
+10006,Lisa,Lisa Allen,Lisa Allen,FINANCE,staff,5,4,21000,Finance & Admin
+10007,Diana,Diana Davis,Diana Davis,ACCOUNTING,manager,13,9,58000,Finance & Admin
+10008,Nina,Nina King,Nina King,PROCUREMENT,director,15,3,136000,Finance & Admin
+10009,Nathan,Nathan Garcia,Nathan Garcia,HR,staff,8,3,20000,Finance & Admin
+10010,Grace,Grace Anderson,Grace Anderson,IT,manager,9,13,73000,Finance & Admin
+10011,Tony,Tony Anderson,Tony Anderson,CORP_ADM,staff,4,22,27000,Finance & Admin
+10012,Megan,Megan Phillips,Megan Phillips,DIGITAL,staff,4,6,33000,Operations
+10013,David,David Walker,David Walker,ENTERPRISE,staff,5,25,20000,Sales & Marketing
+10014,Sean,Sean Scott,Sean Scott,NETWORK,staff,3,7,28000,Finance & Admin
+10015,Laura,Laura White,Laura White,SALES,manager,14,15,64000,Operations
+10016,Anna,Anna Scott,Anna Scott,BD,senior,9,9,54000,Sales & Marketing
+10017,Robert,Robert Davis,Robert Davis,FINANCE,staff,4,17,34000,Finance & Admin
+10018,Luke,Luke Wright,Luke Wright,ACCOUNTING,staff,4,22,32000,Finance & Admin
+10019,Thomas,Thomas Turner,Thomas Turner,PROCUREMENT,staff,6,17,26000,Finance & Admin
+10020,Ava,Ava Anderson,Ava Anderson,HR,senior,10,11,34000,Finance & Admin
+10021,Matt,Matt Miller,Matt Miller,IT,staff,8,24,27000,Finance & Admin
+10022,Chris,Chris King,Chris King,CORP_ADM,manager,11,21,88000,Finance & Admin
+10023,Tony,Tony Walker,Tony Walker,DIGITAL,senior,9,25,47000,Operations
+10024,Robert,Robert White,Robert White,ENTERPRISE,staff,3,12,28000,Sales & Marketing
+10025,Scott,Scott Rodriguez,Scott Rodriguez,NETWORK,manager,9,3,87000,Finance & Admin
+10026,Amy,Amy Evans,Amy Evans,SALES,staff,6,18,23000,Operations
+10027,Ella,Ella King,Ella King,BD,staff,4,18,25000,Sales & Marketing
+10028,Eric,Eric Jones,Eric Jones,FINANCE,staff,7,15,22000,Finance & Admin
+10029,James,James Jones,James Jones,ACCOUNTING,staff,7,18,26000,Finance & Admin
+10030,Sam,Sam Jones,Sam Jones,PROCUREMENT,senior,5,8,32000,Finance & Admin
+10031,Scott,Scott Rodriguez,Scott Rodriguez,HR,staff,5,22,34000,Finance & Admin
+10032,Ian,Ian Green,Ian Green,IT,senior,9,19,45000,Finance & Admin
+10033,Ava,Ava Green,Ava Green,CORP_ADM,staff,3,22,32000,Finance & Admin
+10034,Jake,Jake Hall,Jake Hall,DIGITAL,staff,8,2,21000,Operations
+10035,Scott,Scott Adams,Scott Adams,ENTERPRISE,senior,5,8,36000,Sales & Marketing
+10036,John,John Adams,John Adams,NETWORK,staff,4,9,33000,Finance & Admin
+10037,William,William White,William White,SALES,senior,9,4,32000,Operations
+10038,Amanda,Amanda Anderson,Amanda Anderson,BD,staff,6,16,25000,Sales & Marketing
+10039,Ava,Ava Phillips,Ava Phillips,FINANCE,staff,6,9,33000,Finance & Admin
+10040,Nicole,Nicole Brown,Nicole Brown,ACCOUNTING,senior,8,5,36000,Finance & Admin
+10041,Robert,Robert Parker,Robert Parker,PROCUREMENT,staff,7,2,28000,Finance & Admin
+10042,Steven,Steven Jones,Steven Jones,HR,staff,7,6,20000,Finance & Admin
+10043,Tim,Tim White,Tim White,IT,staff,8,8,31000,Finance & Admin
+10044,Anna,Anna Campbell,Anna Campbell,CORP_ADM,staff,3,20,21000,Finance & Admin
+10045,Ryan,Ryan Scott,Ryan Scott,DIGITAL,staff,5,7,28000,Operations
+10046,Rachel,Rachel Smith,Rachel Smith,ENTERPRISE,staff,8,10,33000,Sales & Marketing
+10047,Matt,Matt Harris,Matt Harris,NETWORK,staff,7,4,20000,Finance & Admin
+10048,Chloe,Chloe Anderson,Chloe Anderson,SALES,staff,5,3,26000,Operations
+10049,Jeff,Jeff Young,Jeff Young,BD,staff,7,23,28000,Sales & Marketing
+10050,Daniel,Daniel Phillips,Daniel Phillips,FINANCE,manager,9,5,72000,Finance & Admin
+10051,Nicole,Nicole Harris,Nicole Harris,ACCOUNTING,staff,5,20,25000,Finance & Admin
+10052,Megan,Megan Williams,Megan Williams,PROCUREMENT,staff,5,2,21000,Finance & Admin
+10053,Ethan,Ethan Phillips,Ethan Phillips,HR,staff,4,21,27000,Finance & Admin
+10054,Chris,Chris Turner,Chris Turner,IT,senior,9,1,34000,Finance & Admin
+10055,Laura,Laura Williams,Laura Williams,CORP_ADM,staff,5,19,23000,Finance & Admin
+10056,Daniel,Daniel Allen,Daniel Allen,DIGITAL,staff,3,12,25000,Operations
+10057,Adam,Adam Anderson,Adam Anderson,ENTERPRISE,senior,8,20,55000,Sales & Marketing
+10058,Sam,Sam Green,Sam Green,NETWORK,director,13,14,102000,Finance & Admin
+10059,Daniel,Daniel Wright,Daniel Wright,SALES,senior,10,8,39000,Operations
+10060,Hannah,Hannah Young,Hannah Young,BD,manager,12,8,68000,Sales & Marketing
+10061,Jake,Jake Hall,Jake Hall,FINANCE,manager,10,8,57000,Finance & Admin
+10062,Kate,Kate Scott,Kate Scott,ACCOUNTING,staff,3,25,27000,Finance & Admin
+10063,Ryan,Ryan Taylor,Ryan Taylor,PROCUREMENT,senior,9,11,31000,Finance & Admin
+10064,Hannah,Hannah Walker,Hannah Walker,HR,staff,5,2,22000,Finance & Admin
+10065,Ryan,Ryan Williams,Ryan Williams,IT,staff,7,4,31000,Finance & Admin
+10066,Nick,Nick Baker,Nick Baker,CORP_ADM,senior,5,17,48000,Finance & Admin
+10067,Patrick,Patrick Mitchell,Patrick Mitchell,DIGITAL,staff,8,11,28000,Operations
+10068,Helen,Helen Rodriguez,Helen Rodriguez,ENTERPRISE,staff,6,11,31000,Sales & Marketing
+10069,Ella,Ella Phillips,Ella Phillips,NETWORK,staff,8,13,24000,Finance & Admin
+10070,Anna,Anna Evans,Anna Evans,SALES,manager,11,10,69000,Operations
+10071,Matt,Matt Hill,Matt Hill,BD,senior,8,15,44000,Sales & Marketing
+10072,Nathan,Nathan Mitchell,Nathan Mitchell,FINANCE,senior,10,6,52000,Finance & Admin
+10073,Patrick,Patrick Jackson,Patrick Jackson,ACCOUNTING,senior,9,11,33000,Finance & Admin
+10074,Ian,Ian Edwards,Ian Edwards,PROCUREMENT,senior,6,1,32000,Finance & Admin
+10075,Luke,Luke Carter,Luke Carter,HR,manager,9,15,82000,Finance & Admin
+10076,Leo,Leo Jackson,Leo Jackson,IT,staff,4,21,18000,Finance & Admin
+10077,Jeff,Jeff White,Jeff White,CORP_ADM,staff,8,17,33000,Finance & Admin
+10078,Amy,Amy Phillips,Amy Phillips,DIGITAL,manager,9,15,64000,Operations
+10079,Helen,Helen Adams,Helen Adams,ENTERPRISE,staff,6,20,35000,Sales & Marketing
+10080,Stephanie,Stephanie Clark,Stephanie Clark,NETWORK,manager,14,16,84000,Finance & Admin
+10081,Jason,Jason Adams,Jason Adams,SALES,senior,9,16,51000,Operations
+10082,Sophia,Sophia Turner,Sophia Turner,BD,staff,5,8,27000,Sales & Marketing
+10083,Brian,Brian Jones,Brian Jones,FINANCE,staff,4,8,31000,Finance & Admin
+10084,Amanda,Amanda Moore,Amanda Moore,ACCOUNTING,staff,5,18,33000,Finance & Admin
+10085,Tim,Tim Wright,Tim Wright,PROCUREMENT,manager,12,25,93000,Finance & Admin
+10086,Diana,Diana Turner,Diana Turner,HR,staff,5,10,31000,Finance & Admin
+10087,Ava,Ava Carter,Ava Carter,IT,senior,6,16,37000,Finance & Admin
+10088,Owen,Owen Rodriguez,Owen Rodriguez,CORP_ADM,staff,5,22,31000,Finance & Admin
+10089,Anna,Anna Campbell,Anna Campbell,DIGITAL,director,16,1,159000,Operations
+10090,Owen,Owen Taylor,Owen Taylor,ENTERPRISE,senior,5,21,44000,Sales & Marketing
+10091,Sophia,Sophia Hall,Sophia Hall,NETWORK,staff,6,11,25000,Finance & Admin
+10092,Rebecca,Rebecca Garcia,Rebecca Garcia,SALES,senior,8,9,55000,Operations
+10093,Ashley,Ashley Jones,Ashley Jones,BD,staff,8,18,20000,Sales & Marketing
+10094,Adam,Adam Thomas,Adam Thomas,FINANCE,senior,10,2,55000,Finance & Admin
+10095,Ian,Ian Davis,Ian Davis,ACCOUNTING,manager,13,5,71000,Finance & Admin
+10096,Susan,Susan Evans,Susan Evans,PROCUREMENT,staff,4,15,26000,Finance & Admin
+10097,Patrick,Patrick Miller,Patrick Miller,HR,staff,8,23,22000,Finance & Admin
+10098,Michelle,Michelle Jones,Michelle Jones,IT,staff,5,19,30000,Finance & Admin
+10099,Eve,Eve Davis,Eve Davis,CORP_ADM,staff,8,8,21000,Finance & Admin
+10100,Grace,Grace Jones,Grace Jones,DIGITAL,senior,9,2,41000,Operations
+10101,Lisa,Lisa Baker,Lisa Baker,ENTERPRISE,staff,5,1,32000,Sales & Marketing
+10102,Angela,Angela Roberts,Angela Roberts,NETWORK,manager,14,15,65000,Finance & Admin
+10103,Ivy,Ivy Baker,Ivy Baker,SALES,manager,11,20,90000,Operations
+10104,William,William Clark,William Clark,BD,manager,13,9,76000,Sales & Marketing
+10105,Olivia,Olivia Johnson,Olivia Johnson,FINANCE,manager,10,25,85000,Finance & Admin
+10106,Ben,Ben Harris,Ben Harris,ACCOUNTING,staff,5,6,34000,Finance & Admin
+10107,Paul,Paul Thomas,Paul Thomas,PROCUREMENT,staff,7,23,27000,Finance & Admin
+10108,Ian,Ian Carter,Ian Carter,HR,staff,8,14,34000,Finance & Admin
+10109,Jake,Jake White,Jake White,IT,staff,3,3,28000,Finance & Admin
+10110,Ava,Ava Phillips,Ava Phillips,CORP_ADM,staff,7,12,34000,Finance & Admin
+10111,Rebecca,Rebecca Jackson,Rebecca Jackson,DIGITAL,staff,8,15,27000,Operations
+10112,Kevin,Kevin Moore,Kevin Moore,ENTERPRISE,staff,4,11,22000,Sales & Marketing
+10113,Lisa,Lisa Thomas,Lisa Thomas,NETWORK,senior,7,24,49000,Finance & Admin
+10114,Scott,Scott Rodriguez,Scott Rodriguez,SALES,staff,5,6,28000,Operations
+10115,Sean,Sean Miller,Sean Miller,BD,staff,3,18,28000,Sales & Marketing
+10116,Mia,Mia Hall,Mia Hall,FINANCE,manager,13,10,86000,Finance & Admin
+10117,John,John Scott,John Scott,ACCOUNTING,staff,3,9,34000,Finance & Admin
+10118,Chris,Chris Campbell,Chris Campbell,PROCUREMENT,staff,7,21,20000,Finance & Admin
+10119,Eve,Eve Evans,Eve Evans,HR,manager,9,8,63000,Finance & Admin
+10120,Mia,Mia Adams,Mia Adams,IT,senior,6,25,47000,Finance & Admin
+10121,Joe,Joe Miller,Joe Miller,CORP_ADM,staff,7,14,28000,Finance & Admin
+10122,Jennifer,Jennifer Anderson,Jennifer Anderson,DIGITAL,manager,10,21,69000,Operations
+10123,Max,Max Adams,Max Adams,ENTERPRISE,staff,7,3,23000,Sales & Marketing
+10124,Nathan,Nathan Lewis,Nathan Lewis,NETWORK,senior,8,10,31000,Finance & Admin
+10125,Ryan,Ryan Parker,Ryan Parker,SALES,senior,8,3,53000,Operations
+10126,Chris,Chris Clark,Chris Clark,BD,senior,6,14,34000,Sales & Marketing
+10127,Eve,Eve Campbell,Eve Campbell,FINANCE,manager,9,2,66000,Finance & Admin
+10128,Ella,Ella Clark,Ella Clark,ACCOUNTING,manager,12,4,86000,Finance & Admin
+10129,Leo,Leo Walker,Leo Walker,PROCUREMENT,staff,6,15,21000,Finance & Admin
+10130,Jason,Jason Campbell,Jason Campbell,HR,staff,3,3,26000,Finance & Admin
+10131,Angela,Angela Parker,Angela Parker,IT,staff,4,16,32000,Finance & Admin
+10132,Zoe,Zoe Hall,Zoe Hall,CORP_ADM,staff,6,3,33000,Finance & Admin
+10133,Ruby,Ruby Lewis,Ruby Lewis,DIGITAL,staff,3,6,29000,Operations
+10134,Owen,Owen Garcia,Owen Garcia,ENTERPRISE,senior,8,25,48000,Sales & Marketing
+10135,Scott,Scott Nelson,Scott Nelson,NETWORK,staff,5,4,31000,Finance & Admin
+10136,Mia,Mia Brown,Mia Brown,SALES,staff,4,17,30000,Operations
+10137,Ruby,Ruby Davis,Ruby Davis,BD,staff,7,5,27000,Sales & Marketing
+10138,Patrick,Patrick Phillips,Patrick Phillips,FINANCE,staff,8,20,26000,Finance & Admin
+10139,Owen,Owen Davis,Owen Davis,ACCOUNTING,staff,6,3,25000,Finance & Admin
+10140,Kate,Kate Clark,Kate Clark,PROCUREMENT,senior,6,16,53000,Finance & Admin
+10141,Helen,Helen Martinez,Helen Martinez,HR,staff,6,16,26000,Finance & Admin
+10142,Jason,Jason Green,Jason Green,IT,staff,7,17,22000,Finance & Admin
+10143,Emma,Emma Parker,Emma Parker,CORP_ADM,staff,7,9,18000,Finance & Admin
+10144,Diana,Diana Hill,Diana Hill,DIGITAL,staff,8,16,23000,Operations
+10145,Sophia,Sophia Thomas,Sophia Thomas,ENTERPRISE,staff,7,25,30000,Sales & Marketing
+10146,Max,Max Williams,Max Williams,NETWORK,director,13,19,125000,Finance & Admin
+10147,Karen,Karen Carter,Karen Carter,SALES,staff,6,23,30000,Operations
+10148,Lisa,Lisa Adams,Lisa Adams,BD,manager,10,17,94000,Sales & Marketing
+10149,Karen,Karen Jones,Karen Jones,FINANCE,staff,6,1,23000,Finance & Admin
+10150,Sam,Sam Turner,Sam Turner,ACCOUNTING,staff,5,11,31000,Finance & Admin
+10151,Joe,Joe Jones,Joe Jones,PROCUREMENT,staff,5,21,34000,Finance & Admin
+10152,Leo,Leo Miller,Leo Miller,HR,staff,8,10,25000,Finance & Admin
+10153,Patrick,Patrick Johnson,Patrick Johnson,IT,senior,10,4,45000,Finance & Admin
+10154,Ava,Ava Martinez,Ava Martinez,CORP_ADM,staff,3,10,30000,Finance & Admin
+10155,Steven,Steven Garcia,Steven Garcia,DIGITAL,staff,6,19,24000,Operations
+10156,Sean,Sean Parker,Sean Parker,ENTERPRISE,senior,8,20,52000,Sales & Marketing
+10157,Rebecca,Rebecca Smith,Rebecca Smith,NETWORK,staff,6,21,26000,Finance & Admin
+10158,John,John Adams,John Adams,SALES,manager,12,10,91000,Operations
+10159,Ivy,Ivy Young,Ivy Young,BD,manager,13,10,83000,Sales & Marketing
+10160,Luke,Luke Campbell,Luke Campbell,FINANCE,staff,6,16,21000,Finance & Admin
+10161,Jake,Jake Clark,Jake Clark,ACCOUNTING,staff,5,23,28000,Finance & Admin
+10162,Chloe,Chloe Jackson,Chloe Jackson,PROCUREMENT,staff,8,25,20000,Finance & Admin
+10163,Laura,Laura Miller,Laura Miller,HR,staff,5,8,24000,Finance & Admin
+10164,Jessica,Jessica Parker,Jessica Parker,IT,manager,14,2,75000,Finance & Admin
+10165,Zoe,Zoe Taylor,Zoe Taylor,CORP_ADM,staff,4,3,28000,Finance & Admin
+10166,Susan,Susan Harris,Susan Harris,DIGITAL,staff,7,12,34000,Operations
+10167,Owen,Owen Jones,Owen Jones,ENTERPRISE,manager,12,10,77000,Sales & Marketing
+10168,Jennifer,Jennifer Scott,Jennifer Scott,NETWORK,staff,4,22,31000,Finance & Admin
+10169,Rebecca,Rebecca Parker,Rebecca Parker,SALES,staff,7,4,33000,Operations
+10170,Ian,Ian Johnson,Ian Johnson,BD,staff,8,12,22000,Sales & Marketing
+10171,John,John Nelson,John Nelson,FINANCE,senior,9,11,50000,Finance & Admin
+10172,Andrew,Andrew Williams,Andrew Williams,ACCOUNTING,manager,11,21,82000,Finance & Admin
+10173,Adam,Adam Turner,Adam Turner,PROCUREMENT,manager,11,16,63000,Finance & Admin
+10174,Max,Max Miller,Max Miller,HR,staff,6,12,32000,Finance & Admin
+10175,Nick,Nick Moore,Nick Moore,IT,manager,13,14,73000,Finance & Admin
+10176,Diana,Diana Allen,Diana Allen,CORP_ADM,staff,4,12,21000,Finance & Admin
+10177,Jennifer,Jennifer Moore,Jennifer Moore,DIGITAL,staff,5,7,22000,Operations
+10178,Stephanie,Stephanie Rodriguez,Stephanie Rodriguez,ENTERPRISE,senior,9,1,32000,Sales & Marketing
+10179,Greg,Greg Moore,Greg Moore,NETWORK,senior,6,3,48000,Finance & Admin
+10180,Jason,Jason Martinez,Jason Martinez,SALES,manager,10,11,65000,Operations
+10181,Thomas,Thomas Johnson,Thomas Johnson,BD,director,16,9,152000,Sales & Marketing
+10182,Steven,Steven Harris,Steven Harris,FINANCE,staff,5,8,29000,Finance & Admin
+10183,Ian,Ian Adams,Ian Adams,ACCOUNTING,staff,8,14,22000,Finance & Admin
+10184,Kate,Kate Jackson,Kate Jackson,PROCUREMENT,senior,9,19,34000,Finance & Admin
+10185,Ivy,Ivy Johnson,Ivy Johnson,HR,manager,9,24,89000,Finance & Admin
+10186,Sean,Sean Adams,Sean Adams,IT,staff,6,13,32000,Finance & Admin
+10187,Andrew,Andrew Clark,Andrew Clark,CORP_ADM,staff,3,11,23000,Finance & Admin
+10188,Lily,Lily Evans,Lily Evans,DIGITAL,senior,9,18,53000,Operations
+10189,Thomas,Thomas Phillips,Thomas Phillips,ENTERPRISE,staff,6,17,32000,Sales & Marketing
+10190,Max,Max Hall,Max Hall,NETWORK,senior,6,14,45000,Finance & Admin
+10191,Ava,Ava Walker,Ava Walker,SALES,manager,12,14,61000,Operations
+10192,Rachel,Rachel Garcia,Rachel Garcia,BD,senior,7,5,53000,Sales & Marketing
+10193,Laura,Laura Phillips,Laura Phillips,FINANCE,manager,9,14,61000,Finance & Admin
+10194,Max,Max Allen,Max Allen,ACCOUNTING,staff,7,18,29000,Finance & Admin
+10195,Eve,Eve Young,Eve Young,PROCUREMENT,manager,12,24,58000,Finance & Admin
+10196,Ian,Ian Jackson,Ian Jackson,HR,staff,7,17,25000,Finance & Admin
+10197,Jason,Jason Campbell,Jason Campbell,IT,manager,11,18,79000,Finance & Admin
+10198,Emily,Emily Taylor,Emily Taylor,CORP_ADM,staff,6,18,19000,Finance & Admin
+10199,Steven,Steven Martinez,Steven Martinez,DIGITAL,staff,5,11,30000,Operations
+10200,William,William Roberts,William Roberts,ENTERPRISE,staff,6,3,23000,Sales & Marketing
+10201,Nick,Nick Young,Nick Young,NETWORK,staff,6,15,29000,Finance & Admin
+10202,Chris,Chris Anderson,Chris Anderson,SALES,senior,9,20,33000,Operations
+10203,Mia,Mia Baker,Mia Baker,BD,senior,5,22,33000,Sales & Marketing
+10204,Matt,Matt Davis,Matt Davis,FINANCE,staff,6,14,27000,Finance & Admin
+10205,Jessica,Jessica Jackson,Jessica Jackson,ACCOUNTING,staff,3,10,34000,Finance & Admin
+10206,Patrick,Patrick Moore,Patrick Moore,PROCUREMENT,staff,7,2,18000,Finance & Admin
+10207,James,James Carter,James Carter,HR,senior,7,10,41000,Finance & Admin
+10208,Matt,Matt Phillips,Matt Phillips,IT,senior,6,5,42000,Finance & Admin
+10209,Leo,Leo Johnson,Leo Johnson,CORP_ADM,manager,11,3,81000,Finance & Admin
+10210,Zoe,Zoe Lewis,Zoe Lewis,DIGITAL,staff,3,11,32000,Operations
+10211,Grace,Grace Garcia,Grace Garcia,ENTERPRISE,staff,3,11,24000,Sales & Marketing
+10212,Amy,Amy Garcia,Amy Garcia,NETWORK,staff,3,8,32000,Finance & Admin
+10213,Sam,Sam Anderson,Sam Anderson,SALES,staff,5,24,29000,Operations
+10214,Ben,Ben Allen,Ben Allen,BD,staff,8,4,35000,Sales & Marketing
+10215,Chris,Chris Harris,Chris Harris,FINANCE,senior,10,5,38000,Finance & Admin
+10216,Sean,Sean Nelson,Sean Nelson,ACCOUNTING,staff,7,5,20000,Finance & Admin
+10217,Sophia,Sophia Martinez,Sophia Martinez,PROCUREMENT,senior,9,15,52000,Finance & Admin
+10218,Anna,Anna Brown,Anna Brown,HR,staff,6,15,28000,Finance & Admin
+10219,Jessica,Jessica Brown,Jessica Brown,IT,staff,3,10,33000,Finance & Admin
+10220,Ivy,Ivy Parker,Ivy Parker,CORP_ADM,staff,5,3,21000,Finance & Admin
+10221,Alex,Alex Evans,Alex Evans,DIGITAL,staff,8,2,33000,Operations
+10222,Sam,Sam Garcia,Sam Garcia,ENTERPRISE,staff,4,2,33000,Sales & Marketing
+10223,Mia,Mia Roberts,Mia Roberts,NETWORK,staff,4,2,26000,Finance & Admin
+10224,Lily,Lily Green,Lily Green,SALES,staff,4,12,30000,Operations
+10225,Rachel,Rachel Hall,Rachel Hall,BD,senior,10,20,32000,Sales & Marketing
+10226,Eve,Eve Martinez,Eve Martinez,FINANCE,staff,8,13,27000,Finance & Admin
+10227,Emma,Emma Scott,Emma Scott,ACCOUNTING,staff,7,22,23000,Finance & Admin
+10228,Olivia,Olivia Rodriguez,Olivia Rodriguez,PROCUREMENT,staff,8,3,28000,Finance & Admin
+10229,Leo,Leo Mitchell,Leo Mitchell,HR,senior,10,22,47000,Finance & Admin
+10230,Sam,Sam Carter,Sam Carter,IT,staff,5,10,24000,Finance & Admin
+10231,Lisa,Lisa Mitchell,Lisa Mitchell,CORP_ADM,staff,4,5,21000,Finance & Admin
+10232,Nina,Nina Rodriguez,Nina Rodriguez,DIGITAL,senior,10,17,31000,Operations
+10233,Ethan,Ethan Williams,Ethan Williams,ENTERPRISE,staff,4,6,24000,Sales & Marketing
+10234,Nina,Nina Lewis,Nina Lewis,NETWORK,staff,8,24,26000,Finance & Admin
+10235,Patrick,Patrick Hill,Patrick Hill,SALES,senior,8,8,47000,Operations
+10236,Ivy,Ivy Lewis,Ivy Lewis,BD,manager,10,12,92000,Sales & Marketing
+10237,Kevin,Kevin Evans,Kevin Evans,FINANCE,senior,9,17,44000,Finance & Admin
+10238,Helen,Helen Miller,Helen Miller,ACCOUNTING,staff,5,2,34000,Finance & Admin
+10239,Mark,Mark Clark,Mark Clark,PROCUREMENT,senior,9,4,39000,Finance & Admin
+10240,Eric,Eric Adams,Eric Adams,HR,staff,7,5,32000,Finance & Admin
+10241,Kate,Kate King,Kate King,IT,manager,9,14,58000,Finance & Admin
+10242,Alex,Alex Miller,Alex Miller,CORP_ADM,staff,3,12,25000,Finance & Admin
+10243,David,David Lewis,David Lewis,DIGITAL,manager,14,11,65000,Operations
+10244,Mia,Mia Edwards,Mia Edwards,ENTERPRISE,manager,12,23,64000,Sales & Marketing
+10245,Chris,Chris Phillips,Chris Phillips,NETWORK,staff,3,1,26000,Finance & Admin
+10246,Nathan,Nathan White,Nathan White,SALES,manager,13,17,83000,Operations
+10247,Rachel,Rachel Davis,Rachel Davis,BD,staff,3,8,32000,Sales & Marketing
+10248,Matt,Matt Campbell,Matt Campbell,FINANCE,manager,12,20,90000,Finance & Admin
+10249,Joe,Joe Allen,Joe Allen,ACCOUNTING,staff,4,10,32000,Finance & Admin
+10250,Rachel,Rachel Roberts,Rachel Roberts,PROCUREMENT,staff,6,6,21000,Finance & Admin
+10251,Nora,Nora Williams,Nora Williams,HR,staff,7,18,19000,Finance & Admin
+10252,Ben,Ben Jones,Ben Jones,IT,senior,7,9,54000,Finance & Admin
+10253,Laura,Laura Williams,Laura Williams,CORP_ADM,staff,8,22,21000,Finance & Admin
+10254,Nora,Nora Taylor,Nora Taylor,DIGITAL,staff,5,21,24000,Operations
+10255,Nathan,Nathan Thomas,Nathan Thomas,ENTERPRISE,manager,9,23,85000,Sales & Marketing
+10256,Kate,Kate Scott,Kate Scott,NETWORK,staff,4,2,28000,Finance & Admin
+10257,Kevin,Kevin Lewis,Kevin Lewis,SALES,director,16,16,117000,Operations
+10258,Maria,Maria King,Maria King,BD,staff,3,21,29000,Sales & Marketing
+10259,Olivia,Olivia Taylor,Olivia Taylor,FINANCE,staff,6,24,32000,Finance & Admin
+10260,Leo,Leo Garcia,Leo Garcia,ACCOUNTING,staff,6,12,27000,Finance & Admin
+10261,Lisa,Lisa Garcia,Lisa Garcia,PROCUREMENT,staff,4,18,28000,Finance & Admin
+10262,Susan,Susan Adams,Susan Adams,HR,staff,5,10,33000,Finance & Admin
+10263,Megan,Megan Brown,Megan Brown,IT,staff,3,24,30000,Finance & Admin
+10264,Michael,Michael Martinez,Michael Martinez,CORP_ADM,staff,8,13,30000,Finance & Admin
+10265,John,John White,John White,DIGITAL,manager,14,15,57000,Operations
+10266,Tony,Tony Martinez,Tony Martinez,ENTERPRISE,senior,7,12,43000,Sales & Marketing
+10267,Tim,Tim Rodriguez,Tim Rodriguez,NETWORK,senior,7,12,45000,Finance & Admin
+10268,Thomas,Thomas Johnson,Thomas Johnson,SALES,staff,6,11,27000,Operations
+10269,Ryan,Ryan Harris,Ryan Harris,BD,senior,8,17,43000,Sales & Marketing
+10270,Michelle,Michelle Davis,Michelle Davis,FINANCE,senior,6,20,39000,Finance & Admin
+10271,Jennifer,Jennifer Walker,Jennifer Walker,ACCOUNTING,staff,3,15,24000,Finance & Admin
+10272,Emma,Emma Anderson,Emma Anderson,PROCUREMENT,senior,10,3,48000,Finance & Admin
+10273,Kate,Kate Jackson,Kate Jackson,HR,senior,10,21,36000,Finance & Admin
+10274,Emily,Emily King,Emily King,IT,staff,4,5,26000,Finance & Admin
+10275,John,John Young,John Young,CORP_ADM,staff,5,15,22000,Finance & Admin
+10276,Zoe,Zoe Campbell,Zoe Campbell,DIGITAL,staff,8,24,34000,Operations
+10277,Ivy,Ivy Roberts,Ivy Roberts,ENTERPRISE,staff,5,21,20000,Sales & Marketing
+10278,Leo,Leo Mitchell,Leo Mitchell,NETWORK,staff,7,21,24000,Finance & Admin
+10279,Patrick,Patrick Anderson,Patrick Anderson,SALES,manager,9,4,89000,Operations
+10280,Jennifer,Jennifer Harris,Jennifer Harris,BD,staff,8,8,29000,Sales & Marketing
+10281,Nina,Nina Turner,Nina Turner,FINANCE,staff,7,9,22000,Finance & Admin
+10282,Joe,Joe Evans,Joe Evans,ACCOUNTING,staff,8,6,23000,Finance & Admin
+10283,David,David Campbell,David Campbell,PROCUREMENT,staff,7,2,19000,Finance & Admin
+10284,Sean,Sean Turner,Sean Turner,HR,staff,4,25,32000,Finance & Admin
+10285,Emma,Emma Nelson,Emma Nelson,IT,staff,5,16,26000,Finance & Admin
+10286,Nora,Nora Nelson,Nora Nelson,CORP_ADM,staff,3,6,32000,Finance & Admin
+10287,Hannah,Hannah Scott,Hannah Scott,DIGITAL,staff,7,5,28000,Operations
+10288,Stephanie,Stephanie Nelson,Stephanie Nelson,ENTERPRISE,staff,5,17,21000,Sales & Marketing
+10289,Robert,Robert Lewis,Robert Lewis,NETWORK,staff,6,8,23000,Finance & Admin
+10290,Alex,Alex Campbell,Alex Campbell,SALES,manager,13,14,71000,Operations
+10291,Kate,Kate Nelson,Kate Nelson,BD,senior,6,25,35000,Sales & Marketing
+10292,Jake,Jake Mitchell,Jake Mitchell,FINANCE,staff,5,16,19000,Finance & Admin
+10293,Robert,Robert Lewis,Robert Lewis,ACCOUNTING,staff,4,7,30000,Finance & Admin
+10294,Diana,Diana Smith,Diana Smith,PROCUREMENT,staff,8,22,33000,Finance & Admin
+10295,Ella,Ella King,Ella King,HR,manager,12,5,72000,Finance & Admin
+10296,Helen,Helen Lewis,Helen Lewis,IT,staff,3,19,24000,Finance & Admin
+10297,Andrew,Andrew Miller,Andrew Miller,CORP_ADM,staff,7,15,27000,Finance & Admin
+10298,Kevin,Kevin Evans,Kevin Evans,DIGITAL,staff,5,18,30000,Operations
+10299,Andrew,Andrew Hall,Andrew Hall,ENTERPRISE,staff,7,2,19000,Sales & Marketing
+10300,Alex,Alex Edwards,Alex Edwards,NETWORK,senior,9,15,35000,Finance & Admin
+10301,Kate,Kate Mitchell,Kate Mitchell,SALES,staff,6,20,28000,Operations
+10302,Emily,Emily King,Emily King,BD,staff,8,19,28000,Sales & Marketing
+10303,Tony,Tony Hill,Tony Hill,FINANCE,staff,3,14,28000,Finance & Admin
+10304,Greg,Greg Hill,Greg Hill,ACCOUNTING,staff,8,25,25000,Finance & Admin
+10305,Adam,Adam Williams,Adam Williams,PROCUREMENT,staff,8,24,30000,Finance & Admin
+10306,Ethan,Ethan Walker,Ethan Walker,HR,staff,8,4,24000,Finance & Admin
+10307,Kate,Kate Edwards,Kate Edwards,IT,staff,6,23,25000,Finance & Admin
+10308,Paul,Paul Moore,Paul Moore,CORP_ADM,manager,14,24,59000,Finance & Admin
+10309,Angela,Angela Nelson,Angela Nelson,DIGITAL,staff,8,16,30000,Operations
+10310,Nina,Nina Hill,Nina Hill,ENTERPRISE,manager,11,18,78000,Sales & Marketing
+10311,Patrick,Patrick Lewis,Patrick Lewis,NETWORK,staff,4,9,28000,Finance & Admin
+10312,Nora,Nora Allen,Nora Allen,SALES,senior,10,23,46000,Operations
+10313,Tim,Tim Turner,Tim Turner,BD,staff,8,9,27000,Sales & Marketing
+10314,Jessica,Jessica Lewis,Jessica Lewis,FINANCE,staff,6,12,23000,Finance & Admin
+10315,Nora,Nora Moore,Nora Moore,ACCOUNTING,manager,9,12,84000,Finance & Admin
+10316,Daniel,Daniel Edwards,Daniel Edwards,PROCUREMENT,staff,7,9,27000,Finance & Admin
+10317,Eric,Eric Brown,Eric Brown,HR,senior,6,8,32000,Finance & Admin
+10318,Andrew,Andrew Smith,Andrew Smith,IT,staff,5,23,33000,Finance & Admin
+10319,Michelle,Michelle Lewis,Michelle Lewis,CORP_ADM,manager,10,14,86000,Finance & Admin
+10320,Scott,Scott Williams,Scott Williams,DIGITAL,staff,8,2,21000,Operations

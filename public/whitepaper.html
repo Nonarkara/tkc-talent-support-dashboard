@@ -1,0 +1,1585 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TKC Digital Twin — Whitepaper · รายงานเบื้องต้น (Interim)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ── Graphic identity per Dr Non's guidelines ──
+   One Thai face (IBM Plex Sans Thai). One mono face (JetBrains Mono).
+   Amber (#CC6600) for level-1 headings only. No vertical table borders.
+   Body 14pt, line-height 1.5. Left-aligned. White A4 paper. ── */
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  background: #ffffff;
+  color: #222222;
+  font-family: 'IBM Plex Sans Thai', 'Noto Sans Thai', sans-serif;
+  font-feature-settings: 'kern' 1;
+  -webkit-font-smoothing: antialiased;
+}
+
+@page { size: A4; margin: 2cm 2.5cm; }
+@media print {
+  .no-print { display: none !important; }
+  body { background: white; }
+  .page-break { page-break-before: always; }
+  .avoid-break { page-break-inside: avoid; }
+  h1, h2, h3 { page-break-after: avoid; }
+}
+
+/* ── Type scale ── */
+.t-mono { font-family: 'JetBrains Mono', monospace; font-size: 11pt; }
+
+/* ── Layout ── */
+.page { max-width: 740px; margin: 0 auto; padding: 24pt 0 48pt; }
+
+/* ── Cover page ── */
+.cover {
+  height: 26cm;
+  display: flex; flex-direction: column;
+  padding: 0;
+}
+.cover-meta {
+  text-align: right;
+  font-size: 10pt;
+  color: #444444;
+  margin-bottom: 80mm;
+  line-height: 1.5;
+}
+.cover-title {
+  font-size: 32pt;
+  font-weight: 700;
+  line-height: 1.15;
+  color: #CC6600;
+  max-width: 580px;
+  letter-spacing: -0.005em;
+}
+.cover-subtitle {
+  font-size: 14pt;
+  font-weight: 400;
+  line-height: 1.4;
+  color: #444444;
+  margin-top: 16pt;
+  max-width: 580px;
+}
+.cover-bottom {
+  margin-top: auto;
+  padding-top: 14pt;
+  border-top: 1px solid #CCCCCC;
+  font-size: 11pt;
+  color: #444444;
+  line-height: 1.55;
+}
+.cover-bottom strong { color: #222222; font-weight: 600; }
+
+/* ── TOC ── */
+.toc {
+  margin: 36pt 0 28pt;
+}
+.toc-title {
+  font-size: 18pt; font-weight: 700;
+  color: #CC6600;
+  margin-bottom: 14pt;
+}
+.toc ol { padding-left: 0; list-style: none; }
+.toc li {
+  display: flex; gap: 14px;
+  padding: 7pt 0;
+  border-bottom: 1px dotted #CCCCCC;
+  font-size: 12pt;
+}
+.toc li:last-child { border-bottom: none; }
+.toc-num {
+  font-family: 'JetBrains Mono', monospace; font-size: 11pt;
+  color: #888888; min-width: 32px;
+}
+.toc-name { flex: 1; }
+
+/* ── Section heading ── */
+.section { margin-top: 36pt; }
+.section-kicker {
+  font-size: 9pt;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #888888;
+  margin-bottom: 4pt;
+  font-weight: 600;
+}
+.section-title {
+  font-size: 20pt; font-weight: 700; line-height: 1.25;
+  color: #CC6600;
+  margin-bottom: 18pt;
+}
+.subsection {
+  font-size: 16pt; font-weight: 700;
+  margin: 22pt 0 10pt;
+  color: #000000;
+}
+
+/* ── Body content ── */
+p {
+  font-size: 14pt; line-height: 1.5;
+  margin-bottom: 12pt;
+  text-align: left;
+}
+.lead {
+  font-size: 14.5pt; line-height: 1.55;
+  color: #222222;
+  margin-bottom: 16pt;
+}
+strong, b { color: #000000; font-weight: 700; }
+em, i { font-style: normal; font-weight: 600; }
+
+/* ── Pull quote ── */
+.pullquote {
+  margin: 18pt 0;
+  padding: 4pt 0 4pt 20pt;
+  border-left: 2px solid #CC6600;
+  font-size: 14pt;
+  font-weight: 500;
+  line-height: 1.55;
+  color: #222222;
+}
+.pullquote-attr {
+  display: block; margin-top: 8pt;
+  font-size: 10pt;
+  color: #888888;
+  font-weight: 400;
+}
+
+/* ── Tables (no vertical lines, thick under header, thin at end) ── */
+table {
+  width: 100%; border-collapse: collapse;
+  margin: 14pt 0 20pt;
+  font-size: 12pt;
+}
+th {
+  background: transparent;
+  border-bottom: 2px solid #222222;
+  padding: 8pt 10pt 6pt;
+  text-align: left;
+  font-weight: 700;
+  color: #000000;
+  font-size: 11.5pt;
+  vertical-align: bottom;
+}
+td {
+  padding: 8pt 10pt;
+  border: none;
+  border-bottom: 1px solid #EEEEEE;
+  vertical-align: top;
+  line-height: 1.45;
+  font-size: 12pt;
+}
+table tbody tr:last-child td {
+  border-bottom: 1px solid #CCCCCC;
+}
+td.num, .num {
+  font-family: 'JetBrains Mono', monospace;
+  text-align: right;
+  font-size: 11pt;
+}
+
+/* ── Callouts (light, no full-rectangle borders) ── */
+.callout {
+  margin: 14pt 0;
+  padding: 12pt 16pt;
+  background: #FAFAFA;
+  border-left: 3px solid #CC6600;
+  font-size: 13pt;
+  line-height: 1.5;
+}
+.callout-gold { border-left-color: #CC6600; background: #FFF7E0; }
+.callout-blue { border-left-color: #5B89B5; background: #F4F8FB; }
+.callout-green { border-left-color: #5B8C4A; background: #F4F8F0; }
+.callout-title {
+  font-weight: 700;
+  margin-bottom: 6pt;
+  display: block;
+  color: #000000;
+  font-size: 13pt;
+}
+
+/* ── Lists ── */
+ul, ol { padding-left: 22pt; margin-bottom: 14pt; font-size: 14pt; }
+ul li, ol li { padding: 3pt 0; line-height: 1.5; }
+
+/* ── Stat strip ── */
+.stat-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18pt;
+  margin: 18pt 0 22pt;
+  padding: 12pt 0;
+  border-top: 1px solid #EEEEEE;
+  border-bottom: 1px solid #EEEEEE;
+}
+.stat-cell {
+  text-align: left;
+}
+.stat-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 24pt; font-weight: 700;
+  color: #CC6600;
+  line-height: 1.0;
+}
+.stat-label {
+  font-size: 9pt;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #666666;
+  margin-top: 4pt;
+}
+
+/* ── Architecture diagram ── */
+.arch-diagram {
+  margin: 16pt 0;
+  padding: 16pt;
+  background: #FAFAFA;
+  border-left: 3px solid #CCCCCC;
+}
+.arch-hub {
+  border: 1.5px solid #CC6600;
+  padding: 10pt 18pt;
+  background: white;
+  text-align: center;
+  margin: 0 auto 12pt;
+  max-width: 360px;
+}
+.arch-hub-label {
+  font-size: 11pt; font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #CC6600;
+}
+.arch-hub-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10pt; color: #666666; margin-top: 3pt;
+}
+.arch-arrow { text-align: center; font-size: 14pt; color: #888888; margin: 4pt 0; }
+.arch-spokes {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8pt;
+}
+.arch-spoke {
+  border: 1px solid #DDDDDD;
+  padding: 8pt 12pt;
+  background: white;
+  text-align: center;
+}
+.arch-spoke-label {
+  font-size: 11pt; font-weight: 700;
+}
+.arch-spoke-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5pt; color: #666666; margin-top: 2pt;
+}
+
+/* ── Print hint (screen only) ── */
+.print-hint {
+  position: fixed; top: 16px; right: 16px;
+  background: #222222; color: white;
+  padding: 12px 20px; font-size: 11px;
+  font-family: monospace; z-index: 100;
+}
+
+/* ── Inline code ── */
+code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11pt;
+  background: #F4F4F4;
+  padding: 1px 5px;
+  color: #444444;
+}
+
+/* ── Links ── */
+a { color: #CC6600; text-decoration: underline; }
+a:visited { color: #CC6600; }
+
+/* ── Footer page numbers (printing) ── */
+@media print {
+  .page-num {
+    position: running(footer);
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9pt; color: #888888;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="no-print print-hint">
+  กำลังเปิด Print dialog…<br>
+  <span style="opacity: 0.7; font-size: 10px;">Save as PDF · A4 · Interim Brief</span>
+</div>
+
+<div class="page">
+
+<!-- ═══ COVER PAGE ═══ -->
+<section class="cover avoid-break">
+  <div class="cover-meta">
+    Dr. Non Arkaraprasertkul<br>6 พฤษภาคม 2569
+  </div>
+
+  <h1 class="cover-title">รายงานเบื้องต้น<br>การพัฒนาระบบสนับสนุนทรัพยากรมนุษย์ TKC</h1>
+  <div class="cover-subtitle">Interim Brief · Talent Transformation Engine for Talent Knowledge Collaborative · v4.2 Fluid Legend (Phase 1)</div>
+
+  <div class="cover-bottom" style="display: flex; align-items: flex-end; justify-content: space-between; gap: 24pt;">
+    <div>
+      <strong>ผู้ว่าจ้าง:</strong> Talent Knowledge Collaborative<br>
+      <strong>ระยะเวลา Phase 1:</strong> 17 เมษายน — 6 พฤษภาคม 2569 · 19 วันจาก kickoff ถึงการส่งมอบ<br>
+      <strong>สถานะ:</strong> รายงานเบื้องต้น (interim) — รายงานฉบับสมบูรณ์จะตามมาเมื่อ sandbox 6 เดือนเสร็จสิ้น
+    </div>
+    <img src="non-logo.png" alt="Dr Non Arkaraprasertkul — Skin in the Game Consulting"
+         style="width: 90pt; height: 90pt; object-fit: contain; flex-shrink: 0; opacity: 0.92;">
+  </div>
+</section>
+
+<div class="page-break"></div>
+
+<!-- ═══ TABLE OF CONTENTS ═══ -->
+<section class="toc avoid-break">
+  <div class="toc-title">สารบัญ · Table of Contents</div>
+  <ol>
+    <li><span class="toc-num">00</span><span class="toc-name">บทสรุปสำหรับผู้บริหาร · Executive Summary</span></li>
+    <li><span class="toc-num">01</span><span class="toc-name">บทนำ — เริ่มจากการสนทนา</span></li>
+    <li><span class="toc-num">02</span><span class="toc-name">บริบท TKC ปี 2569 — สถานการณ์ที่เผชิญ</span></li>
+    <li><span class="toc-num">03</span><span class="toc-name">ความตึงเครียดเชิงโครงสร้าง 5 ประการ</span></li>
+    <li><span class="toc-num">04</span><span class="toc-name">ข้อสังเกตจากการประชุม Kickoff และ Management Review</span></li>
+    <li><span class="toc-num">05</span><span class="toc-name">ขอบเขตงานตาม TOR และวิธีตอบโจทย์</span></li>
+    <li><span class="toc-num">06</span><span class="toc-name">กรอบความคิด — ทำไมต้องเป็นเกม</span></li>
+    <li><span class="toc-num">07</span><span class="toc-name">สถาปัตยกรรมระบบ — The Cassette Model</span></li>
+    <li><span class="toc-num">08</span><span class="toc-name">Frontend — 8 หน้าจอของ Command Center</span></li>
+    <li><span class="toc-num">09</span><span class="toc-name">Backend — Database, API, Game Engine</span></li>
+    <li><span class="toc-num">10</span><span class="toc-name">Game Mechanics — สูตรและกลไก</span></li>
+    <li><span class="toc-num">11</span><span class="toc-name">The Magic — Google Sheets ในฐานะ Memory Card</span></li>
+    <li><span class="toc-num">12</span><span class="toc-name">ข้อมูลและตัวเลขปัจจุบัน</span></li>
+    <li><span class="toc-num">13</span><span class="toc-name">ขั้นถัดไป — Roadmap</span></li>
+    <li><span class="toc-num">14</span><span class="toc-name">คำถามที่ HR และผู้บริหารควรถาม (HR FAQ)</span></li>
+    <li><span class="toc-num">15</span><span class="toc-name">บทสรุปและคำมั่น</span></li>
+    <li><span class="toc-num">16</span><span class="toc-name">ภาคผนวก — ลิงก์และอ้างอิง</span></li>
+  </ol>
+</section>
+
+<div class="page-break"></div>
+
+<!-- ═══ 00 — EXECUTIVE SUMMARY ═══ -->
+<section class="section">
+  <div class="section-kicker">SECTION 00 · EXECUTIVE SUMMARY</div>
+  <h2 class="section-title">บทสรุปสำหรับผู้บริหาร · Executive Summary</h2>
+
+  <p class="lead">
+    เอกสารฉบับนี้เป็น <strong>รายงานเบื้องต้น</strong> ของระบบ TKC Digital Twin —
+    เครื่องมือสนับสนุนการตัดสินใจด้านทรัพยากรมนุษย์
+    ที่ผมในฐานะที่ปรึกษาอิสระพัฒนาให้ Talent Knowledge Collaborative
+    ระหว่าง 17 เมษายน — 6 พฤษภาคม 2569 ตามขอบเขตของ Phase 1.
+    ระบบเข้าใช้งานจริงแล้ว และอยู่ระหว่างการเก็บฟีดแบ็กเพื่อพัฒนา Phase 2.
+  </p>
+
+  <h3 class="subsection">สิ่งที่ระบบนี้คืออะไร (ใน 3 บรรทัด)</h3>
+  <p>
+    ระบบเล่นเหมือน <strong>เกม Famicom Dragon Quest III ปี 1988</strong> —
+    พนักงานคือ party member ที่มี class และ stats; โครงการคือ quest ที่มี budget;
+    การจัดทีมคือการวาง party order บน felt mat. กลไกเกมจริง ๆ
+    ขับเคลื่อนการตัดสินใจจริง ๆ ของ HR และผู้บริหาร —
+    ไม่ใช่ dashboard ที่แสดงข้อมูล แต่เป็น <em>operating system</em>
+    ที่ทำให้การตัดสินใจเรื่องคน <em>เห็นได้, วัดได้, เปรียบเทียบ prediction กับ reality ได้</em>.
+  </p>
+
+  <h3 class="subsection">ทำไม TKC ต้องการระบบนี้</h3>
+  <p>
+    TKC เป็นบริษัท SI ขนาดกลางอายุ 20 ปี ที่กำลัง pivot จาก project-based revenue
+    ไปสู่ recurring digital infrastructure (เป้าหมาย 40% recurring ภายใน 5 ปี).
+    การ pivot นี้ต้องการคนเก่งและทีมที่ตั้งและเลิกได้เร็ว —
+    แต่ระบบ HR ปัจจุบัน (Mango ERP + Excel) ทำหน้าที่ payroll ไม่ใช่ talent visibility.
+    ผลคือ <em>unknown unknowns เต็มไปหมด</em>: คนเก่งลาออก, คนกลาง ๆ คงอยู่,
+    การจัดทีมพึ่งการเมืองมากกว่าการประเมิน. ระบบนี้คือพื้นที่ทดลอง 6 เดือน
+    ที่ทำให้เห็น "องค์กรเป็น digital twin" ก่อนตัดสินใจปรับโครงสร้างจริง.
+  </p>
+
+  <h3 class="subsection">5 อย่างที่ส่งมอบใน Phase 1</h3>
+  <ol>
+    <li><strong>Command Center</strong> — เว็บเดียวที่มี 8 หน้าจอสลับด้วยปุ่มเลข 1–8 (Cockpit, Formation, Ninja, Matrix, Roster, Signals, Lobby, Ledger). Live ที่ tkc-digital-twin.fly.dev</li>
+    <li><strong>The Cassette Architecture</strong> — Next.js (rules) + Neon Postgres (truth) + Google Sheets (human-readable mirror, 21 tabs). ฟันเฟืองทุกตัวเขียนทั้ง Postgres และ Sheets แบบ fire-and-forget</li>
+    <li><strong>Game Engine ที่สมบูรณ์</strong> — ICA Index, Credo Score, Vital Signs (HP/MP/XP/Stamina), Budget Cap (Project ÷ 10), Readiness Formula, Streak System ทำงานครบ</li>
+    <li><strong>The Tome Printer</strong> — พิมพ์ปกแข็งบันทึกประวัติพนักงานที่ครบวาระ. การจากไปที่เป็นเกียรติ ไม่ใช่ "ซองขาว"</li>
+    <li><strong>Daily Briefing System</strong> — รายงานสรุปอัจฉริยะรายวันที่ generate อัตโนมัติและ push เข้า Obsidian Vault</li>
+  </ol>
+
+  <h3 class="subsection">ลิงก์ที่ต้องเปิด</h3>
+  <table>
+    <tbody>
+      <tr><td style="width: 28%;"><strong>Command Center</strong></td><td class="t-mono">tkc-digital-twin.fly.dev/command-center</td></tr>
+      <tr><td><strong>e-Report (interactive)</strong></td><td class="t-mono">tkc-digital-twin.fly.dev/report</td></tr>
+      <tr><td><strong>Public Showcase</strong></td><td class="t-mono">nonarkara.github.io/tkc-digital-twin-showcase</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-gold avoid-break">
+    <span class="callout-title">ใจความสำคัญที่ผู้บริหารต้องเข้าใจก่อนอ่านส่วนที่เหลือ</span>
+    <strong>(1)</strong> ระบบนี้ <em>ไม่ได้แทนที่</em> ระบบประเมินผลรายปีของ TKC —
+    แต่ feed ข้อมูลเข้าให้การประเมินคมขึ้น.
+    <strong>(2)</strong> ICA Index และ Credo Score เป็น <em>compass ไม่ใช่ judgment</em> —
+    ใช้เพื่อบอกแนวโน้ม, ไม่ใช่เพื่อจัดอันดับคน.
+    <strong>(3)</strong> Salary Cap = Project Budget ÷ 10 เป็นกลไกการ <em>จัดสรรงบโครงการ</em> —
+    ไม่ใช่กลไกการ set เงินเดือน. เงินเดือนจริงไม่ถูกกระทบ.
+    <strong>(4)</strong> ทุกคนเห็นข้อมูลของตัวเองก่อน. ไม่มี leaderboard ของผู้ที่ผลงานต่ำ.
+    <strong>(5)</strong> PDPA compliance + audit trail ฝังในระบบจาก Day 1.
+  </div>
+
+  <h3 class="subsection">Phase 2 จะมีอะไร (ตัวอย่าง)</h3>
+  <p>
+    ภายใน 6 เดือนของ sandbox model, roadmap ปัจจุบันชี้ไปที่:
+    <strong>v8.6 MemPalace</strong> (LLM-powered relationship memory) ·
+    <strong>v8.7 Voice Check-in</strong> (Thai STT สำหรับผู้บริหาร) ·
+    <strong>v8.8 Mango ERP Sync</strong> (จบการคีย์ข้อมูลซ้ำ) ·
+    <strong>v9.x Lobby Graph</strong> (relationship network) ·
+    <strong>v10.x Two-Way Ratings</strong> (Uber-style ระหว่างพนักงานและ project lead).
+    Roadmap นี้ <strong>ไม่ใช่ commitment</strong> — เป็น strategic intent ที่ปรับได้ตามฟีดแบ็กผู้ใช้จริง.
+  </p>
+
+  <p style="margin-top: 18pt; font-size: 11pt; color: #666666; border-top: 1px dotted #CCCCCC; padding-top: 12pt; line-height: 1.5;">
+    <strong>หมายเหตุ:</strong> รายงานฉบับนี้คือ <strong>เบื้องต้น (interim)</strong> —
+    เป็นการสรุปสิ่งที่ส่งมอบใน Phase 1 ก่อนเข้าสู่ Phase 2.
+    รายงานฉบับสมบูรณ์จะตามมาเมื่อ sandbox 6 เดือนเสร็จสิ้น
+    และมีข้อมูลการใช้งานจริงเพียงพอที่จะวัดผล.
+  </p>
+</section>
+
+<div class="page-break"></div>
+
+<!-- ═══ 01 ═══ -->
+<section class="section">
+  <div class="section-kicker">SECTION 01</div>
+  <h2 class="section-title">บทนำ — เริ่มจากการสนทนา</h2>
+
+  <p class="lead">
+    รายงานฉบับนี้เริ่มต้นในวันที่ 17 เมษายน 2569
+    เมื่อทีมงาน depa และคณะผู้บริหาร TKC นัดประชุมร่วมกันเป็นครั้งแรก
+    เพื่อวินิจฉัยอาการของบริษัทเทคโนโลยีไทยอายุยี่สิบปีที่กำลังเปลี่ยนผ่าน
+    จากระบบเดิมไปสู่ความท้าทายในยุคใหม่. ผมในฐานะที่ปรึกษาอิสระ
+    ได้รับมอบหมายให้ร่วมวินิจฉัยและออกแบบกลไกใหม่
+    เพื่อช่วยให้ฝ่ายทรัพยากรมนุษย์และผู้บริหารระดับสูงสามารถมองเห็นและตัดสินใจได้แม่นยำขึ้น
+  </p>
+
+  <p>
+    ประเด็นที่จับใจความได้ในการประชุมครั้งแรก คือ
+    HR ของ TKC <strong>กำลังจมอยู่กับ unknown unknowns</strong> —
+    คำถามที่พวกเขายังบรรยายไม่ได้ด้วยซ้ำ เพราะข้อมูลที่จะใช้บรรยายยังไม่มีอยู่.
+    คนเก่งกำลังลาออก, คนกลาง ๆ คงอยู่, ผู้บริหารแต่ละสายงานต่างมี view ของตัวเอง
+    ที่ไม่ตรงกัน, ทุกการตัดสินใจเรื่องคนกลายเป็นการเมือง.
+    ระบบสารสนเทศที่ TKC ใช้อยู่ขณะนั้น (Mango ERP + Excel)
+    ตอบโจทย์การจ่ายเงินเดือนได้, แต่ไม่ตอบโจทย์การ "เห็นองค์กร" ในแบบ real-time.
+  </p>
+
+  <div class="pullquote">
+    "Their KPIs are my KPIs. The TOR is the floor, not the ceiling."
+    <span class="pullquote-attr">— กรอบการทำงานหลักของผู้รับจ้าง · 21 เมษายน 2569</span>
+  </div>
+
+  <p>
+    การประชุมครั้งที่สองวันที่ 21 เมษายน เป็น management review
+    ที่นำไปสู่ <strong>ข้อตกลง 6-month sandbox</strong> — เปิดโอกาสให้ผมสร้าง
+    prototype, ทดสอบจริงกับคนจริงในองค์กร, และปรับเปลี่ยนตามฟีดแบ็กแบบรายสัปดาห์.
+    ภายในหกเดือนจะไม่มีการประกาศโครงสร้างใหม่ในบริษัท จนกว่าผลลัพธ์จะชัดเจน.
+    Sandbox นี้คือพื้นที่ทดลองที่ปกปิดต้นทุนทางการเมืองได้ — ความเสี่ยงต่ำ, ความเรียนรู้สูง.
+  </p>
+
+  <p>
+    รายงานฉบับนี้สรุป Phase 1 ที่ส่งมอบในวันที่ 6 พฤษภาคม 2569 —
+    19 วันหลังจากการประชุมครั้งแรก. ในช่วงเวลานี้ ผมพร้อมกับ Claude Code
+    ได้พัฒนาระบบ TKC Digital Twin จากศูนย์
+    ขึ้นมาจนถึง v4.2 "Fluid Legend" และพร้อมส่งมอบเข้าใช้งานจริง.
+  </p>
+</section>
+
+<!-- ═══ 02 ═══ -->
+<section class="section">
+  <div class="section-kicker">SECTION 02</div>
+  <h2 class="section-title">บริบท TKC ปี 2569 — สถานการณ์ที่เผชิญ</h2>
+
+  <h3 class="subsection">2.1 ภาพการเงินปีงบประมาณ 2568 (ตามที่บริษัทเปิดเผย)</h3>
+  <p>
+    TKC (Talent Knowledge Collaborative)
+    เป็นองค์กรที่มุ่งเน้นการพัฒนาทรัพยากรบุคคลและการบริหารจัดการความรู้
+    ก่อตั้งราวปี 2545–2546.
+    ปัจจุบันมีอายุการดำเนินงานกว่า 20 ปี, พนักงานราว 348 คน,
+    ดำเนินธุรกิจ Vertically Integrated Digital Products
+    ผ่าน 4 สายผลิตภัณฑ์หลัก — <strong>PromptPost, Thai CA, Data Center, และ D.I.D. (Delivery ID)</strong>.
+  </p>
+  <p>
+    ในปีงบประมาณ 2568 รายได้รวมของ TKC อยู่ที่ราว
+    <strong>2,338 ล้านบาท</strong> (ตามรายงานบริษัท; -4.5% YoY ตามการประมาณภายใน)
+    ขณะที่ Gross Margin ลดลงอย่างมีนัยสำคัญ — ทรุดเกือบครึ่ง.
+    กำไรสุทธิลดลงเกือบ 20% YoY.
+    ในจำนวนนี้ <strong>ส่วนใหญ่มาจากบริษัทร่วม ไม่ใช่ธุรกิจหลัก</strong> —
+    หมายความว่า core operations ขององค์กรในปีนั้นแทบจะไม่ทำกำไร.
+    เงินสดในมือลดลงราวครึ่งหนึ่ง, หนี้สินเพิ่มราวสองเท่า.
+  </p>
+
+  <div class="callout callout-gold">
+    <span class="callout-title">ใจความสำคัญ</span>
+    การพัฒนาทรัพยากรบุคคลขององค์กรในปี 2569 ไม่ใช่ "nice-to-have"
+    มันคือ <strong>survival mechanism</strong>. องค์กรกำลังลงทุนเพื่อกระจายธุรกิจ
+    และตั้งเป้า recurring revenue ให้สูงขึ้นภายใน 5 ปี.
+    ถ้าคนไม่เก่งและไม่จัดสรรได้ดี การลงทุนนั้นจะไม่คืนทุน.
+  </div>
+
+  <h3 class="subsection">2.2 ข้อมูลองค์กรที่เกี่ยวข้อง</h3>
+  <table>
+    <thead>
+      <tr><th style="width: 35%;">มิติ</th><th>ค่า / สถานะ (ตัวแทน)</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>ประเภทธุรกิจ</td><td>Technology Services · IT Infrastructure · Digital Solutions</td></tr>
+      <tr><td>ขนาดองค์กร</td><td>~200 พนักงาน · 3 สายงาน · 12 ฝ่าย</td></tr>
+      <tr><td>Revenue (ปีล่าสุด)</td><td>ระดับพันล้านบาท (ลดลง YoY)</td></tr>
+      <tr><td>Profit Margin</td><td>ต่ำกว่าเป้าหมายภายใน — margin pressure จาก project-based delivery</td></tr>
+      <tr><td>การรับรองมาตรฐาน</td><td>ISO 9001 · ISO 45001 · ISO/IEC 27001</td></tr>
+      <tr><td>ทิศทางกลยุทธ์</td><td>Pivot จาก project-based → recurring digital services</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="subsection">2.3 โครงสร้างผู้บริหาร</h3>
+  <p>
+    องค์กรบริหารโดย MD และ DMD จำนวน 3 ตำแหน่ง — DMD CMO ดูแล Sales,
+    Business Development, R&D; DMD Tech ดูแล PMO, Implementation,
+    Engineering, AI CoE, Digital Services, และ Digital Product;
+    DMD CFO ดูแล Accounting และ Financial.
+    <strong>ตำแหน่ง DMD ที่ดูแล HR & GA, Org Management, Procurement และ IT
+    ปัจจุบันยังว่างอยู่</strong> — ซึ่งเป็นทั้งโอกาสและความท้าทาย:
+    โอกาสคือไม่มีใครต่อต้านการเปลี่ยนแปลง, ความท้าทายคือไม่มีใครเป็นเจ้าของ HR
+    ในระดับนโยบายอย่างเป็นทางการ.
+    โครงสร้างผู้บริหารที่ผู้ถือหุ้นใหญ่คือผู้บริหารคนเดียวกัน หมายความว่า
+    การ pivot เชิงกลยุทธ์ไม่มี agency mismatch.
+  </p>
+
+  <h3 class="subsection">2.4 ผลิตภัณฑ์หลัก และเหตุผลเชิง metaphor</h3>
+  <p>
+    องค์กรมีผลิตภัณฑ์หลักหลายตัวที่มี <strong>หลักร่วมกัน</strong> ที่น่าสังเกต — คือการ <em>abstract identifier</em>
+    ออกจากรายละเอียดทางกายภาพ. ผลิตภัณฑ์ด้าน digital document, certificate authority,
+    data center, และ location encoding ล้วนทำงานบนหลักการเดียวกัน:
+    <strong>ทำให้ตัวระบุง่ายต่อมนุษย์, ทิ้งความซับซ้อนให้ระบบ</strong>.
+    นี่คือ design philosophy ที่กลายเป็น business model.
+  </p>
+
+  <div class="callout callout-blue">
+    <span class="callout-title">เชื่อมไปยังระบบ Digital Twin</span>
+    หลักการ "abstract the identifier" ที่องค์กรใช้กับลูกค้า,
+    ผมก็ใช้กับพนักงานในระบบนี้: <strong>employee ID เป็น handle</strong>
+    ที่ map ไปยัง sprite, archetype, stats, vital signs, ICA Index, และ Credo Score —
+    ผู้ใช้ระบบไม่ต้องจำรายละเอียดเอง, ระบบจัดการให้.
+  </div>
+
+  <h3 class="subsection">2.5 การปรับทิศทางเชิงกลยุทธ์ในรอบปี 2568–2569</h3>
+  <p>
+    การ pivot ขององค์กรจากบริษัทรับเหมา IT infrastructure
+    ไปสู่ <strong>digital infrastructure platform company</strong>
+    เกิดขึ้นพร้อมกันหลายจังหวะ:
+  </p>
+  <table>
+    <thead>
+      <tr><th style="width: 22%;">จังหวะ</th><th>สาระสำคัญ</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Digital Trust Services</strong></td><td>เปิดบริการด้าน digital certificate, identity verification, และ document management</td></tr>
+      <tr><td><strong>Strategic Investment</strong></td><td>ขยาย ICT portfolio ผ่านการลงทุนในบริษัทร่วม</td></tr>
+      <tr><td><strong>Recurring Revenue Target</strong></td><td>เป้าหมาย recurring revenue ให้สูงขึ้นอย่างมีนัยสำคัญ — ลดความผันผวนของ project-based income</td></tr>
+      <tr><td><strong>Verifiable Credentials</strong></td><td>พัฒนาระบบ Verifiable Credential + Digital Document Wallet สำหรับหน่วยงานรัฐและสถาบันการศึกษา</td></tr>
+    </tbody>
+  </table>
+  <p>
+    การ pivot เหล่านี้มีลายเซ็นเดียวกัน — <strong>การออกจาก one-off project economy
+    ไปสู่ recurring digital trust infrastructure</strong>. ลูกค้าเดิม (operator, government, enterprise)
+    ยังคงอยู่, แต่ revenue model เปลี่ยน. ในแง่นี้ ระบบ Digital Twin ที่ผมพัฒนา
+    ไม่ใช่ project-based deliverable — มันคือ <em>recurring service</em> ของผม
+    ที่ทำงานสอดคล้องกับยุทธศาสตร์ที่องค์กรเลือกเอง.
+  </p>
+
+  <h3 class="subsection">2.6 Smart Solutions Portfolio (ที่บริษัทประกาศเอง)</h3>
+  <p>
+    เว็บไซต์ของ TKC ระบุ Smart Solutions อย่างน้อย 8 หมวด —
+    Smart Building, Smart Utility, Smart Farming, Smart Logistics,
+    Smart Learning, Smart Hospital, Cloud Services, Cybersecurity.
+    หมวดเหล่านี้ <strong>ทั้งหมดต้องใช้คนเก่งที่มี skill mix หลายแบบในเวลาเดียวกัน</strong> —
+    architecture, data engineering, embedded, network, security, business analyst.
+    การจะปั้น Smart Solutions ได้พร้อมกัน 8 หมวด ไม่สามารถทำได้ด้วย org chart แบบ silo เดิม —
+    ต้องการ <em>capability engine</em> ที่จัดทีมข้ามแผนกได้รวดเร็วและ data-driven.
+    ระบบ TKC Digital Twin คือ MVP ของ capability engine นั้น.
+  </p>
+
+  <div class="callout callout-green">
+    <span class="callout-title">การวางตัวของระบบในแผนยุทธศาสตร์ TKC</span>
+    ระบบนี้เป็น <strong>internal proof-of-concept</strong> ในสองมิติพร้อมกัน:
+    (1) เป็นเครื่องมือบริหารทรัพยากรบุคคลที่ใช้ภายใน;
+    (2) เป็น <em>showcase สำหรับลูกค้า</em> ว่า TKC สามารถสร้างระบบ business outcome
+    ที่ซับซ้อนได้ด้วยตัวเอง — ไม่ใช่แค่ติดตั้ง infrastructure.
+    ในระยะกลาง ระบบเดียวกันสามารถ productize เป็นบริการ HR-as-a-Service
+    ที่ขายให้บริษัทไทยขนาดกลางอื่นได้ — สอดคล้องกับเป้าหมาย recurring revenue 40% ของบริษัท.
+  </div>
+</section>
+
+<div class="page-break"></div>
+
+<!-- ═══ 03 ═══ -->
+<section class="section">
+  <div class="section-kicker">SECTION 03</div>
+  <h2 class="section-title">ความตึงเครียดเชิงโครงสร้าง 5 ประการ</h2>
+
+  <p class="lead">
+    จากการพูดคุยและการสังเกตในวันที่ 17 และ 21 เมษายน
+    ผมระบุความตึงเครียดเชิงโครงสร้าง 5 ประการที่ฝังลึกในวิธีที่ TKC ดำเนินงาน.
+    ระบบทุกชิ้นที่ผมพัฒนาออกมา ต้องตอบโจทย์ความตึงเครียดอย่างน้อยหนึ่งใน 5 นี้.
+  </p>
+
+  <h3 class="subsection">3.1 Business is Matrix, Structure is Silo</h3>
+  <p>
+    โครงการแต่ละชิ้นของ TKC ต้องการคนจากหลายแผนก —
+    technical จาก Engineering, sales จาก BD, paperwork จาก Procurement, ฯลฯ.
+    แต่โครงสร้างองค์กรล็อคทรัพยากรไว้ที่แผนก:
+    "คนนั้นเป็นคนของ DMD Tech, อยากใช้ต้องขอ".
+    ผลลัพธ์คือ project leads ต้องเล่นการเมืองเพื่อเข้าถึงคน,
+    ไม่ใช่จัดสรรตามความเหมาะสม.
+  </p>
+
+  <h3 class="subsection">3.2 Revenue is Project-Based, Knowledge Doesn't Compound</h3>
+  <p>
+    TKC เป็นบริษัท SI (System Integrator) — รายได้มาจาก project deliveries.
+    ปัญหาคือเมื่อโครงการจบ <strong>ความรู้ที่สั่งสมระหว่างทางก็จบไปด้วย</strong>:
+    ทีมแยกกัน, lessons learned ไม่ถูกบันทึก, project เดิมที่กลับมาในปีถัดไป
+    ก็ต้องเรียนใหม่ทั้งหมด. Project-based business โดยธรรมชาติ
+    ทำให้ทุนปัญญา (intellectual capital) ไม่ทบต้น.
+  </p>
+
+  <h3 class="subsection">3.3 Talent Exists but No Capability Engine</h3>
+  <p>
+    คนเก่งของ TKC มีเยอะ — แต่ไม่มีระบบที่บอกว่าพวกเขาเก่งเรื่องอะไร, ระดับไหน,
+    เปรียบเทียบกับใคร, และ <strong>มีช่องทางเติบโตอย่างไร</strong>.
+    ผลลัพธ์คือคนเก่งที่ไม่มี visibility ลาออก, คนกลาง ๆ ที่ไม่มี challenge ก็คงอยู่.
+    ไม่มี <em>capability engine</em> — ไม่มีกลไกระบบที่จัดการเรื่อง skill development
+    และ career mobility อย่างเป็นระบบ.
+  </p>
+
+  <h3 class="subsection">3.4 Speed Collides with Governance</h3>
+  <p>
+    Internal controls ที่ TKC ออกแบบไว้สำหรับการ audit
+    ไม่ใช่สำหรับการแข่งขันในตลาดที่เปลี่ยนเร็ว.
+    Procurement สำหรับ tools ใช้เวลาหลายสัปดาห์,
+    การอนุมัติทีมโครงการต้องผ่าน 4 ระดับ.
+    Governance เลยกลายเป็น brake, ไม่ใช่ guardrail.
+    ทีมเก่งที่อยากเร่งจะติดหล่ม.
+  </p>
+
+  <h3 class="subsection">3.5 Innovation is Initiative, Not Engine</h3>
+  <p>
+    เมื่อมีไอเดียดี ๆ ใน TKC, มันยังต้องอาศัยการ "push" ของคน ๆ หนึ่ง
+    ตั้งแต่ต้นจนปลายทาง — ไม่มีระบบที่จัดการให้ idea → prototype → deploy → measure → iterate
+    เกิดขึ้นโดยอัตโนมัติ. ไอเดียดีที่ไม่มีคน push ก็ตาย.
+    ไม่มี innovation engine — มีแต่ innovation initiatives.
+  </p>
+
+  <div class="callout callout-blue">
+    <span class="callout-title">ข้อสรุปของ Section นี้</span>
+    ทุก feature ที่พัฒนาในระบบ TKC Digital Twin
+    ถูกออกแบบให้ตอบความตึงเครียดอย่างน้อย 1 ใน 5 ข้อข้างต้น —
+    ไม่ใช่ feature เพื่อความสวยงาม.
+  </div>
+</section>
+
+<!-- ═══ 04 ═══ -->
+<section class="section">
+  <div class="section-kicker">SECTION 04</div>
+  <h2 class="section-title">ข้อสังเกตจากการประชุม Kickoff และ Management Review</h2>
+
+  <h3 class="subsection">4.1 Kickoff Meeting — 17 เมษายน 2569</h3>
+  <p>
+    การประชุมแรกระหว่าง depa × TKC เป็นการแนะนำตัวและวินิจฉัยเบื้องต้น.
+    ประเด็นที่จับใจความได้:
+  </p>
+  <ul>
+    <li><strong>HR overload</strong> — ทีม HR เผชิญงานเอกสารและการประเมินที่ปริมาณเกินกว่าจะตามทัน, มี unknown unknowns เต็มไปหมด</li>
+    <li><strong>Talent invisible</strong> — ผู้บริหารไม่รู้ว่าใครเก่งเรื่องอะไรนอกจากแผนกของตัวเอง</li>
+    <li><strong>No capability data</strong> — ไม่มีฐานข้อมูล skill / strength / weakness ของพนักงานที่เป็น single source</li>
+    <li><strong>Mango ERP ทำหน้าที่ payroll, ไม่ใช่ talent visibility</strong></li>
+    <li><strong>การประเมินรายปี</strong> ไม่สอดคล้องกับโครงการที่หมุนเวียนทุกไตรมาส</li>
+  </ul>
+
+  <h3 class="subsection">4.2 Management Review — 21 เมษายน 2569</h3>
+  <p>
+    การประชุมที่สองเข้มข้นกว่า — มี MD, DMD Tech, DMD CFO ร่วมประชุม.
+    การประชุมนี้นำไปสู่การอนุมัติ 6-month sandbox model
+    และยืนยัน 10 ความต้องการที่ผู้บริหารระบุชัดเจน:
+  </p>
+  <table>
+    <thead>
+      <tr><th style="width: 5%;">#</th><th>ความต้องการที่ผู้บริหารระบุ</th><th style="width: 18%;">ความเร่งด่วน</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>01</td><td>Competency / skill matrix แบบ ISO standards</td><td>Critical</td></tr>
+      <tr><td>02</td><td>Plan vs Actual FTE → P&L per project</td><td>Critical</td></tr>
+      <tr><td>03</td><td>Employee availability timeline</td><td>High</td></tr>
+      <tr><td>04</td><td>Project history pre-population (จาก Mango)</td><td>High</td></tr>
+      <tr><td>05</td><td>Input beyond skills (languages, certifications, soft skills)</td><td>Medium</td></tr>
+      <tr><td>06</td><td>Voice input (Thai STT) สำหรับผู้บริหาร</td><td>Medium</td></tr>
+      <tr><td>07</td><td>Director dashboard สำหรับจอ 72"</td><td>Medium</td></tr>
+      <tr><td>08</td><td>Director approval authority ใน matrix</td><td>Low</td></tr>
+      <tr><td>09</td><td>ERP sync (don't double-enter)</td><td>Critical</td></tr>
+      <tr><td>10</td><td>Integration กับ competency framework เดิม</td><td>High</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<div class="page-break"></div>
+
+<!-- ═══ 05 ═══ -->
+<section class="section">
+  <div class="section-kicker">SECTION 05</div>
+  <h2 class="section-title">ขอบเขตงานตาม TOR และวิธีตอบโจทย์</h2>
+
+  <p class="lead">
+    Phase 1 (17 เม.ย. — 6 พ.ค. 2569) ส่งมอบ <strong>10 deliverables</strong>
+    ที่ตอบความต้องการในข้อ 4.2 ทั้ง 10 ข้อ — บางข้อตอบ 100%, บางข้อวางรากฐานไว้แล้ว
+    รอเชื่อมต่อกับข้อมูลจริง. ตารางต่อไปนี้แสดงการ map TOR → feature → status:
+  </p>
+
+  <table>
+    <thead>
+      <tr><th style="width: 4%;">#</th><th style="width: 35%;">ความต้องการตาม TOR</th><th style="width: 35%;">Feature ที่ส่งมอบ</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>01</td><td>Competency / skill matrix</td><td>Capability Matrix screen + token-economy.ts + fit-matrix.ts</td><td><strong>ส่งมอบ</strong></td></tr>
+      <tr><td>02</td><td>Plan vs Actual FTE → P&L</td><td>Formation Engine + project_allocations + budget-bar UI</td><td><strong>ส่งมอบ</strong></td></tr>
+      <tr><td>03</td><td>Employee availability timeline</td><td>Formation screen แสดง FTE allocations + AvailabilityTimeline component</td><td><strong>ส่งมอบ</strong></td></tr>
+      <tr><td>04</td><td>Project history pre-population</td><td>Schema + import API พร้อมแล้ว, รอ Sheets feed จาก PMO</td><td>วางรากฐาน</td></tr>
+      <tr><td>05</td><td>Languages, certifications, soft skills</td><td>employee_profile_facets table + skill_assessments + Codex</td><td><strong>ส่งมอบ</strong></td></tr>
+      <tr><td>06</td><td>Voice input (Thai STT)</td><td>Reserved สำหรับ v8.6 MemPalace</td><td>กำหนดถัดไป</td></tr>
+      <tr><td>07</td><td>72" director dashboard</td><td>Cockpit screen รองรับ, รอ UX tuning ที่หน้างาน</td><td>ส่งมอบ + tune</td></tr>
+      <tr><td>08</td><td>Director approval authority</td><td>Backend lock mechanism พร้อม, นโยบายรอ DMD CFO</td><td>วางรากฐาน</td></tr>
+      <tr><td>09</td><td>ERP sync</td><td>Schema รองรับ, รอ Mango export endpoint</td><td>วางรากฐาน</td></tr>
+      <tr><td>10</td><td>Existing competency framework</td><td>competency_standards table + sortable Workshop drawer</td><td><strong>ส่งมอบ</strong></td></tr>
+    </tbody>
+  </table>
+
+  <p>
+    นอกเหนือจาก 10 ข้อข้างต้น ผมยังส่งมอบ feature เพิ่มเติม
+    <strong>นอกขอบเขต TOR</strong> ที่ผมมองว่าจำเป็นต่อการใช้งานจริง:
+    The Tome Printer (พิมพ์ประวัติพนักงาน), Daily Briefing System,
+    Obsidian Knowledge Export, Game Balance sliders, GitHub Pulse panel,
+    และ Codex (in-app operating manual). ทุกชิ้นเป็นไปตามหลัก
+    "TOR เป็นพื้น, ไม่ใช่เพดาน" — Their KPIs are my KPIs.
+  </p>
+</section>
+
+<!-- ═══ 06 ═══ -->
+<section class="section">
+  <div class="section-kicker">SECTION 06</div>
+  <h2 class="section-title">กรอบความคิด — ทำไมต้องเป็นเกม</h2>
+
+  <p class="lead">
+    HR SaaS ที่ผมและ TKC เคยพิจารณาก่อนหน้านี้
+    มีหน้าตาเหมือนกันหมด — rounded cards, gradient buttons, vague metrics.
+    ไม่มีตัวไหนที่ทำให้ผู้บริหารหรือพนักงาน "อยากเปิดใช้".
+    เกม Famicom ปี 1988 อย่าง Dragon Quest III ทำได้.
+    เพราะ metaphor มันชัดและมือมันได้สัมผัส.
+  </p>
+
+  <table>
+    <thead>
+      <tr><th style="width: 30%;">โลกจริง</th><th>ในเกม TKC Digital Twin</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>พนักงาน</td><td>Party member ที่มี stats (STR/INT/WIS/CHA/DEX/CON) และ class (archetype)</td></tr>
+      <tr><td>โครงการ</td><td>Quest ที่มี objective + budget + reward (XP)</td></tr>
+      <tr><td>การจัดทีม</td><td>Party order บน felt mat (front/mid/back)</td></tr>
+      <tr><td>Salary cap</td><td>Stack of paper money ที่ค่อย ๆ พร่องไปเมื่อ assign คน</td></tr>
+      <tr><td>การเปลี่ยนสายงาน</td><td>Class change ที่ Alltrades Abbey — stats ลดครึ่ง, spells ยังอยู่</td></tr>
+      <tr><td>Burnout</td><td>HP ลดลง</td></tr>
+      <tr><td>การลาออกจากบริษัท</td><td>The Tome — พิมพ์ปกแข็งบันทึกประวัติทั้งชีวิตการทำงาน</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="subsection">6.1 The 4C Framework — ทำไมคนถึงทำงาน</h3>
+  <p>
+    ระบบทุกหน้าจอบันทึกตัวบ่งชี้ของแรงจูงใจ 4 มิติ:
+    <strong>Compensation</strong> (เงินและความอยู่รอด — Herzberg hygiene),
+    <strong>Cause</strong> (เรื่องราวและศักดิ์ศรี — งานที่มีความหมาย),
+    <strong>Career</strong> (การเติบโตและ flow — Csikszentmihalyi),
+    <strong>Community</strong> (ความเชื่อมโยงและสุขภาพจิต).
+    หากตัวใดต่ำเกินไป ตัวอื่นจะค้ำไม่ไหว — ระบบจึงต้องดูทั้ง 4 พร้อมกัน.
+  </p>
+
+  <h3 class="subsection">6.2 Three Pillars ที่ทุก Feature ต้องตอบโจทย์</h3>
+  <ol>
+    <li><strong>HR Fun Again</strong> — จัดทีม, จำลองผลงาน, เปรียบ prediction กับ reality. Data → hypotheses ที่ดีขึ้น.</li>
+    <li><strong>God's Mode</strong> — CEO มองเห็นทั้งบริษัทเป็น digital twin. ใครทำงานกับใคร, ช่องว่างทักษะอยู่ไหน, ทีมไหนมีเคมี.</li>
+    <li><strong>Moneyball</strong> — ซื้อซูเปอร์สตาร์ทุกตำแหน่งไม่ได้, salary cap บังคับให้จัดสรรอย่างฉลาด. หา undervalued talent, สร้าง chemistry.</li>
+  </ol>
+</section>
+
+<div class="page-break"></div>
+
+<!-- ═══ 07 ═══ -->
+<section class="section">
+  <div class="section-kicker">SECTION 07</div>
+  <h2 class="section-title">สถาปัตยกรรมระบบ — The Cassette Model</h2>
+
+  <p class="lead">
+    ระบบ TKC Digital Twin ออกแบบตามแบบจำลอง <strong>cartridge ของ Famicom 1988</strong> —
+    self-contained, แยก concern ระหว่าง rules, truth, และ readable save.
+    Metaphor ไม่ใช่แค่สวย — มันบังคับให้สถาปัตยกรรมเป็นระเบียบ.
+  </p>
+
+  <table>
+    <thead>
+      <tr><th style="width: 30%;">ส่วนของ Cartridge</th><th>ในระบบนี้คืออะไร</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>ROM chip (กฎและภาพ)</td><td>Next.js 16 + React 19 + TypeScript application</td></tr>
+      <tr><td>Battery-backed save RAM (ความจริง)</td><td>Neon PostgreSQL — source of truth</td></tr>
+      <tr><td>Memory card (save ที่อ่านได้)</td><td>Google Sheets — shadow mirror, 21 tabs</td></tr>
+    </tbody>
+  </table>
+
+  <div class="arch-diagram avoid-break">
+    <div class="arch-hub">
+      <div class="arch-hub-label">NEXT.JS 16 · FLY.IO SINGAPORE</div>
+      <div class="arch-hub-sub">tkc-digital-twin.fly.dev</div>
+    </div>
+    <div class="arch-arrow">↕</div>
+    <div class="arch-spokes">
+      <div class="arch-spoke">
+        <div class="arch-spoke-label">NEON POSTGRESQL</div>
+        <div class="arch-spoke-sub">28 tables · serverless · Singapore</div>
+      </div>
+      <div class="arch-spoke">
+        <div class="arch-spoke-label">GOOGLE SHEETS</div>
+        <div class="arch-spoke-sub">21 tabs · fire-and-forget mirror</div>
+      </div>
+      <div class="arch-spoke">
+        <div class="arch-spoke-label">OBSIDIAN VAULT</div>
+        <div class="arch-spoke-sub">348 dossiers · daily briefing</div>
+      </div>
+      <div class="arch-spoke">
+        <div class="arch-spoke-label">GITHUB API</div>
+        <div class="arch-spoke-sub">commit pulse · 7d/28d</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout callout-gold">
+    <span class="callout-title">กฎสำคัญของ The Cassette</span>
+    ทุก writing API route ต้องเขียนลง Postgres <strong>และ</strong>
+    fire-and-forget mirror ลง Sheets. ไม่มีข้อยกเว้น.
+    Sheets จะค่อย ๆ มี formula ที่ HR สร้างขึ้นเอง,
+    ค่าที่ได้กลับเข้ามาเป็น input ของระบบ — round-trip linkage นี้คือ "magic".
+  </div>
+
+  <h3 class="subsection">7.1 Self-Contained Principle</h3>
+  <p>
+    ระบบนี้ทำงานได้ด้วยตัวเองโดยไม่ต้องพึ่งบริการภายนอกอื่นนอกจาก Neon และ Sheets:
+    <strong>ไม่มี analytics SaaS, ไม่มี tracking pixels, ไม่มี third-party auth provider</strong>.
+    เหมือน cartridge ที่เสียบเข้ากับเครื่องแล้วใช้งานได้.
+    การพึ่งบริการภายนอกน้อย = ความเสี่ยงต่ำ + ค่าใช้จ่ายน้อย + ความอิสระสูง.
+  </p>
+</section>
+
+<!-- ═══ 08 ═══ -->
+<section class="section">
+  <div class="section-kicker">SECTION 08</div>
+  <h2 class="section-title">Frontend — 8 หน้าจอของ Command Center</h2>
+
+  <p class="lead">
+    Command Center (เข้าได้ที่ <code>/command-center</code>)
+    เป็นหน้าจอเดียวที่มี 8 sub-screens สลับด้วยปุ่มเลข 1–8 บนคีย์บอร์ด —
+    ตามแบบฉบับ DQ3 ที่ผู้เล่นกดเลขเพื่อเลือกคำสั่ง.
+  </p>
+
+  <table>
+    <thead>
+      <tr><th style="width: 6%;">KEY</th><th style="width: 24%;">ชื่อ</th><th>หน้าที่</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>1 · C</code></td><td>Cockpit · ห้องควบคุม</td><td>KPI ภาพรวมองค์กร, Four Pillars (Belonging/Purpose/Transcendence/Story), Flow Distribution, GitHub Pulse</td></tr>
+      <tr><td><code>2 · F</code></td><td>Formation · จัดทีม</td><td>Drag-and-drop จัดทีมบน felt mat, salary cap visualization, party order (front/mid/back), chemistry score, predicted readiness</td></tr>
+      <tr><td><code>3 · N</code></td><td>Ninja · สกวอด</td><td>Squad readiness engine — candidate matching, skill-gap analysis, mission configuration</td></tr>
+      <tr><td><code>4 · M</code></td><td>Matrix · แมทริกซ์</td><td>Capability heatmap — supply (org skills) vs demand (project requirements). ระบุ gaps ก่อน failures</td></tr>
+      <tr><td><code>5 · R</code></td><td>Roster · รายชื่อฮีโร่</td><td>Wall of 348 employee cards. Warhol principle — repetition = the company</td></tr>
+      <tr><td><code>6 · S</code></td><td>Signals · สัญญาณ</td><td>Deployment history, prediction vs reality, the feedback loop</td></tr>
+      <tr><td><code>7 · L</code></td><td>Lobby · โลบบี้</td><td>Real-time check-in world พร้อม pixel characters เดินในแผนที่</td></tr>
+      <tr><td><code>8 · G</code></td><td>Ledger · บัญชีระบบ</td><td>Admin — Sheets health, Game Balance sliders, Obsidian export, audit log</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="subsection">8.1 ส่วนประกอบเสริมที่อยู่นอก 8 หน้าจอ</h3>
+  <ul>
+    <li><strong>The Tome Printer</strong> (<code>/tome/[employee_id]</code>) — พิมพ์ปกแข็งบันทึกประวัติพนักงานเมื่อครบวาระ. การจากไปที่เป็นเกียรติ ไม่ใช่ "ซองขาว"</li>
+    <li><strong>Daily Briefing</strong> — รายงานอัจฉริยะรายวันที่ generate อัตโนมัติและ push ไปที่ Obsidian Vault</li>
+    <li><strong>Codex</strong> (in-app, กดเครื่องหมาย ?) — operating manual 363 บรรทัดพร้อม searchable glossary</li>
+    <li><strong>Check-in</strong> (<code>/check-in/[employee_id]</code>) — narrative weekly entry (The Chronicler's Scroll)</li>
+  </ul>
+
+  <h3 class="subsection">8.2 Anti-Template Aesthetic</h3>
+  <p>
+    หลักการออกแบบที่บังคับใช้ทั้งโครงการ: <strong>ไม่มีมุมมน</strong> (border-radius: 0 ทั่วทั้ง app),
+    <strong>ไม่มี gradient fills</strong>, <strong>ไม่มี drop shadows</strong> (ยกเว้น focus ring),
+    <strong>ไม่มี Roboto / Inter / Poppins</strong> (fonts ที่ AI templates ใช้แล้วทำให้ดูเหมือน boilerplate).
+    ใช้ IBM Plex Sans Thai (non-looped) เป็นหลัก — เพราะ Thai readers อ่านชิ้นที่หัวเล็กแล้วรู้สึกเป็นไทยแท้,
+    หัวใหญ่ทำให้ดูเหมือนสื่อสำหรับชาวต่างชาติเรียนภาษา.
+  </p>
+</section>
+
+<div class="page-break"></div>
+
+<!-- ═══ 09 ═══ -->
+<section class="section">
+  <div class="section-kicker">SECTION 09</div>
+  <h2 class="section-title">Backend — Database, API, Game Engine</h2>
+
+  <h3 class="subsection">9.1 Database Schema (Neon PostgreSQL)</h3>
+  <p>
+    Database อยู่บน Neon (Serverless PostgreSQL, region Singapore).
+    มีทั้งหมด <strong>28 tables</strong> ครอบคลุมทุก domain ของระบบ:
+  </p>
+  <table>
+    <thead>
+      <tr><th>กลุ่ม</th><th>ตารางหลัก</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Org structure</td><td><code>divisions</code>, <code>departments</code>, <code>employees</code>, <code>employee_attributes</code></td></tr>
+      <tr><td>Skill & competency</td><td><code>skill_assessments</code>, <code>competency_standards</code>, <code>employee_profile_facets</code></td></tr>
+      <tr><td>Projects & quests</td><td><code>projects</code>, <code>quests</code>, <code>project_allocations</code>, <code>project_outcomes</code></td></tr>
+      <tr><td>Teams</td><td><code>team_compositions</code>, <code>team_snapshots</code>, <code>quest_members</code></td></tr>
+      <tr><td>People ops</td><td><code>vocation_changes</code>, <code>support_actions</code>, <code>evaluations</code></td></tr>
+      <tr><td>Behavioral signals</td><td><code>check_ins</code>, <code>attendance_log</code>, <code>interactions</code>, <code>events</code></td></tr>
+      <tr><td>Game state</td><td><code>game_adjustments</code>, <code>balance_cache</code>, <code>points_log</code></td></tr>
+      <tr><td>Resources</td><td><code>resources</code> (ทรัพยากรนอกเหนือคน — ของอะไหล่/ไลเซนส์/DC racks)</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="subsection">9.2 API Routes — มากกว่า 40 endpoints</h3>
+  <p>API ครอบคลุมทุก action ของระบบ. Route categories:</p>
+  <ul>
+    <li><strong>/api/db/*</strong> — CRUD บนฐานข้อมูลหลัก (employees, projects, teams, allocations, outcomes, dashboard payload)</li>
+    <li><strong>/api/game/*</strong> — game state (values, log, adjust, lock, project-scores)</li>
+    <li><strong>/api/sheets/*</strong> — bootstrap, restore, health-check ของ Google Sheets mirror</li>
+    <li><strong>/api/formation/*</strong> และ <strong>/api/ninja/*</strong> — บันทึกทีมและ squad</li>
+    <li><strong>/api/matrix/scenarios</strong> — capability scenarios</li>
+    <li><strong>/api/auth/*</strong> — OAuth login + callback</li>
+    <li><strong>/api/check-ins/*</strong>, <strong>/api/lobby/*</strong> — narrative input + check-in punches</li>
+    <li><strong>/api/export/obsidian</strong>, <strong>/api/briefing/today</strong> — knowledge export และ daily briefing</li>
+    <li><strong>/api/ai/*</strong>, <strong>/api/chat</strong> — LLM integration สำหรับ player briefs</li>
+    <li><strong>/api/tome/[id]/print</strong> — pdf generation สำหรับ Retirement Ritual</li>
+  </ul>
+
+  <h3 class="subsection">9.3 Game Engine Modules</h3>
+  <table>
+    <thead>
+      <tr><th style="width: 26%;">Module</th><th>หน้าที่</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>snap-engine.ts</code></td><td>Team scoring, skill matching, snap rules</td></tr>
+      <tr><td><code>game-loop.ts</code></td><td>Budget, salary cap, 10x viability rule, Moneyball verdicts</td></tr>
+      <tr><td><code>team-chemistry.ts</code></td><td>4-component chemistry (coverage, diversity, synergy, cohesion)</td></tr>
+      <tr><td><code>fit-matrix.ts</code></td><td>Skill dimensions × archetype fit matrix</td></tr>
+      <tr><td><code>talent-engine.ts</code></td><td>Flight risk, pair compatibility, support needs</td></tr>
+      <tr><td><code>token-economy.ts</code></td><td>Salary cap, point economy, Archetype enum</td></tr>
+      <tr><td><code>baseline-engine.ts</code></td><td>Competency baseline scoring</td></tr>
+      <tr><td><code>balance-cache.ts</code></td><td>Game balance state cache</td></tr>
+      <tr><td><code>sentiment-engine.ts</code></td><td>Morale / sentiment tracking from check-ins</td></tr>
+      <tr><td><code>sheets-mirror.ts</code></td><td>Fire-and-forget Sheets sync (21 tabs)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ═══ 10 ═══ -->
+<section class="section">
+  <div class="section-kicker">SECTION 10</div>
+  <h2 class="section-title">Game Mechanics — สูตรและกลไก</h2>
+
+  <h3 class="subsection">10.1 ICA Index — Fantasy Football Scoring</h3>
+  <p>
+    คะแนน contribution ของพนักงานวัดด้วยสูตร Fantasy Football inspired:
+  </p>
+  <div class="callout callout-blue">
+    <strong>ICA = Impact (40%) + Collaboration (30%) + Advancement (30%)</strong><br>
+    <span class="t-small">Impact = ผลลัพธ์ที่จับต้องได้, Collaboration = peer signals, Advancement = skill growth velocity</span>
+  </div>
+
+  <h3 class="subsection">10.2 Credo Score — 4-Pillar Wellbeing</h3>
+  <p>
+    แรงบันดาลใจจาก Ritz-Carlton's Credo. คะแนน 4 มิติ ๆ ละ 25%:
+    <strong>Belonging</strong> (รู้สึกเป็นส่วนหนึ่ง),
+    <strong>Purpose</strong> (เข้าใจเหตุผลของงาน),
+    <strong>Transcendence</strong> (รู้สึกว่างานสร้างคุณค่าใหญ่กว่าตัวเอง),
+    <strong>Story</strong> (รู้สึกมีเรื่องราวที่อยากเล่า).
+    Credo Score เป็น compass ไม่ใช่ score — บอกแนวโน้ม ไม่ตัดสิน.
+  </p>
+
+  <h3 class="subsection">10.3 Vital Signs — Fleet Management Metaphor</h3>
+  <p>
+    พนักงานทุกคนมี HP / MP / XP / Stamina ที่ tracked over time:
+    HP สำหรับสุขภาพจิต (ลดลงเมื่อ workload หนักเกิน),
+    MP สำหรับพลังงานเชิงสร้างสรรค์ (รีเซ็ตเมื่อพักผ่อน),
+    XP สำหรับการเติบโต (เพิ่มขึ้นจาก quest completion + streak),
+    Stamina สำหรับ resilience (วัดจาก consistent delivery).
+  </p>
+
+  <h3 class="subsection">10.4 Budget Cap — The Moneyball Rule</h3>
+  <div class="callout callout-gold">
+    <strong>Project Budget ÷ 10 = Monthly Salary Cap</strong><br>
+    โครงการ 2 ล้านบาท → จัดสรรเงินเดือนรวมได้ไม่เกิน 200,000 บาท/เดือน.
+    <strong>10x Viability Rule:</strong> ถ้าจ้างคนเดียวเกิน 10% ของ budget,
+    คนนั้น block การจัดทีม.
+  </div>
+
+  <h3 class="subsection">10.5 Readiness Formula (v3.1+)</h3>
+  <p style="font-family: 'JetBrains Mono', monospace; background: #FAFAFA; padding: 14pt 16pt; font-size: 11pt; line-height: 1.6; border-left: 3px solid #CCCCCC; color: #222222;">
+    readiness = coverage × 0.40 + quality × 0.25 +<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;party_split × 0.05 + chemistry × 0.15 + morale × 0.15
+  </p>
+  <p>
+    <code>party_split_pct</code> คือ DQ3 EXP-split — slot ที่ overstaffed
+    จะ dilute per-head contribution. ระบบจึงลงโทษการ "hoarding" คนเก่งโดยไม่ตั้งใจ.
+  </p>
+
+  <h3 class="subsection">10.6 Streak System — Variable Ratio Reinforcement</h3>
+  <table>
+    <thead>
+      <tr><th>Day</th><th>Reward</th><th>หมายเหตุ</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1–6</td><td>+5 XP/day</td><td>พื้นฐาน</td></tr>
+      <tr><td>7</td><td>+25 XP</td><td>Weekly milestone</td></tr>
+      <tr><td>14</td><td>+50 XP</td><td>Badge</td></tr>
+      <tr><td>30</td><td>+100 XP</td><td>Monthly milestone</td></tr>
+      <tr><td>90</td><td>+250 XP</td><td>Quarter</td></tr>
+      <tr><td>365</td><td>+1000 XP</td><td>Year — permanent achievement</td></tr>
+      <tr><td>random 1-in-7</td><td>×3 to ×5</td><td>Variable Ratio bonus</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<div class="page-break"></div>
+
+<!-- ═══ 11 ═══ -->
+<section class="section">
+  <div class="section-kicker">SECTION 11</div>
+  <h2 class="section-title">The Magic — Google Sheets ในฐานะ Memory Card</h2>
+
+  <p class="lead">
+    Google Sheets ในระบบนี้ <strong>ไม่ใช่ backup</strong>, ไม่ใช่ export tool.
+    มันคือ <em>memory card</em> ของ cassette —
+    ที่เก็บความจริงในรูปแบบที่มนุษย์อ่านและเขียนได้.
+    HR เปิด Sheet, เห็นทุกอย่าง, แก้ cell, ใส่สูตร, ทำ pivot —
+    ระบบโค้งเข้าหาผู้ใช้, ไม่ใช่ผู้ใช้โค้งเข้าหาระบบ.
+  </p>
+
+  <div class="pullquote">
+    "ROM = Next.js · Battery save = Postgres · Memory card = Google Sheets."
+    <span class="pullquote-attr">— กฎข้อ 1 ของ The Cassette Architecture</span>
+  </div>
+
+  <h3 class="subsection">11.1 21 แท็บที่ทำงานอยู่</h3>
+  <table>
+    <thead>
+      <tr><th style="width: 8%;">#</th><th style="width: 28%;">Tab</th><th>ข้อมูลใน Tab</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>01</td><td>Players</td><td>พนักงาน 348 คน · stats / archetype / salary / dept</td></tr>
+      <tr><td>02</td><td>Projects</td><td>โครงการ · code / budget / slots / priority</td></tr>
+      <tr><td>03</td><td>Teams</td><td>ทีมที่ save แล้ว · chemistry / fit / overall score</td></tr>
+      <tr><td>04</td><td>CheckIns</td><td>Weekly narrative entries (The Chronicler's Scroll)</td></tr>
+      <tr><td>05</td><td>Events</td><td>Game event log (level-up, vocation change, awards)</td></tr>
+      <tr><td>06</td><td>League</td><td>Director leaderboard scaffolding</td></tr>
+      <tr><td>07</td><td>DeptHeat</td><td>Department-level capability heatmap</td></tr>
+      <tr><td>08</td><td>AttrHistory</td><td>Time-series ของการเปลี่ยน stat ของพนักงาน</td></tr>
+      <tr><td>09</td><td>NinjaSquads</td><td>Saved squad readiness configs</td></tr>
+      <tr><td>10</td><td>SquadEvents</td><td>Squad mission history</td></tr>
+      <tr><td>11</td><td>SkillCatalog</td><td>Master skill taxonomy</td></tr>
+      <tr><td>12</td><td>InterviewLog</td><td>Hiring + interview notes</td></tr>
+      <tr><td>13</td><td>MatrixScenarios</td><td>Saved capability-matrix scenarios</td></tr>
+      <tr><td>14</td><td>Formation</td><td>Project allocations · encoded <code>empid@dim@order</code></td></tr>
+      <tr><td>15</td><td>FormationEvents</td><td>Formation change audit log</td></tr>
+      <tr><td>16</td><td>Resources</td><td>Non-human capacity (DC racks, GPUs, licences)</td></tr>
+      <tr><td>17</td><td>Attendance</td><td>Daily check-in lobby punches</td></tr>
+      <tr><td>18</td><td>Interactions</td><td>Cross-employee social-graph signals</td></tr>
+      <tr><td>19</td><td>Memos</td><td>Director memos / commentary</td></tr>
+      <tr><td>20</td><td>VocationChanges</td><td>Alltrades Abbey reskilling ledger</td></tr>
+      <tr><td>21</td><td>GameAdjustments</td><td>Game Balance slider history (จาก Ledger)</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="subsection">11.2 Fire-and-Forget Architecture</h3>
+  <p>
+    ทุก writing API route เขียนลง Postgres ก่อน, แล้ว <strong>ยิง mirror</strong> ลง Sheets
+    แบบ fire-and-forget — ถ้า Sheets ล่ม Postgres ก็ยังเขียนสำเร็จ.
+    Silent no-op rule: ถ้าไม่มี credentials ระบบจะเงียบ ไม่ throw error.
+    Postgres = truth. ถ้า Sheets และ Postgres ขัดแย้งกัน, Postgres ชนะ.
+  </p>
+
+  <div class="callout callout-green">
+    <span class="callout-title">Status ปัจจุบัน (ณ 6 พ.ค. 2569)</span>
+    <code>GET /api/sheets/health</code> → <strong>ok: true · enabled: true ·
+    21 tabs · 0 missing</strong>. Service account
+    <code>tkc-dashboard-sheets@tkcx-494310.iam.gserviceaccount.com</code>
+    ทำงานปกติทั้งบน local และ production.
+  </div>
+</section>
+
+<!-- ═══ 12 ═══ -->
+<section class="section">
+  <div class="section-kicker">SECTION 12</div>
+  <h2 class="section-title">ข้อมูลและตัวเลขปัจจุบัน</h2>
+
+  <div class="stat-strip">
+    <div class="stat-cell"><div class="stat-num">348</div><div class="stat-label">HEROES</div></div>
+    <div class="stat-cell"><div class="stat-num">8</div><div class="stat-label">PROJECTS</div></div>
+    <div class="stat-cell"><div class="stat-num">28</div><div class="stat-label">DB TABLES</div></div>
+    <div class="stat-cell"><div class="stat-num">21</div><div class="stat-label">SHEET TABS</div></div>
+  </div>
+
+  <div class="stat-strip">
+    <div class="stat-cell"><div class="stat-num">7</div><div class="stat-label">ARCHETYPES</div></div>
+    <div class="stat-cell"><div class="stat-num">6</div><div class="stat-label">ATTR AXES</div></div>
+    <div class="stat-cell"><div class="stat-num">4</div><div class="stat-label">SKILL DIMS</div></div>
+    <div class="stat-cell"><div class="stat-num">5</div><div class="stat-label">SLOTS</div></div>
+  </div>
+
+  <h3 class="subsection">12.1 Archetypes (DQ3 Septet)</h3>
+  <p>
+    7 archetypes ใช้ canon ของ Famicom DQ3 ปี 1988 (ไม่ใช่ remake):
+    <strong>Hero</strong> (captain, gold), <strong>Soldier</strong> (ops, green),
+    <strong>Wizard</strong> (tech, blue), <strong>Pilgrim</strong> (scout, purple),
+    <strong>Merchant</strong> (sales, red), <strong>Fighter</strong> (junior IC, orange),
+    <strong>Goof-Off</strong> (wildcard, pink). แต่ละคนได้ archetype จาก
+    department หรือสามารถเปลี่ยนได้ที่ Alltrades Abbey.
+  </p>
+
+  <h3 class="subsection">12.2 Skill Dimensions และ Personality Modifiers</h3>
+  <p>
+    <strong>4 Skill Dimensions:</strong> Technical, Soft Skill, Outsource Management,
+    In-House Execution. <strong>3 Personality Modifiers:</strong> Resilience,
+    Authenticity, Adaptability. ทั้งหมดวัดด้วย attribute axes 6 แกน
+    ที่อ้างอิงจาก D&D / RPG canon (STR/INT/WIS/CHA/DEX/CON).
+  </p>
+
+  <h3 class="subsection">12.3 Sprite System</h3>
+  <p>
+    ตัวอย่าง sprite ใช้ HTML5 Canvas render แบบ procedural.
+    32×32 pixel · dual silhouette (m/f) per archetype · 6 palette slots
+    (hat / shirt / pants / shoes / gloves / weapon) — ละ 8 colours
+    รวมประมาณ 260,000 combinations ที่ deterministic จาก employee ID
+    ผ่าน FNV-1a hash. พนักงานคนเดียวกันจะได้ sprite เดิมทุกครั้งที่ render.
+  </p>
+</section>
+
+<div class="page-break"></div>
+
+<!-- ═══ 13 ═══ -->
+<section class="section">
+  <div class="section-kicker">SECTION 13</div>
+  <h2 class="section-title">ขั้นถัดไป — Roadmap</h2>
+
+  <p class="lead">
+    Engine ทำงานสมบูรณ์แล้ว — สร้างจาก 1990s Famicom DQ3 console.
+    ขั้นถัดไปคือเปลี่ยน mock data → real data:
+    ผมจะเข้าไปทำงานกับคนจริงที่ TKC, feed ข้อมูลให้ Claude Code,
+    แล้วระบบจะดีขึ้นเรื่อย ๆ ทุก installment.
+  </p>
+
+  <table>
+    <thead>
+      <tr><th style="width: 12%;">Version</th><th style="width: 22%;">Codename</th><th>เนื้อหา</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>v8.6</code></td><td>MEMPALACE</td><td>LLM-powered relationship memory — local-first AI ที่เรียนรู้ว่าใครเข้าขากับใคร</td></tr>
+      <tr><td><code>v8.7</code></td><td>VOICE CHECK-IN</td><td>Thai STT daily input — ผู้บริหารพูด, engine ถอดความและจัดเรียง</td></tr>
+      <tr><td><code>v8.8</code></td><td>MANGO ERP SYNC</td><td>End the double-entry — pull project history จาก Mango ผ่าน Sheets + Apps Script</td></tr>
+      <tr><td><code>v9.x</code></td><td>LOBBY GRAPH</td><td>Relationship graph จาก mock + interactions data ใน Lobby screen</td></tr>
+      <tr><td><code>v10.x</code></td><td>TWO-WAY RATINGS</td><td>Uber-style ratings ระหว่าง employee ↔ project lead</td></tr>
+      <tr><td><code>v11.x</code></td><td>WEEKLY GANTT</td><td>Auto-nudge สำหรับ project leads ที่ Gantt ไม่ตรงกับความเป็นจริง</td></tr>
+    </tbody>
+  </table>
+
+  <p>
+    Roadmap นี้ <strong>ไม่ใช่ commitment</strong> — มันเป็น strategic intent
+    ที่จะถูก re-prioritize ทุกครั้งที่ผู้บริหารคนหนึ่งใช้ระบบจริงและบอก wishlist.
+    ระบบโต้ขึ้นเข้าหาบริษัท ไม่ใช่บริษัทโต้ขึ้นเข้าหาระบบ.
+  </p>
+</section>
+
+<!-- ═══ 14 — HR FAQ ═══ -->
+<section class="section">
+  <div class="section-kicker">SECTION 14 · HR FAQ</div>
+  <h2 class="section-title">คำถามที่ HR และผู้บริหารควรถาม</h2>
+
+  <p class="lead">
+    ส่วนนี้ผมรวบรวมคำถามที่คาดว่าทีม HR, ผู้บริหารระดับสูง,
+    และคณะกรรมการตรวจสอบจะถามเมื่อเห็นระบบนี้เป็นครั้งแรก —
+    พร้อมคำตอบที่ตรงไปตรงมา. คำถามถูกจัดเรียงเป็น 5 หมวด
+    เพื่อให้อ่านได้ง่ายและกลับมาอ้างอิงได้.
+    หลายข้อจะถูกตอบลึกขึ้นใน Phase 2 เมื่อมีข้อมูลการใช้งานจริง.
+  </p>
+
+  <h3 class="subsection">14.1 หมวด A — การประเมินผลและค่าตอบแทน</h3>
+
+  <div class="callout callout-blue avoid-break">
+    <strong>Q1. ระบบนี้มาแทนระบบประเมินผลรายปีของ TKC ไหม?</strong><br>
+    <strong>A.</strong> ไม่. ระบบประเมินรายปีตามนโยบายบริษัทยังคงอยู่. ระบบนี้
+    <em>feed signal เข้าให้การประเมินคมขึ้น</em> — ICA Index, Credo Score,
+    Vital Signs, และ check-in narrative ทำหน้าที่เป็น context ให้ผู้ประเมิน,
+    ไม่ใช่แทนการประเมิน.
+  </div>
+
+  <div class="callout callout-blue avoid-break">
+    <strong>Q2. คะแนน ICA จะมีผลต่อโบนัส, การปรับเงินเดือน, หรือการเลื่อนตำแหน่งหรือไม่?</strong><br>
+    <strong>A.</strong> <em>ไม่ในเฟสแรก.</em> ICA เป็น <strong>compass ไม่ใช่ judgment</strong>.
+    ใช้เพื่อให้พนักงานเห็นแนวโน้มของตัวเอง และให้ผู้บังคับบัญชาเห็นจุดแข็ง/จุดเติบโต
+    ก่อนการประเมินทางการจะมาถึง. การ link คะแนนกับเงินตัดสินใจของ
+    คณะกรรมการ HR + DMD CFO + DMD Tech ในเฟส 2 หากมีข้อมูลพอ.
+  </div>
+
+  <div class="callout callout-blue avoid-break">
+    <strong>Q3. Salary Cap = Project Budget ÷ 10 จะกระทบเงินเดือนจริงของพนักงานไหม?</strong><br>
+    <strong>A.</strong> <em>ไม่.</em> Salary Cap เป็น <strong>กลไกการจัดสรรงบโครงการ</strong> —
+    ใช้กำหนดว่าโครงการขนาด ฿X ล้านบาท ควรใส่เงินค่าคนเดือนละเท่าไร
+    เพื่อให้ ROI สมเหตุสมผล. เงินเดือนที่พนักงานได้จริงตามสัญญาจ้าง
+    ไม่เปลี่ยนตามกฎนี้. กฎนี้กระทบเฉพาะการ assign คนเข้า project
+    (ใครเหมาะ, จำนวน FTE เท่าไร, ใครต้อง share กับโครงการอื่น).
+  </div>
+
+  <div class="callout callout-blue avoid-break">
+    <strong>Q4. ใครจะเห็นคะแนนของพนักงานคนหนึ่ง?</strong><br>
+    <strong>A.</strong> ลำดับการเห็นเป็นดังนี้: (1) <strong>เจ้าตัวเห็นก่อนเสมอ</strong> ผ่านหน้า self-view
+    ที่ /command-center; (2) ผู้บังคับบัญชาตรงเห็น team-level view ของลูกทีม;
+    (3) ผู้บริหารระดับ DMD ขึ้นไปเห็น org-level aggregate (department averages,
+    capability heatmap) — ไม่เห็นรายบุคคลโดย default.
+    การเปิด rights ให้ระดับใดเป็น role-based (RBAC) ที่ HR + DMD เป็นเจ้าของนโยบาย.
+  </div>
+
+  <h3 class="subsection">14.2 หมวด B — ความเป็นส่วนตัวและกฎหมาย (PDPA)</h3>
+
+  <div class="callout callout-blue avoid-break">
+    <strong>Q5. PDPA Thailand ครอบคลุมอย่างไร?</strong><br>
+    <strong>A.</strong> ระบบออกแบบให้สอดคล้อง PDPA จาก Day 1: (1) Consent flow
+    ก่อนพนักงานเข้าระบบครั้งแรก; (2) Right to Access — เจ้าของข้อมูล download ได้
+    ผ่าน /api/export/me; (3) Right to Erasure — ลบข้อมูล personal ได้
+    ผ่าน HR ติดต่อ data controller; (4) Data Minimization —
+    ระบบเก็บเฉพาะข้อมูลที่ใช้กับฟังก์ชันจริง.
+    Data Processing Agreement ระหว่าง TKC และผู้ให้บริการ (Neon, Google) มีในที่.
+  </div>
+
+  <div class="callout callout-blue avoid-break">
+    <strong>Q6. ข้อมูลพนักงานถูกเก็บไว้ที่ไหน? ข้ามประเทศไปไหม?</strong><br>
+    <strong>A.</strong> Neon Postgres อยู่ที่ <strong>Singapore region</strong>;
+    Google Sheets เป็น Workspace ของ TKC. ทั้งสอง provider ส่ง DPA ตาม PDPA
+    cross-border data transfer (PDPA มาตรา 28). มี backup encrypted อัตโนมัติ.
+    ระบบไม่มี analytics SaaS, ไม่มี tracking pixel — ลด third-party data exposure.
+  </div>
+
+  <div class="callout callout-blue avoid-break">
+    <strong>Q7. เมื่อพนักงานออกจากบริษัท ข้อมูลเขาจะไปไหน?</strong><br>
+    <strong>A.</strong> ตามนโยบาย retention ที่ TKC HR กำหนด (เสนอเริ่มต้น 7 ปี
+    ตาม Labour Protection Act). ก่อนข้อมูลจะถูก archive,
+    <strong>The Tome Printer</strong> พิมพ์ปกแข็งบันทึกประวัติทั้งชีวิตการทำงาน
+    มอบให้พนักงาน — เป็น "การจากไปที่เป็นเกียรติ" ไม่ใช่ "ซองขาว".
+    หากเจ้าตัวขอใช้สิทธิ Right to Erasure ก่อน 7 ปี ระบบจะเคารพและลบทันที
+    (ยกเว้นข้อมูลที่ต้องเก็บตามกฎหมายภาษี/แรงงาน).
+  </div>
+
+  <div class="callout callout-blue avoid-break">
+    <strong>Q8. Lobby check-in (เห็นใครเข้าออฟฟิศ) ละเมิดความเป็นส่วนตัวไหม?</strong><br>
+    <strong>A.</strong> Lobby check-in เป็น <strong>opt-in</strong> — พนักงานเลือกแสดงตัว
+    ในแผนที่หรือไม่. ผู้บริหารเห็น <em>aggregate count</em> (กี่คนที่ออฟฟิศ, กี่คน WFH)
+    ไม่ได้เห็นรายบุคคลโดย default. ฟีเจอร์นี้ออกแบบมาเป็น <em>ambient awareness</em>
+    เพื่อสร้างความรู้สึกของชุมชน — ไม่ใช่ surveillance tool.
+    ใครไม่อยากเช็กอินก็ไม่ต้อง, ระบบไม่ลงโทษ.
+  </div>
+
+  <h3 class="subsection">14.3 หมวด C — สุขภาพจิตและความเป็นอยู่ที่ดี</h3>
+
+  <div class="callout callout-blue avoid-break">
+    <strong>Q9. HP/MP เหมือนเป็นการ gamify burnout — ไม่อันตรายเหรอ?</strong><br>
+    <strong>A.</strong> HP/MP ออกแบบเป็น <strong>early warning system</strong>
+    ที่ <em>เจ้าตัวเห็นก่อนเสมอ</em>. ค่าต่ำลง = ระบบเตือนให้คุยกับผู้บังคับบัญชา
+    หรือทีม HR — ไม่ใช่ public ranking. ค่าเหล่านี้ <strong>ไม่ปรากฏใน leaderboard
+    หรือเปรียบเทียบระหว่างพนักงาน</strong>. การออกแบบอ้างอิง
+    JD-R Model (Demerouti et al.) ที่บอกว่า burnout เกิดเมื่อ demand > resources;
+    HP track สมดุลนั้น เพื่อ intervene ก่อนสาย.
+  </div>
+
+  <div class="callout callout-blue avoid-break">
+    <strong>Q10. ระบบจะ shame คนที่ผลงานไม่ดีหรือไม่?</strong><br>
+    <strong>A.</strong> <em>ไม่.</em> นโยบาย hard-coded ในระบบ:
+    (1) <strong>ไม่มี bottom-ranking</strong> — ไม่มีหน้าที่บอก "10 คนล่าง";
+    (2) <strong>ไม่มี leaderboard ของ underperformers</strong> — มีแต่ leaderboard ของ achievement;
+    (3) Activity feed แสดง <strong>positive signal เท่านั้น</strong>
+    (level-up, vocation change, project win); (4) คะแนนต่ำเป็น "where you could grow"
+    ไม่ใช่ "where you're failing". หลักการ <em>compass not judgment</em>
+    มาจาก Self-Determination Theory (Deci & Ryan) — autonomy, competence, relatedness.
+  </div>
+
+  <div class="callout callout-blue avoid-break">
+    <strong>Q11. วัฒนธรรมไทย/วัฒนธรรม TKC จะรับ "เกม" ในที่ทำงานไหม?</strong><br>
+    <strong>A.</strong> นี่คือเหตุผลของ <strong>6-month sandbox model</strong> —
+    เราทดสอบกับคนจริงในองค์กร, ปรับตามฟีดแบ็กรายสัปดาห์, ไม่ประกาศ rollout ใหญ่จนกว่าจะแน่ใจ.
+    การเลือก <em>Dragon Quest III ปี 1988</em> เป็น metaphor ก็ตั้งใจ —
+    เพราะเป็นเกมที่คน Gen X/Y ไทยจำนวนมากเคยเล่น (Famicom เข้าไทยช่วงปลาย 80s),
+    ไม่ใช่เกมร่วมสมัยที่อาจดูเด็กเกินไป. การใช้ pixel art และ retro UI
+    ส่งสัญญาณ <em>nostalgia</em>, ไม่ใช่ <em>frivolity</em>. หากในระหว่าง sandbox
+    พบว่า metaphor ไม่ทำงาน เราจะปรับให้ neutral มากขึ้นได้.
+  </div>
+
+  <div class="callout callout-blue avoid-break">
+    <strong>Q12. ถ้าพนักงานคนหนึ่งเครียดเพราะ "ดูคะแนนตัวเองตลอดเวลา" จะทำยังไง?</strong><br>
+    <strong>A.</strong> ระบบมี mechanism ป้องกันสามชั้น: (1) <strong>คะแนนเปลี่ยน
+    เป็นรอบ ไม่ใช่ real-time per action</strong> — ลด tic-by-tic anxiety;
+    (2) <strong>เจ้าตัวสามารถปิดการแสดงคะแนนของตัวเองได้</strong> — ดู narrative ผลงาน
+    แทนตัวเลขล้วน; (3) <strong>HR ทีมมี dashboard ดู vital signs ระดับ org</strong>
+    ถ้าเห็น HP เฉลี่ยลดต่อเนื่อง เป็น signal ให้ intervention ที่ระดับนโยบาย, ไม่ใช่ระดับบุคคล.
+  </div>
+
+  <h3 class="subsection">14.4 หมวด D — การนำมาใช้งานจริง</h3>
+
+  <div class="callout callout-blue avoid-break">
+    <strong>Q13. ใครต้องเป็นคนอัพเดตข้อมูล? ทีม HR ที่งานล้นมืออยู่แล้วจะหาเวลาที่ไหน?</strong><br>
+    <strong>A.</strong> หลักการคือ <strong>"data goes where data lives"</strong> —
+    ไม่บังคับให้ HR คีย์ทุกอย่าง: (1) <strong>Mango ERP sync (v8.8)</strong>
+    จะดึง project history และ payroll structure อัตโนมัติ;
+    (2) <strong>Director self-update</strong> — แต่ละ DMD แก้ project allocation ของตัวเองได้โดยตรง
+    บน /command-center; (3) <strong>Peer signals</strong> ที่ระบบเก็บจาก check-ins,
+    interactions, attendance ก็ feed เข้าคะแนนเอง โดยไม่ต้องคีย์.
+    HR ทำหน้าที่ <em>policy owner</em> และ <em>exception handler</em>, ไม่ใช่ data clerk.
+  </div>
+
+  <div class="callout callout-blue avoid-break">
+    <strong>Q14. ถ้าผู้บังคับบัญชาคนหนึ่งไม่อัพเดตข้อมูลทีมเลย ระบบจะรู้ไหม?</strong><br>
+    <strong>A.</strong> ระบบจะ <em>เงียบ</em> สำหรับฝั่ง management input,
+    แต่ <em>ไม่เงียบ</em>: (1) signals จาก peer interactions
+    (interactions table) จะ feed เข้าคะแนนของลูกทีมตามปกติ;
+    (2) Sheets tab "FormationEvents" บันทึก audit log ทุก allocation change —
+    DMD CFO เห็นว่าใครอัพเดตหรือไม่อัพเดต;
+    (3) Daily Briefing System จะรายงานให้ MD เห็นว่ามี director คนใดที่ project allocation
+    "frozen" นานเกินไป — ระบบ nudge ผู้บังคับบัญชาเอง.
+  </div>
+
+  <div class="callout callout-blue avoid-break">
+    <strong>Q15. การฝึกอบรมพนักงานให้ใช้ระบบใช้เวลานานแค่ไหน?</strong><br>
+    <strong>A.</strong> เป้าหมายคือ <strong>"zero training" สำหรับ end user</strong>:
+    (1) <strong>Codex</strong> เป็น in-app operating manual กดเครื่องหมาย ?
+    เปิดอ่านได้ทันที (363 บรรทัด searchable);
+    (2) ผู้บริหารระดับ DMD จะมี onboarding session 30 นาที กับผมในออฟฟิศ;
+    (3) ทีม HR จะมี champion ที่เข้าใจระบบลึก 1–2 คน ทำหน้าที่ relay ให้แผนกอื่น.
+    ปรัชญาการออกแบบคือ <em>"Don't make me think"</em> (Steve Krug) —
+    ถ้าต้อง train เกิน 30 นาที = ระบบมีปัญหา, ไม่ใช่ user มีปัญหา.
+  </div>
+
+  <div class="callout callout-blue avoid-break">
+    <strong>Q16. เมื่อไหร่ที่เราจะรู้ว่าระบบนี้ "ทำงาน" หรือไม่?</strong><br>
+    <strong>A.</strong> Success metric ที่ตกลงกันใน Management Review (21 เม.ย.):
+    (1) <strong>HR ใช้เวลาในการจัดทีมโครงการลดลงอย่างน้อย 30%</strong>
+    (วัดจากเวลาที่ใช้ระหว่าง project kickoff ถึง team confirmed);
+    (2) <strong>การเปลี่ยนทีมกลางทาง (re-staffing) ลดลง</strong>
+    (วัดจาก project_allocations history);
+    (3) <strong>คะแนน Credo เฉลี่ยทั้งบริษัทเพิ่มขึ้น</strong> ใน 6 เดือน;
+    (4) <strong>การลาออกของคนระดับ Senior+ ลดลง</strong>.
+    หาก 3 จาก 4 ตัวชี้ดีขึ้นใน 6 เดือน ถือว่า sandbox ผ่าน.
+  </div>
+
+  <div class="callout callout-blue avoid-break">
+    <strong>Q17. เมื่อไหร่ที่เราควร "ฆ่า" ระบบนี้?</strong><br>
+    <strong>A.</strong> Kill criteria ตรงกันข้าม: (1) ถ้าหลัง 3 เดือนยังไม่มี DMD คนใด
+    เข้าใช้ระบบเองโดยไม่ต้องเตือน — แสดงว่า value proposition ไม่ตรงกับ user;
+    (2) ถ้าฝ่าย HR รายงานว่าระบบสร้าง <em>เพิ่ม</em> work load (ไม่ลด);
+    (3) ถ้ามี incident ด้าน privacy ที่ทำลาย trust;
+    (4) ถ้า uptime ต่ำกว่า 99% เป็นเวลา 2 สัปดาห์ติด.
+    ผมยินดี <strong>หยุดและคืนข้อมูลให้ TKC</strong> ในรูปแบบ portable
+    (Postgres dump + Sheets export + Obsidian markdown) ภายใน 7 วันหลังตัดสิน.
+  </div>
+
+  <h3 class="subsection">14.5 หมวด E — กรรมสิทธิ์, การกำกับดูแล, ความเสี่ยง</h3>
+
+  <div class="callout callout-blue avoid-break">
+    <strong>Q18. กรรมสิทธิ์ของระบบ, ของ source code, และของข้อมูลเป็นของใคร?</strong><br>
+    <strong>A.</strong> (1) <strong>ข้อมูลเป็นของ TKC 100%</strong> —
+    Postgres database, Google Sheets, Obsidian Vault ทั้งหมดอยู่ใน infrastructure ของ TKC
+    (Sheets อยู่ใน Workspace ของ TKC; Postgres bill ภายใต้ TKC account ใน Phase 2);
+    (2) <strong>Source code</strong> เริ่มต้นเป็น repo ส่วนตัวของผู้รับจ้าง,
+    มีข้อตกลง license/transfer ใน Phase 2 ตามที่ TKC ตัดสิน;
+    (3) <strong>Game engine modules</strong> (snap-engine, game-loop, talent-engine)
+    เป็น proprietary IP ของผู้รับจ้าง แต่ TKC ใช้ได้ unlimited ตลอดอายุสัญญา.
+    รายละเอียดทั้งหมดจะถูกเขียนเป็น MSA + SOW อย่างเป็นทางการก่อน Phase 2 start.
+  </div>
+
+  <div class="callout callout-blue avoid-break">
+    <strong>Q19. มี audit trail ทุกการเปลี่ยนแปลงไหม?</strong><br>
+    <strong>A.</strong> มี. ทุก state-change เขียน 2 ที่เสมอ:
+    (1) Postgres timestamp + actor; (2) Google Sheets event tab —
+    <strong>FormationEvents</strong> (allocation changes),
+    <strong>SquadEvents</strong> (squad missions),
+    <strong>VocationChanges</strong> (Alltrades Abbey reskilling),
+    <strong>GameAdjustments</strong> (game balance slider history),
+    <strong>Events</strong> (level-up / awards). ผู้ตรวจสอบของบริษัทเปิด Sheets
+    อ่าน timeline ได้โดยไม่ต้องผ่านผม.
+  </div>
+
+  <div class="callout callout-blue avoid-break">
+    <strong>Q20. ความเสี่ยงด้านการพึ่งพาที่ปรึกษาคนเดียว (key-person risk) จะถูกจัดการยังไง?</strong><br>
+    <strong>A.</strong> รับทราบ. การจัดการคือ: (1) <strong>Code, schema, และเอกสาร เป็น public visible</strong>
+    ใน showcase repo; (2) <strong>Self-contained architecture</strong> (§7.1) ตั้งใจให้ TKC
+    handover ให้ทีมในบริษัทหรือ vendor อื่นได้ในเวลา 2–4 สัปดาห์ —
+    ไม่มี black box; (3) <strong>The Cassette philosophy</strong>
+    ที่ทุกอย่างถูก mirror ลง Sheets ที่อ่านได้ — แม้ระบบ Next.js ดับไป,
+    ข้อมูลทั้งหมดยังเข้าถึงได้ผ่าน spreadsheet; (4) ใน Phase 2 ผมจะสร้าง runbook
+    + handover guide ที่อ่านได้ภายใน 1 วันโดยวิศวกรไทยที่ไม่เคยรู้จักโครงการ.
+  </div>
+
+  <div class="callout callout-gold avoid-break">
+    <span class="callout-title">หมายเหตุท้ายหมวด</span>
+    20 คำถามข้างต้นเป็นเพียงจุดเริ่มต้น. หากระหว่าง Phase 2 มีคำถามใหม่
+    จากที่ HR หรือผู้บริหารยกขึ้น ผมจะ <strong>เพิ่มในรายงานฉบับสมบูรณ์</strong>
+    (final report) ที่จะส่งหลัง sandbox 6 เดือนสิ้นสุด. เอกสารฉบับนี้
+    เป็น living document — ระบบโต้ขึ้นเข้าหาคำถามที่บริษัทมี, ไม่ใช่บริษัทโต้ขึ้นเข้าหาเอกสาร.
+  </div>
+</section>
+
+<div class="page-break"></div>
+
+<!-- ═══ 15 — บทสรุปและคำมั่น ═══ -->
+<section class="section">
+  <div class="section-kicker">SECTION 15</div>
+  <h2 class="section-title">บทสรุปและคำมั่น</h2>
+
+  <p class="lead">
+    Phase 1 ส่งมอบในวันที่ 6 พฤษภาคม 2569 — 19 วันหลัง kickoff.
+    ระบบเข้าใช้งานจริงผ่าน <code>tkc-digital-twin.fly.dev</code>,
+    มีพนักงาน 348 คนใน database, 8 โครงการ, 21 Sheets tabs ทำงาน sync,
+    8 หน้าจอใน Command Center, และ engine คำนวณ ICA, Credo, Formation,
+    Capability Matrix ครบถ้วน.
+  </p>
+
+  <p>
+    คำมั่นของผมต่อ TKC ในระยะถัดไป:
+  </p>
+  <ol>
+    <li><strong>Their KPIs are my KPIs.</strong> KPI sheet ของฝ่าย HR — แม้กล่องที่ TOR ไม่กำหนด — ถ้าระบบนี้ช่วย tick ได้ผมก็จะส่งมอบ.</li>
+    <li><strong>The TOR is the floor, not the ceiling.</strong> 10 deliverables ที่ระบุไว้ในขอบเขตงาน เป็นพื้นฐาน. ที่เกินกว่านั้น — voice input, AI memory, social graph — ผมส่งมอบในตอน iteration ถัดไป.</li>
+    <li><strong>Visit the office, talk to people.</strong> ผมจะเข้าออฟฟิศทุกสัปดาห์ ๆ ละครั้งหรือมากกว่า, นั่งคุยกับ HR กับ project lead กับ junior engineer, เก็บข้อสังเกตจริง ๆ กลับมา feed เข้าระบบ.</li>
+    <li><strong>Ship visible iterations.</strong> Build version pill บน Cockpit screen แสดงเวอร์ชันสด. เห็น iterate ได้ — TKC จะเห็นทุก installment ที่ระบบเปลี่ยนไป.</li>
+  </ol>
+
+  <div class="pullquote">
+    "We may not be able to change the world, but we can do our part to make it better."
+    <span class="pullquote-attr">— Nonism Mantra · ปรัชญาการทำงานของผู้รับจ้าง</span>
+  </div>
+
+  <p>
+    คำถามสุดท้ายที่ผมยังหาคำตอบไม่ได้ — และไม่อยากหาเอง — คือ:
+    <strong>ทีม HR ของ TKC จะใช้ระบบนี้แล้วรู้สึกว่าได้คืนเวลาที่จมในเอกสารกลับมาบ้างไหม?</strong>
+    คำตอบจะปรากฏหลังเดือนแรกของการใช้งานจริง. ผมจะรอวัด.
+  </p>
+</section>
+
+<!-- ═══ 16 — APPENDIX ═══ -->
+<section class="section">
+  <div class="section-kicker">SECTION 16 · APPENDIX</div>
+  <h2 class="section-title">ภาคผนวก — ลิงก์และอ้างอิง</h2>
+
+  <h3 class="subsection">16.1 ลิงก์ระบบ Live</h3>
+  <table>
+    <tbody>
+      <tr><td style="width: 30%;"><strong>Command Center</strong></td><td class="t-mono">https://tkc-digital-twin.fly.dev/command-center</td></tr>
+      <tr><td><strong>e-Report</strong></td><td class="t-mono">https://tkc-digital-twin.fly.dev/report</td></tr>
+      <tr><td><strong>e-Report (static)</strong></td><td class="t-mono">https://nonarkara.github.io/tkc-digital-twin-showcase/</td></tr>
+      <tr><td><strong>Showcase repo</strong></td><td class="t-mono">https://github.com/Nonarkara/tkc-digital-twin-showcase</td></tr>
+      <tr><td><strong>Google Sheets</strong></td><td class="t-mono">docs.google.com/spreadsheets/d/1LR8t7Qx…3PJYuttE</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="subsection">16.2 Build Version Log</h3>
+  <table>
+    <thead>
+      <tr><th style="width: 10%;">Rev</th><th style="width: 24%;">Codename</th><th>Highlight</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>v1</code></td><td>Sheets</td><td>Manual HR tracking ใน spreadsheets</td></tr>
+      <tr><td><code>v2</code></td><td>Command Center</td><td>Next.js + Postgres dashboard wrapped รอบ Sheets</td></tr>
+      <tr><td><code>v3</code></td><td>Cassette</td><td>DQ3 archetypes + 32×32 sprites + Formation tab</td></tr>
+      <tr><td><code>v3.1</code></td><td>Party Split</td><td>EXP-split readiness penalty</td></tr>
+      <tr><td><code>v3.2</code></td><td>Alltrades</td><td>Vocation change ledger</td></tr>
+      <tr><td><code>v3.3</code></td><td>Front Row</td><td>Party order (front/mid/back)</td></tr>
+      <tr><td><code>v4.2</code></td><td>Fluid Legend</td><td>SNES-grade 64×64 sprites · Lobby social graph · URL routing</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="subsection">16.3 Tech Stack</h3>
+  <table>
+    <tbody>
+      <tr><td style="width: 28%;">Framework</td><td>Next.js 16 + React 19 + TypeScript 5</td></tr>
+      <tr><td>Styling</td><td>Tailwind v4 + design tokens (no shadcn defaults)</td></tr>
+      <tr><td>Database</td><td>Neon PostgreSQL (serverless · Singapore)</td></tr>
+      <tr><td>Shadow Mirror</td><td>Google Sheets (21 tabs · service account)</td></tr>
+      <tr><td>Knowledge Export</td><td>Obsidian Vault (348 dossiers)</td></tr>
+      <tr><td>Animation</td><td>Framer Motion (snap-only, no per-item staggers)</td></tr>
+      <tr><td>Sprite Engine</td><td>HTML5 Canvas (procedural 32×32)</td></tr>
+      <tr><td>Fonts</td><td>IBM Plex Sans Thai (non-looped) · JetBrains Mono · Press Start 2P</td></tr>
+      <tr><td>Hosting</td><td>Fly.io (Singapore) · auto-sleep on idle</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="subsection">16.4 References & Influences</h3>
+  <ul>
+    <li><strong>Don Norman</strong> — Design of Everyday Things (visibility, feedback, mapping)</li>
+    <li><strong>Mihaly Csikszentmihalyi</strong> — Flow theory (challenge ÷ skill ratio)</li>
+    <li><strong>Frederick Herzberg</strong> — Hygiene-Motivation theory (Compensation pillar)</li>
+    <li><strong>Edgar Schein</strong> — Three Cultures of Management (silo problem)</li>
+    <li><strong>Belbin</strong> & <strong>Tuckman</strong> — Team roles and stages</li>
+    <li><strong>Daniel Kahneman</strong> — Prospect theory (variable ratio reinforcement)</li>
+    <li><strong>Google Project Aristotle</strong> — psychological safety = #1 team predictor</li>
+    <li><strong>Bill James / Billy Beane</strong> — Moneyball (salary cap as forcing function)</li>
+    <li><strong>Andy Warhol</strong> — repetition as aesthetic (348 employee cards in a grid)</li>
+    <li><strong>Dieter Rams</strong> — 10 principles of good design</li>
+    <li><strong>Yuji Horii</strong> — Dragon Quest III mechanics (1988 Famicom)</li>
+  </ul>
+
+  <h3 class="subsection">16.5 ผู้รับจ้าง</h3>
+  <div style="display: flex; align-items: flex-start; gap: 20pt; margin-bottom: 12pt;">
+    <img src="non-logo.png" alt="Dr Non Arkaraprasertkul — Skin in the Game Consulting"
+         style="width: 70pt; height: 70pt; object-fit: contain; flex-shrink: 0;">
+    <p style="margin-bottom: 0;">
+      <strong>นน อัครประเสริฐกุล</strong> (Dr. Non Arkaraprasertkul) —
+      ที่ปรึกษาอิสระด้าน Talent Transformation ภายใต้แนวคิด
+      <em>Skin in the Game</em> — Their KPIs are my KPIs.
+      ทำงานกับ TKC ตั้งแต่ 17 เมษายน 2569.
+      การมีส่วนร่วมเป็นแบบ open-ended;
+      Phase ถัดไปจะส่งมอบเมื่อ installment ถัดไปพร้อม.
+    </p>
+  </div>
+
+  <h3 class="subsection">16.6 แหล่งอ้างอิงสาธารณะของ TKC</h3>
+  <ul>
+    <li><strong>เว็บไซต์บริษัท</strong> — (internal reference)</li>
+    <li><strong>Investor Relations Portal</strong> — (internal reference)</li>
+    <li><strong>Annual Reports</strong> — (internal reference)</li>
+    <li><strong>Financial Statements + MD&A</strong> — รายไตรมาส</li>
+  </ul>
+
+  <p style="margin-top: 36pt; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 10pt; color: #888888; line-height: 1.6;">
+    — END OF INTERIM BRIEF —<br>
+    <span style="font-size: 9pt;">เอกสารฉบับนี้จัดทำเมื่อ 6 พฤษภาคม 2569 · v4.2 Fluid Legend · Phase 1 Interim</span>
+  </p>
+</section>
+
+</div>
+
+<script>
+setTimeout(() => window.print(), 1000);
+</script>
+
+</body>
+</html>

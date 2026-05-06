@@ -1,0 +1,551 @@
+/* ──────────────────────────────────────────────────────────────────────
+ * The Tome — classical book layout, A4 print-ready.
+ *
+ * Voice: serif body for the chronicle paragraphs (the truth), monospace
+ * for stat blocks and codes (the game state), geometric sans for the
+ * banners (the brand). Zero border-radius. Hairline rules. The cover
+ * is one page; every section starts on a fresh page; the closing is
+ * the final page.
+ *
+ * The artifact is meant to be printed. Cmd-P from Chrome produces a
+ * hardcover-quality PDF. The print stylesheet hides the Print button
+ * itself so it never appears in the final document.
+ * ──────────────────────────────────────────────────────────────────── */
+
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700;800&display=swap");
+
+.tome-root {
+  --tome-paper: #fbf8f0;
+  --tome-ink: #181816;
+  --tome-rule: #181816;
+  --tome-faint: rgba(24, 24, 22, 0.45);
+  --tome-accent: #8a3324; /* oxblood */
+  --tome-gold: #b8862c;
+
+  background: var(--tome-paper);
+  color: var(--tome-ink);
+  font-family: "IBM Plex Serif", Georgia, "Times New Roman", serif;
+  font-size: 14pt;
+  line-height: 1.55;
+  padding: 0;
+  margin: 0;
+  min-height: 100vh;
+}
+
+/* Print button — hidden when printing */
+.tome-print-button {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  z-index: 100;
+  padding: 10px 18px;
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 11pt;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  background: var(--tome-ink);
+  color: var(--tome-paper);
+  border: 0;
+  cursor: pointer;
+}
+
+.tome-print-button:hover {
+  background: var(--tome-accent);
+}
+
+@media print {
+  .no-print { display: none !important; }
+  .tome-root {
+    padding: 0;
+    background: var(--tome-paper);
+  }
+}
+
+/* ── Page ─────────────────────────────────────────────────────── */
+
+.tome-page {
+  width: 21cm;
+  min-height: 29.7cm;
+  padding: 3.2cm 3cm 3cm 3cm;
+  margin: 0 auto;
+  background: var(--tome-paper);
+  page-break-after: always;
+  break-after: page;
+  position: relative;
+  box-sizing: border-box;
+}
+
+@media screen {
+  .tome-page {
+    margin: 18px auto;
+    box-shadow: 0 1px 0 rgba(24, 24, 22, 0.18);
+    /* Visual hint that pages are pages. Allowed: hairline only, no soft shadow. */
+    border: 1px solid rgba(24, 24, 22, 0.12);
+  }
+}
+
+/* ── Cover ────────────────────────────────────────────────────── */
+
+.tome-cover {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 4cm 3.2cm;
+}
+
+.tome-cover-rule {
+  width: 60%;
+  height: 2px;
+  background: var(--tome-ink);
+  margin: 1.4cm 0;
+}
+
+.tome-cover-banner {
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 12pt;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--tome-accent);
+  margin-bottom: 1.6cm;
+}
+
+.tome-cover-name {
+  font-family: "IBM Plex Serif", serif;
+  font-size: 36pt;
+  font-weight: 600;
+  line-height: 1.1;
+  margin: 0 0 0.4cm 0;
+  letter-spacing: -0.01em;
+}
+
+.tome-cover-thai {
+  font-family: "IBM Plex Sans Thai", "Noto Sans Thai", sans-serif;
+  font-size: 18pt;
+  font-weight: 400;
+  color: var(--tome-faint);
+  margin-bottom: 1.4cm;
+}
+
+.tome-cover-class {
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 14pt;
+  font-weight: 700;
+  letter-spacing: 0.32em;
+  color: var(--tome-gold);
+}
+
+.tome-cover-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3cm;
+  margin: 0.8cm 0;
+  font-size: 13pt;
+  color: var(--tome-ink);
+}
+
+.tome-cover-dates {
+  font-family: "IBM Plex Mono", "SFMono-Regular", monospace;
+  font-size: 11pt;
+  letter-spacing: 0.06em;
+  color: var(--tome-faint);
+  margin-top: 0.5cm;
+}
+
+.tome-cover-tenure {
+  font-style: italic;
+  color: var(--tome-faint);
+}
+
+.tome-cover-registry {
+  position: absolute;
+  bottom: 2cm;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10pt;
+  letter-spacing: 0.12em;
+  color: var(--tome-faint);
+}
+
+/* ── Section pages ────────────────────────────────────────────── */
+
+.tome-section {
+  font-family: "IBM Plex Serif", serif;
+}
+
+.tome-section-h {
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 28pt;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  margin: 0 0 0.4cm 0;
+  padding-bottom: 0.3cm;
+  border-bottom: 2px solid var(--tome-ink);
+}
+
+.tome-section-h3 {
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 14pt;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--tome-accent);
+  margin: 0.8cm 0 0.3cm 0;
+}
+
+.tome-section-deck {
+  font-style: italic;
+  color: var(--tome-faint);
+  margin-bottom: 0.8cm;
+  font-size: 12pt;
+}
+
+.tome-empty {
+  font-style: italic;
+  color: var(--tome-faint);
+  font-size: 12pt;
+}
+
+.tome-empty-inline {
+  color: var(--tome-faint);
+  font-size: 11pt;
+}
+
+/* ── Tables ───────────────────────────────────────────────────── */
+
+.tome-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12pt;
+}
+
+.tome-table th {
+  text-align: left;
+  font-family: "IBM Plex Sans", sans-serif;
+  font-weight: 600;
+  font-size: 10.5pt;
+  letter-spacing: 0.02em;
+  color: var(--tome-faint);
+  padding: 6pt 12pt 6pt 0;
+  width: 30%;
+  vertical-align: top;
+}
+
+.tome-table td {
+  padding: 6pt 0;
+  font-family: "IBM Plex Serif", serif;
+}
+
+.tome-table code {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11pt;
+  letter-spacing: 0.04em;
+}
+
+.tome-quests {
+  font-size: 10.5pt;
+}
+
+.tome-quests th {
+  width: auto;
+  border-bottom: 1px solid var(--tome-ink);
+  padding-bottom: 6pt;
+}
+
+.tome-quests td {
+  padding: 4pt 8pt 4pt 0;
+  border-bottom: 1px solid rgba(24, 24, 22, 0.08);
+}
+
+/* ── Attributes ──────────────────────────────────────────────── */
+
+.tome-attrs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8pt 16pt;
+  margin: 0.4cm 0 0.8cm 0;
+}
+
+.tome-attr {
+  display: grid;
+  grid-template-columns: 38pt 36pt 1fr;
+  align-items: baseline;
+  gap: 8pt;
+  padding: 6pt 0;
+  border-bottom: 1px solid rgba(24, 24, 22, 0.08);
+}
+
+.tome-attr-code {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11pt;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--tome-accent);
+}
+
+.tome-attr-value {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 18pt;
+  font-weight: 700;
+  text-align: right;
+}
+
+.tome-attr-label {
+  font-family: "IBM Plex Serif", serif;
+  font-style: italic;
+  color: var(--tome-faint);
+  font-size: 11pt;
+}
+
+/* ── Tags / facets ──────────────────────────────────────────── */
+
+.tome-tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6pt 8pt;
+  margin: 4pt 0;
+}
+
+.tome-tag {
+  display: inline-block;
+  padding: 3pt 9pt;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9.5pt;
+  letter-spacing: 0.04em;
+  border: 1px solid var(--tome-ink);
+  background: transparent;
+}
+
+.tome-facets {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5cm;
+}
+
+.tome-facet-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4pt;
+}
+
+.tome-facet-label {
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 10pt;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--tome-faint);
+}
+
+/* ── Chronicles ──────────────────────────────────────────────── */
+
+.tome-chronicles {
+  display: flex;
+  flex-direction: column;
+  gap: 1cm;
+}
+
+.tome-chronicle {
+  break-inside: avoid;
+}
+
+.tome-chronicle-header {
+  display: flex;
+  gap: 12pt;
+  align-items: baseline;
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 9.5pt;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--tome-faint);
+  margin-bottom: 6pt;
+  padding-bottom: 4pt;
+  border-bottom: 1px solid rgba(24, 24, 22, 0.16);
+}
+
+.tome-chronicle-cycle {
+  font-weight: 700;
+  color: var(--tome-accent);
+}
+
+.tome-chronicle-author { flex: 1; }
+
+.tome-chronicle-body {
+  font-family: "IBM Plex Serif", serif;
+  font-size: 12.5pt;
+  line-height: 1.7;
+  margin: 0;
+  text-indent: 1em;
+  hanging-punctuation: first;
+}
+
+.tome-chronicle-deltas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6pt 10pt;
+  margin-top: 0.4cm;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9pt;
+}
+
+.tome-delta {
+  padding: 2pt 6pt;
+  border: 1px solid var(--tome-ink);
+  letter-spacing: 0.06em;
+}
+
+/* ── Recognitions ────────────────────────────────────────────── */
+
+.tome-recognitions {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5cm;
+}
+
+.tome-recognitions li {
+  break-inside: avoid;
+  border-left: 3px solid var(--tome-gold);
+  padding-left: 12pt;
+}
+
+.tome-recog-cycle {
+  display: inline-block;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9.5pt;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--tome-accent);
+  margin-right: 8pt;
+}
+
+.tome-recog-type {
+  display: inline-block;
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 9pt;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--tome-faint);
+  margin-right: 8pt;
+}
+
+.tome-recog-title {
+  display: block;
+  font-size: 13pt;
+  margin: 4pt 0;
+}
+
+.tome-recog-note {
+  margin: 4pt 0;
+  font-style: italic;
+  color: var(--tome-faint);
+  font-size: 11.5pt;
+}
+
+.tome-recog-foot {
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 9pt;
+  letter-spacing: 0.04em;
+  color: var(--tome-faint);
+}
+
+/* ── Ascensions ─────────────────────────────────────────────── */
+
+.tome-ascensions {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4cm;
+}
+
+.tome-ascensions li {
+  break-inside: avoid;
+  display: grid;
+  grid-template-columns: 90pt 1fr;
+  gap: 16pt;
+  align-items: baseline;
+}
+
+.tome-asc-date {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10pt;
+  letter-spacing: 0.04em;
+  color: var(--tome-faint);
+}
+
+.tome-asc-level {
+  margin-left: 8pt;
+  font-style: italic;
+  color: var(--tome-faint);
+  font-size: 11pt;
+}
+
+.tome-asc-reason {
+  margin: 4pt 0 0 0;
+  font-style: italic;
+  color: var(--tome-faint);
+  font-size: 11pt;
+}
+
+/* ── Closing page ────────────────────────────────────────────── */
+
+.tome-closing {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  padding: 4cm 4cm;
+}
+
+.tome-closing-rule {
+  width: 100%;
+  height: 1px;
+  background: var(--tome-ink);
+  margin: 1cm 0;
+}
+
+.tome-closing-text {
+  font-family: "IBM Plex Serif", serif;
+  font-size: 12.5pt;
+  line-height: 1.7;
+  margin: 0.6cm 0;
+  text-align: justify;
+  hyphens: auto;
+}
+
+.tome-closing-sigs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2cm;
+  margin: 2cm 0;
+}
+
+.tome-sig-line {
+  height: 1px;
+  background: var(--tome-ink);
+  margin-bottom: 6pt;
+}
+
+.tome-sig-label {
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 9.5pt;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--tome-faint);
+}
+
+.tome-closing-registry {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10pt;
+  letter-spacing: 0.08em;
+  color: var(--tome-faint);
+  margin-top: 0.6cm;
+}

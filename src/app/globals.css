@@ -1,0 +1,1735 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --radius: 0;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    border-radius: 0 !important;
+  }
+  body {
+    @apply bg-background text-foreground;
+    letter-spacing: 0.01em;
+    font-family: var(--font-sans), "Helvetica Neue", Helvetica, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+/* ═══ TKC Digital Twin — Board Game Design System ═══ */
+:root {
+  /* ── 12 semantic tokens: The Tabletop ── */
+  --bg-base: #1a1209;
+  --bg-surface: #231a0f;
+  --bg-elevated: #2a1f14;
+  --border-subtle: #3d2e1e;
+  --border-strong: #5a4530;
+  --text-primary: #f5f0e8;
+  --text-secondary: #b8a88a;
+  --text-muted: #7a6b54;
+  --accent-gold: #D4A843;
+  --accent-green: #5B8C4A;
+  --accent-red: #C44D3F;
+  --accent-blue: #5B89B5;
+
+  /* ── Card stock ── */
+  --card-face: #f5f0e8;
+  --card-text: #1a1209;
+  --card-border: #3d2e1e;
+  --felt-green: #1a3a1a;
+
+  /* ── Live-state colour tokens ──
+     Reserved for *changes and statefulness*, not decoration. A row bleeds
+     --surface-hot only when it's actually on fire; --flux-up only on a
+     real stat gain. Never use these for chrome. */
+  --flux-up:    #7DB865;
+  --flux-down:  #C44D3F;
+  --flux-hold:  #D4A843;
+  --surface-hot:  rgba(228, 120, 70, 0.10);
+  --surface-cool: rgba(91, 140, 180, 0.08);
+
+  /* ── Legacy DQ tokens (mapped to board game) ── */
+  --dq-night: #1a1209;
+  --dq-void: #0f0b06;
+  --dq-panel: #231a0f;
+  --dq-panel-deep: #1a1209;
+  --dq-ink: #f5f0e8;
+  --dq-muted-ink: #b8a88a;
+  --dq-gold: #D4A843;
+  --dq-gold-deep: #8d6e21;
+  --dq-red: #C44D3F;
+  --dq-red-deep: #6b1d24;
+  --dq-cyan: #5B89B5;
+  --dq-green: #5B8C4A;
+}
+
+/* ─── The Tabletop ─── */
+.tabletop {
+  background:
+    repeating-linear-gradient(90deg, rgba(60,45,30,0.06) 0px, transparent 1px, transparent 47px, rgba(60,45,30,0.06) 48px),
+    repeating-linear-gradient(0deg, rgba(40,30,18,0.04) 0px, transparent 1px, transparent 199px, rgba(40,30,18,0.04) 200px),
+    linear-gradient(180deg, #1a1209 0%, #1f150c 50%, #1a1209 100%);
+}
+
+/* ─── Card Stock ─── */
+.card-stock {
+  background: var(--card-face);
+  border: 2px solid var(--card-border);
+  color: var(--card-text);
+  box-shadow:
+    0 1px 2px rgba(0,0,0,0.15),
+    0 4px 8px rgba(0,0,0,0.1),
+    0 0 0 1px rgba(0,0,0,0.05);
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+.card-stock:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 4px 8px rgba(0,0,0,0.2),
+    0 12px 24px rgba(0,0,0,0.15),
+    0 0 0 1px rgba(0,0,0,0.08);
+}
+
+.card-stock-flat {
+  background: var(--card-face);
+  border: 2px solid var(--card-border);
+  color: var(--card-text);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.05);
+}
+
+/* ─── Card Back (face-down) ─── */
+.card-back {
+  background:
+    repeating-linear-gradient(45deg, rgba(212,168,67,0.08) 0px, transparent 1px, transparent 7px, rgba(212,168,67,0.08) 8px),
+    repeating-linear-gradient(-45deg, rgba(212,168,67,0.08) 0px, transparent 1px, transparent 7px, rgba(212,168,67,0.08) 8px),
+    var(--bg-surface);
+  border: 2px solid var(--border-subtle);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+}
+
+/* ─── Felt Mat ─── */
+.felt-mat {
+  background:
+    radial-gradient(ellipse at center, rgba(40,80,40,0.15) 0%, transparent 70%),
+    var(--felt-green);
+  border: 2px solid #2a4a2a;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.3);
+}
+
+/* ─── Panel styles — subtle, let the world breathe ─── */
+
+.dq-screen-panel {
+  background: linear-gradient(180deg, rgba(35,26,15,0.92) 0%, rgba(26,18,9,0.95) 100%);
+}
+
+.dq-console-shell,
+.dq-window-shell {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(35,26,15,0.96) 0%, rgba(26,18,9,0.98) 100%);
+  border: 1px solid rgba(212,168,67,0.22);
+}
+
+.dq-title-ribbon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.6rem;
+  border: 2px solid var(--accent-gold);
+  background: var(--bg-elevated);
+  color: var(--accent-gold);
+  font-family: var(--font-pixel), monospace;
+  font-size: 8px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.dq-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 0.4rem;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: 9px;
+}
+
+.dq-meter {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(243,197,103,0.2);
+  background: rgba(7,13,34,0.9);
+}
+
+.dq-meter-fill {
+  position: relative;
+  overflow: hidden;
+}
+
+.dq-menu-link {
+  border: 1px solid transparent;
+  background: rgba(12,26,61,0.2);
+}
+
+.dq-menu-link:hover {
+  border-color: rgba(243,197,103,0.18);
+  background: rgba(12,26,61,0.5);
+}
+
+.dq-menu-link-active {
+  border-color: rgba(243,197,103,0.3);
+  background: linear-gradient(180deg, rgba(178,71,61,0.85) 0%, rgba(107,29,36,0.9) 100%);
+}
+
+.dq-portrait-frame {
+  background: rgba(12,26,61,0.4);
+  border: 1px solid rgba(243,197,103,0.2);
+}
+
+/* ─── Animations ─── */
+@keyframes snap-bounce {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.06); }
+  70% { transform: scale(0.98); }
+  100% { transform: scale(1); }
+}
+
+@keyframes score-pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.15); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes card-appear {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(212,168,67,0.3); }
+  50% { box-shadow: 0 0 16px rgba(212,168,67,0.5); }
+}
+
+@keyframes card-deal {
+  from { transform: translateX(40px) rotate(5deg); opacity: 0; }
+  to { transform: translateX(0) rotate(0deg); opacity: 1; }
+}
+
+@keyframes snap-lock {
+  0% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+@keyframes fail-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-4px); }
+  40% { transform: translateX(4px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(2px); }
+}
+
+/* DQ3 tile-wipe between screens — stepped, not smooth. */
+@keyframes screen-fade {
+  0%   { opacity: 0; transform: translateY(4px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Animation utility classes (wire up the keyframes) ─── */
+.anim-snap-bounce   { animation: snap-bounce 300ms ease-out; }
+.anim-card-appear   { animation: card-appear 250ms ease-out; }
+.anim-glow-pulse    { animation: glow-pulse 1.6s ease-in-out infinite; }
+.anim-score-pulse   { animation: score-pulse 400ms ease-out; }
+.anim-fade-out      { animation: card-appear 150ms ease-in reverse forwards; }
+.anim-snap-lock     { animation: snap-lock 200ms ease-out; }
+.anim-card-deal     { animation: card-deal 300ms ease-out; }
+.anim-screen-enter  { animation: screen-fade 220ms steps(8, end); }
+
+/* ─── Card flip (forecast → reality) ─── */
+@keyframes card-flip-out { from { transform: rotateY(0deg); } to { transform: rotateY(90deg); } }
+@keyframes card-flip-in { from { transform: rotateY(-90deg); } to { transform: rotateY(0deg); } }
+.card-flip-container { perspective: 800px; }
+.card-flip-front { backface-visibility: hidden; }
+.card-flip-back { backface-visibility: hidden; transform: rotateY(180deg); }
+.anim-flip-out { animation: card-flip-out 250ms ease-in forwards; }
+.anim-flip-in  { animation: card-flip-in 250ms ease-out forwards; }
+
+/* ─── Department-colored card stripe ─── */
+.card-stripe {
+  position: relative;
+  overflow: hidden;
+}
+.card-stripe::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: var(--stripe-color, var(--accent-gold));
+}
+.card-stripe::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--stripe-color, var(--accent-gold));
+  opacity: 0.5;
+}
+
+/* ─── Typography tiers ─── */
+.type-label {
+  font-family: var(--font-pixel), monospace;
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-variant: small-caps;
+  color: var(--text-muted);
+}
+.type-data {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.type-meta {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+.type-heading {
+  font-family: var(--font-pixel), monospace;
+  letter-spacing: 0.04em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+/* Scope pixel-font chrome to command-center surfaces only — body copy
+   outside the console keeps its readable sans/mono. */
+.cc-root .cc-console-title h1,
+.cc-root .cc-screen-kicker,
+.cc-root .menu-window-title,
+.cc-root .cc-nav-button,
+.cc-root .cc-primary-action,
+.cc-root .cc-command-label,
+.cc-root .cc-command-shortcut,
+.cc-root .cc-breadcrumb,
+.cc-root .cc-shortcut-legend,
+.cc-root .cc-rail-button,
+.cc-root .cc-overlay-button strong {
+  font-family: var(--font-pixel), monospace;
+  letter-spacing: 0.04em;
+}
+
+/* ─── Jigsaw connectors ─── */
+.jigsaw-connector {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.jigsaw-connector::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  background: radial-gradient(circle, #a08060 30%, #8B7355 100%);
+  clip-path: circle(50%);
+  box-shadow: inset 0 1px 2px rgba(255,255,255,0.2), 0 1px 2px rgba(0,0,0,0.3);
+  flex-shrink: 0;
+}
+
+/* ─── 50" Dashboard Scale (3840+ px width) ─── */
+@media (min-width: 3000px) {
+  .type-label { font-size: 12px; }
+  .type-data { font-size: 16px; }
+  .type-meta { font-size: 13px; }
+}
+
+.hud-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 0.4rem;
+  background: rgba(7,13,34,0.85);
+  border: 1px solid rgba(243,197,103,0.2);
+  color: var(--dq-muted-ink);
+  font-size: 9px;
+  font-family: monospace;
+}
+
+/* ═══ Command Center — Famicom × Subway Map ═══
+   Layered over the warm-brown base. Only activates inside `.cc-root`
+   (the command-center shell) so the rest of the app stays unchanged.
+*/
+:root {
+  /* 8-bit RPG palette. NES-era classics, classily restrained. */
+  --rpg-blue:   #2B5FA0;  /* Famicom menu navy. Primary chrome. */
+  --rpg-red:    #C14B4B;  /* HP, risk, danger. */
+  --rpg-orange: #D4803F;  /* Active / highlighted / hovered. */
+  --rpg-yellow: #E8C547;  /* XP, gold, selected tab, ticker. */
+  --rpg-blue-deep: #1A3E70;  /* Menu-window inner shadow. */
+  --rpg-blue-hilite: #5B8DD0;  /* Menu-window inner highlight. */
+  --rpg-purple: #8B6FB5;  /* Ninja-quest accent. Fifth route. */
+
+  /* Subway-Map neutral ladder. No half-stops. */
+  --ink-0: #F5F0E8;  /* paper      — headlines on dark */
+  --ink-1: #C2B8A5;  /* caption    — secondary */
+  --ink-2: #8B8274;  /* rule       — subtle */
+  --ink-3: #3D3A33;  /* rail       — faint */
+  --ink-4: #1A1A18;  /* deep ink   — panel fill */
+}
+
+/* Command-center scope. Wrap the page root in `.cc-root` to swap
+   from JetBrains Mono → Helvetica for information chrome, without
+   disturbing the rest of the app. */
+/* ─── Outer chassis: locked to one landscape viewport — but ONLY on
+   the command-center route. Other routes (/check-in/..., /tome/...,
+   /login, /lore, etc.) get normal body scroll because they need to. */
+html, body {
+  height: 100%;
+  overscroll-behavior: none;
+}
+
+/* The :has() selector locks the body only when the dashboard chassis
+   is mounted. Removed when the user navigates to a sub-route. */
+body:has(.cc-root) {
+  overflow: hidden;
+}
+
+.cc-root {
+  --cc-pad: clamp(14px, 2vw, 24px);
+  height: 100svh;
+  display: grid;
+  grid-template-rows: auto auto 1fr; /* header + ticker + main */
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  letter-spacing: 0;
+  color: var(--ink-0);
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, rgba(245,240,232,0.035) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(245,240,232,0.026) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(43,95,160,0.12) 0%, rgba(26,26,24,0) 260px),
+    var(--ink-4);
+  background-size: 48px 48px, 48px 48px, auto, auto;
+}
+.cc-root .pixel {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.cc-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  padding: 14px var(--cc-pad) 0;
+  color: var(--ink-0);
+  background:
+    linear-gradient(180deg, rgba(26,26,24,0.98), rgba(26,26,24,0.94));
+  border-bottom: 1px solid rgba(245,240,232,0.08);
+}
+
+.cc-brand-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 12px;
+}
+
+.cc-brand-lockup {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  min-width: 0;
+}
+
+.cc-wordmark {
+  color: var(--rpg-yellow);
+  font-size: 14px;
+  flex: 0 0 auto;
+}
+
+.cc-product-name {
+  color: var(--ink-1);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cc-build-pill {
+  display: inline-flex;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cc-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--ink-2);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.cc-status::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  background: var(--flux-up);
+}
+
+.cc-status[data-state="syncing"]::before {
+  background: var(--rpg-yellow);
+}
+
+.cc-status[data-state="offline"]::before {
+  background: var(--rpg-red);
+}
+
+.cc-status[data-state="degraded"]::before {
+  background: var(--rpg-orange);
+}
+
+.cc-top-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.cc-nav-button {
+  border: 1px solid rgba(245,240,232,0.18);
+  background: rgba(255,255,255,0.03);
+  color: var(--ink-0);
+  min-height: 34px;
+  padding: 0 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.cc-nav-button:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+.cc-main {
+  padding: 0;
+  min-height: 0;
+  height: 100%;
+  /* console fills space, shortcut-legend pins to the bottom */
+  display: grid;
+  grid-template-rows: 1fr auto;
+  overflow: hidden;
+}
+
+.cc-console {
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  border: 0;
+  background: var(--ink-4);
+  box-shadow: none;
+  overflow: hidden;
+  position: relative;
+}
+
+.cc-console-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: end;
+  padding: 18px 18px 16px;
+  border-bottom: 1px solid rgba(245,240,232,0.12);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0)),
+    rgba(0,0,0,0.12);
+}
+
+.cc-console-title {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.cc-console-title h1 {
+  margin: 0;
+  font-size: clamp(28px, 3vw, 54px);
+  line-height: 0.94;
+  font-weight: 800;
+  color: var(--ink-0);
+}
+
+.cc-console-title p {
+  margin: 0;
+  max-width: 72ch;
+  color: var(--ink-1);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.cc-console-metrics {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.cc-console-body {
+  min-height: 0;
+  padding: 14px;
+  overflow: hidden;
+}
+
+/* ─── Breadcrumb (⌂ COMMAND → ROUTE) ─── */
+.cc-breadcrumb {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 9px;
+  text-transform: uppercase;
+  color: var(--ink-1);
+  letter-spacing: 0.12em;
+  margin-bottom: 4px;
+}
+.cc-breadcrumb-sep {
+  color: var(--rpg-yellow);
+  opacity: 0.7;
+}
+.cc-breadcrumb-node {
+  color: var(--ink-1);
+}
+.cc-breadcrumb-node[data-current="true"] {
+  color: var(--rpg-yellow);
+}
+
+/* ─── Keyboard-shortcut legend (bottom chrome) ─── */
+.cc-shortcut-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 6px 14px;
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text-muted);
+  border-top: 1px solid rgba(245,240,232,0.08);
+  background: rgba(0,0,0,0.18);
+}
+.cc-shortcut-legend kbd {
+  display: inline-block;
+  padding: 1px 4px;
+  background: var(--rpg-blue);
+  color: var(--rpg-yellow);
+  font-family: var(--font-pixel), monospace;
+  font-size: 8px;
+  border: 1px solid rgba(232,197,71,0.4);
+  margin-right: 3px;
+}
+
+/* ─── Sync indicator dot ─── */
+.cc-sync-dot {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  font-family: var(--font-pixel), monospace;
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  background: rgba(0,0,0,0.32);
+  border: 1px solid rgba(245,240,232,0.14);
+  color: var(--ink-1);
+  cursor: pointer;
+}
+.cc-sync-dot:hover {
+  border-color: var(--rpg-yellow);
+}
+.cc-sync-dot-led {
+  width: 8px;
+  height: 8px;
+  background: var(--text-muted);
+  box-shadow: 0 0 4px transparent;
+}
+.cc-sync-dot[data-state="ok"] .cc-sync-dot-led {
+  background: #5ecf7a;
+  box-shadow: 0 0 6px rgba(94,207,122,0.6);
+}
+.cc-sync-dot[data-state="idle"] .cc-sync-dot-led {
+  background: var(--rpg-yellow);
+  animation: glow-pulse 1.8s ease-in-out infinite;
+}
+.cc-sync-dot[data-state="error"] .cc-sync-dot-led {
+  background: #d85252;
+  box-shadow: 0 0 6px rgba(216,82,82,0.6);
+}
+
+.cc-sync-popup {
+  position: absolute;
+  top: 68px;
+  right: 18px;
+  z-index: 30;
+  min-width: 280px;
+  max-width: 360px;
+}
+.cc-sync-popup .cc-info-row {
+  font-size: 11px;
+}
+.cc-sync-popup-tablist {
+  max-height: 140px;
+  overflow: auto;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  color: var(--ink-1);
+  margin-top: 8px;
+  padding: 6px;
+  background: rgba(0,0,0,0.24);
+  border: 1px solid rgba(245,240,232,0.08);
+}
+.cc-sync-popup-tablist code {
+  display: block;
+  padding: 1px 0;
+}
+.cc-sync-popup-tablist code[data-missing="true"] {
+  color: var(--rpg-red);
+}
+
+.cc-console-message {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: var(--ink-1);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.cc-console-message-danger {
+  color: var(--rpg-red);
+}
+
+.cc-home-grid {
+  height: 100%;
+  display: grid;
+  grid-template-columns: minmax(260px, 320px) minmax(0, 1fr) minmax(260px, 320px);
+  gap: 14px;
+}
+
+.cc-home-center,
+.cc-home-side {
+  min-height: 0;
+  display: grid;
+  gap: 14px;
+}
+
+/* Centre column carries three windows since v8.4: BriefingPanel,
+   route-preview window, Board Pulse. All three share the column height
+   with explicit rows so none can burst past the viewport. */
+.cc-home-center {
+  grid-template-rows: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 0.8fr);
+}
+
+.cc-home-side {
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+}
+
+/* Home windows: lock to their grid cell, never overflow. Internal scroll
+   is handled by the window content via .cc-scroll utility. */
+.cc-home-window,
+.cc-route-window {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* MenuWindow body inside a home window: scrollable region for tall
+   content (briefing, lists, etc.). The frame itself never scrolls. */
+.cc-home-window .menu-window-body {
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.cc-command-list {
+  display: grid;
+  gap: 6px;
+}
+
+/* Menu overlay — fits all 8 routes on one screen as a 4×2 tile grid.
+   No scroll. Dr Non 2026-04-27: "I have to scroll down to find a menu,
+   which is weird." */
+.cc-overlay-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.cc-command-list,
+.cc-linkage-list,
+.cc-diagnostic-list,
+.cc-info-list {
+  min-height: 0;
+  overflow: auto;
+  padding-right: 4px;
+  align-content: start;
+}
+
+.cc-command-button,
+.cc-overlay-button {
+  width: 100%;
+  border: 1px solid rgba(245,240,232,0.12);
+  background: rgba(255,255,255,0.02);
+  color: var(--ink-0);
+  padding: 7px 10px;
+  display: grid;
+  gap: 3px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 120ms ease, transform 120ms ease, background 120ms ease;
+}
+
+.cc-command-button:hover,
+.cc-overlay-button:hover {
+  border-color: var(--route-accent, var(--rpg-yellow));
+  background: rgba(255,255,255,0.08);
+  transform: translateX(1px);
+}
+
+.cc-command-button:active,
+.cc-overlay-button:active {
+  transform: scale(0.98) translateX(1px);
+  background: rgba(255,255,255,0.12);
+}
+
+.cc-command-button[data-active="true"],
+.cc-overlay-button[data-active="true"] {
+  border-color: var(--route-accent, var(--rpg-yellow));
+  background: rgba(255,255,255,0.05);
+  transform: translateX(2px);
+}
+
+.cc-command-shortcut {
+  color: var(--route-accent, var(--rpg-yellow));
+  font-size: 9px;
+}
+
+.cc-command-label {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.cc-command-deck,
+.cc-overlay-button p {
+  margin: 0;
+  color: var(--ink-1);
+  font-size: 10px;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cc-overlay-button {
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: 10px;
+}
+
+.cc-overlay-button strong {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.cc-home-preview {
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto auto auto;
+  gap: 14px;
+}
+
+.cc-home-preview-copy {
+  display: grid;
+  gap: 8px;
+}
+
+.cc-home-preview-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--ink-0);
+}
+
+.cc-home-preview-copy p {
+  margin: 0;
+  color: var(--ink-1);
+  line-height: 1.6;
+  font-size: 13px;
+}
+
+.cc-home-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.cc-home-stat {
+  min-height: 90px;
+  border: 1px solid rgba(245,240,232,0.1);
+  background: rgba(0,0,0,0.18);
+  padding: 10px 12px;
+  display: grid;
+  align-content: start;
+  gap: 6px;
+}
+
+.cc-home-stat span,
+.cc-linkage-row p {
+  color: var(--ink-1);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.cc-home-stat strong {
+  font-size: 24px;
+  color: var(--ink-0);
+  line-height: 1;
+}
+
+.cc-home-stat small {
+  color: var(--ink-2);
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.cc-primary-action,
+.cc-rail-button {
+  border: none;
+  background: var(--route-accent, var(--rpg-yellow));
+  color: var(--ink-4);
+  min-height: 40px;
+  padding: 0 14px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.cc-linkage-list,
+.cc-diagnostic-list,
+.cc-info-list {
+  display: grid;
+  gap: 8px;
+}
+
+.cc-linkage-row,
+.cc-diagnostic-item,
+.cc-info-row {
+  border: 1px solid rgba(245,240,232,0.08);
+  background: rgba(0,0,0,0.18);
+  padding: 10px 12px;
+}
+
+.cc-linkage-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+}
+
+.cc-linkage-row strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--ink-0);
+  font-size: 13px;
+}
+
+.cc-linkage-status {
+  color: var(--route-accent, var(--rpg-yellow));
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.cc-diagnostic-item,
+.cc-ok-copy,
+.cc-rail-copy p {
+  color: var(--ink-1);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.cc-operating-loop {
+  display: grid;
+  gap: 8px;
+}
+
+.cc-operating-loop-row {
+  display: grid;
+  gap: 4px;
+  border: 1px solid rgba(245,240,232,0.08);
+  background: rgba(0,0,0,0.18);
+  padding: 10px 12px;
+}
+
+.cc-operating-loop-row strong {
+  color: var(--rpg-yellow);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.cc-operating-loop-row span {
+  color: var(--ink-1);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.cc-route-stage {
+  min-height: 0;
+  height: 100%;
+  overflow: auto;
+  padding: 0;
+}
+
+/* ─── Single-viewport tab frame (DQ3 command-window discipline)
+   Use this on every tab that should fit in one landscape screen.
+   The frame fills .cc-route-stage's height and refuses to scroll;
+   any region that needs internal scroll must have its own
+   min-height: 0 and overflow: auto (use .cc-scroll utility).
+
+   The route stage is `overflow: auto` for legacy tabs, but a frame
+   inside it never overflows because the frame caps its own height
+   at 100% of the parent. */
+.cc-tab-frame {
+  height: 100%;
+  display: grid;
+  grid-template-rows: 1fr;       /* override per tab */
+  gap: 12px;
+  padding: 14px;
+  overflow: hidden;
+  min-height: 0;
+  box-sizing: border-box;
+}
+
+/* A scroll-container utility: drop on any region inside .cc-tab-frame
+   that NEEDS internal scroll. Required min-height:0 so flex/grid
+   children can shrink below content size. */
+.cc-scroll {
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.cc-info-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+}
+
+.cc-info-row span {
+  color: var(--ink-1);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.cc-info-row strong {
+  color: var(--ink-0);
+  font-size: 16px;
+}
+
+.cc-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+}
+
+.cc-overlay-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(5, 6, 11, 0.7);
+  backdrop-filter: blur(2px);
+}
+
+.cc-overlay-window {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -50%);
+  width: min(760px, calc(100% - 32px));
+  max-height: calc(100% - 32px);
+}
+
+.cc-screen-brief {
+  --route-accent: var(--rpg-orange);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: end;
+  padding: clamp(18px, 3vw, 30px) 0 clamp(18px, 2.2vw, 26px);
+  margin-bottom: 22px;
+  border-bottom: 1px solid rgba(245,240,232,0.14);
+}
+
+.cc-screen-copy {
+  display: grid;
+  gap: 8px;
+  max-width: 780px;
+}
+
+.cc-screen-kicker {
+  color: var(--route-accent);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.cc-screen-copy h1 {
+  margin: 0;
+  color: var(--ink-0);
+  font-size: clamp(28px, 4vw, 58px);
+  line-height: 0.95;
+  font-weight: 800;
+}
+
+.cc-screen-copy p {
+  margin: 0;
+  color: var(--ink-1);
+  font-size: clamp(13px, 1.2vw, 16px);
+  line-height: 1.55;
+}
+
+.cc-brief-stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.cc-metric-pill {
+  min-width: 112px;
+  padding: 10px 12px;
+  border: 1px solid rgba(245,240,232,0.16);
+  border-left: 3px solid var(--route-accent);
+  background: rgba(0,0,0,0.16);
+}
+
+.cc-metric-pill span {
+  display: block;
+  color: var(--ink-1);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.cc-metric-pill strong {
+  display: block;
+  margin-top: 3px;
+  color: var(--ink-0);
+  font-size: 20px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.cc-root button:focus-visible,
+.cc-root a:focus-visible,
+.cc-root input:focus-visible,
+.cc-root select:focus-visible,
+.cc-root textarea:focus-visible {
+  outline: 2px solid var(--rpg-yellow);
+  outline-offset: 2px;
+}
+
+.roster-card-wall {
+  height: 100%;
+}
+
+/* ─── Menu Window — Subway Map frame ───
+   Clean squared frame. Navy background with a thick bottom and right
+   border for 8-bit depth. Title sits in upper-left with yellow label. */
+.menu-window {
+  position: relative;
+  background: transparent;
+  border: 1px solid rgba(245,240,232,0.12);
+  color: var(--ink-0);
+  padding: 16px;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.menu-window-body {
+  /* Default: no special behaviour. Parent rules (e.g. .cc-home-window)
+     can opt in to internal scroll. Keeps backwards compatibility for
+     every existing MenuWindow caller. */
+  min-height: 0;
+}
+.menu-window-title {
+  display: block;
+  margin: 0 0 12px;
+  padding: 0 0 6px;
+  font-family: var(--mono, monospace);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--rpg-yellow);
+  border: 0;
+  border-bottom: 1px solid rgba(243,197,103,0.2);
+  background: transparent;
+}
+
+/* ─── Subway Map rule + route chip ─── */
+.subway-rule {
+  border-top: 3px solid var(--ink-0);
+  padding-top: 14px;
+  margin-bottom: 4px;
+}
+.cc-route-tabs {
+  display: flex;
+  gap: 8px;
+  max-width: 100%;
+  overflow-x: auto;
+  padding-bottom: 14px;
+  scrollbar-width: none;
+  scroll-snap-type: x proximity;
+}
+
+.cc-route-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.subway-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 8px 16px;
+  background: var(--ink-4);
+  color: var(--ink-0);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  border: 2px solid var(--ink-0);
+  margin-right: 8px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 120ms ease;
+  flex: 0 0 auto;
+  min-height: 38px;
+  scroll-snap-align: start;
+}
+.cc-route-tabs .subway-chip {
+  margin: 0;
+}
+.subway-chip[data-route="cockpit"]  { background: var(--rpg-blue);   border-color: var(--rpg-blue); color: var(--ink-0); }
+.subway-chip[data-route="formation"]{ background: var(--rpg-orange); border-color: var(--rpg-orange); color: var(--ink-4); }
+.subway-chip[data-route="ninja"]    { background: var(--rpg-purple); border-color: var(--rpg-purple); color: var(--ink-0); }
+.subway-chip[data-route="matrix"]   { background: #4A9BA8;          border-color: #4A9BA8; color: var(--ink-4); }
+.subway-chip[data-route="roster"]   { background: var(--rpg-yellow); border-color: var(--rpg-yellow); color: var(--ink-4); }
+.subway-chip[data-route="signals"]  { background: var(--rpg-red);    border-color: var(--rpg-red); color: var(--ink-0); }
+.subway-chip[data-active="false"] {
+  background: transparent;
+  color: var(--ink-1);
+  border-color: var(--ink-2);
+}
+.subway-chip[data-active="false"]:hover {
+  color: var(--ink-0);
+  border-color: var(--ink-1);
+}
+.subway-chip[data-active="true"] {
+  transform: translateY(-1px);
+}
+
+/* ─── TKC ticker — scrolling information stripe ─── */
+.tkc-ticker {
+  overflow: hidden;
+  background: var(--ink-4);
+  color: var(--rpg-yellow);
+  border-top: 2px solid var(--rpg-yellow);
+  border-bottom: 2px solid var(--rpg-yellow);
+  font-family: var(--font-pixel), "Courier New", monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  padding: 6px 0;
+  white-space: nowrap;
+}
+.tkc-ticker-inner {
+  display: inline-block;
+  padding-left: 100%;
+  animation: tkc-ticker-scroll 45s linear infinite;
+  font-weight: 400;
+}
+@keyframes tkc-ticker-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-100%); }
+}
+
+/* ─── Optional CRT scanline overlay ───
+   Off by default. Toggle with `.cc-root.scanline`. A single
+   1px stripe repeated at 3px period — subtle enough to read through,
+   character enough to feel like a cabinet glass. */
+.cc-root.scanline::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0,0,0,0.12) 0,
+    rgba(0,0,0,0.12) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  z-index: 9999;
+}
+
+/* ─── Drop zone affordance for Formation drag-drop ─── */
+.drop-zone {
+  border: 2px dashed var(--ink-2);
+  background: rgba(43,95,160,0.08);
+  transition: background 120ms ease, border-color 120ms ease;
+}
+.drop-zone[data-hover="true"] {
+  border-color: var(--rpg-yellow);
+  background: rgba(232,197,71,0.18);
+}
+
+@media (max-width: 1120px) {
+  body:has(.cc-root) {
+    overflow: auto;
+  }
+
+  .cc-root {
+    height: auto;
+    min-height: 100svh;
+    overflow: visible;
+  }
+
+  .cc-console {
+    width: 100%;
+    aspect-ratio: auto;
+    max-height: none;
+    height: auto;
+    min-height: calc(100svh - 188px);
+    overflow: visible;
+  }
+
+  .cc-console-header,
+  .cc-screen-brief {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .cc-console-metrics,
+  .cc-brief-stats {
+    justify-content: flex-start;
+  }
+
+  .cc-home-grid,
+  .cc-route-layout {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  .cc-home-center,
+  .cc-home-side {
+    grid-template-rows: auto;
+  }
+
+  .cc-console-body,
+  .cc-home-window,
+  .cc-route-window,
+  .cc-home-window .menu-window-body {
+    height: auto;
+    overflow: visible;
+  }
+
+  .roster-card-wall {
+    height: min(78svh, 760px) !important;
+    min-height: 520px;
+  }
+
+  .formation-rail {
+    max-height: none !important;
+    padding-right: 0 !important;
+  }
+}
+
+@media (max-width: 860px) {
+  .cc-main {
+    overflow: auto;
+    place-items: stretch;
+  }
+
+  .cc-two-pane,
+  .cc-readiness-strip,
+  .cc-squad-tray {
+    grid-template-columns: 1fr !important;
+  }
+
+  .cc-readiness-metrics {
+    border-left: 0 !important;
+    border-top: 1px solid var(--border-subtle);
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    padding-left: 0 !important;
+    padding-top: 12px;
+  }
+
+  .cc-skill-bar-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .cc-home-preview-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cc-rail-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .cc-list-header {
+    grid-template-columns: 1fr !important;
+    align-items: stretch !important;
+  }
+
+  .lobby-floor-grid {
+    grid-template-columns: 1fr !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  .lobby-map-pane {
+    min-height: 68svh;
+    border-right: 0 !important;
+    border-bottom: 1px solid #0c0c0c;
+  }
+}
+
+@media (max-width: 640px) {
+  .cc-header {
+    padding-top: 12px;
+  }
+
+  .cc-brand-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .cc-top-controls {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 6px;
+  }
+
+  .cc-brand-lockup {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+    width: 100%;
+  }
+
+  .cc-product-name {
+    white-space: normal;
+  }
+
+  .cc-build-pill {
+    margin-left: 0 !important;
+    max-width: min(100%, 22rem);
+  }
+
+  .cc-screen-copy h1 {
+    font-size: 34px;
+  }
+
+  .cc-console-header {
+    padding: 14px 18px;
+  }
+
+  .cc-console-title h1 {
+    font-size: clamp(36px, 13vw, 46px);
+    line-height: 1.05;
+    overflow-wrap: anywhere;
+  }
+
+  .cc-console-title p {
+    font-size: 13px;
+  }
+
+  .cc-console-metrics {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .cc-home-preview-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cc-metric-pill {
+    min-width: calc(50% - 4px);
+    flex: 1 1 calc(50% - 4px);
+  }
+
+  .menu-window {
+    padding: 14px 12px;
+  }
+
+  .subway-chip {
+    padding: 8px 15px;
+    min-height: 38px;
+  }
+
+  .cc-route-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    overflow-x: visible;
+  }
+
+  .cc-route-tabs .subway-chip {
+    width: 100%;
+    padding: 8px 6px;
+    font-size: 11px;
+  }
+
+  .tkc-ticker {
+    font-size: 10px;
+  }
+
+  .cc-shortcut-legend {
+    display: none;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   TKC v8 · Subway override
+   ─────────────────────────────────────────────────────────────────────
+   Kills the centred-box-inside-the-browser chrome. The whole command
+   centre goes full-bleed: left rail, content fills the viewport edge
+   to edge, no aspect-ratio clamp, no 18-px drop shadow.
+
+   Aesthetic is 1970s Phillips × NY Subway signage — flat pure colour,
+   hairline rules, bold uppercase labels, one warning accent.
+
+   Old DQ tokens stay aliased so existing surfaces keep rendering; new
+   chrome pulls from `--sub-*` tokens below.
+   ────────────────────────────────────────────────────────────────── */
+
+:root {
+  --sub-ink: #0c0c0c;
+  --sub-paper: #f5f1e8;
+  --sub-rule: #0c0c0c;
+  --sub-accent: #d8411f;
+  --sub-signal: #f3b61f;
+  --sub-dim: #6d6d6d;
+}
+
+/* Flat subway chrome for the top header + nav buttons + ticker. The
+   console body itself stays dark (canonical .cc-console rules above);
+   only the command surface on the very edges picks up the flat black
+   + cream + signal palette. This keeps the dark tab-body contrast
+   intact while killing every pixel-art bevel in the command strip. */
+
+.cc-header {
+  background: var(--sub-ink) !important;
+  color: var(--sub-paper) !important;
+  border-bottom: 2px solid var(--sub-rule) !important;
+}
+.cc-wordmark,
+.cc-product-name {
+  color: var(--sub-paper) !important;
+}
+.cc-nav-button {
+  background: var(--sub-paper) !important;
+  color: var(--sub-ink) !important;
+  border: 2px solid var(--sub-paper) !important;
+  border-radius: 0 !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase;
+}
+.cc-nav-button:hover:not(:disabled) {
+  background: var(--sub-signal) !important;
+  color: var(--sub-ink) !important;
+}
+.cc-nav-button:disabled {
+  opacity: 0.4 !important;
+}
+.cc-status {
+  background: var(--sub-signal) !important;
+  color: var(--sub-ink) !important;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  border: 0 !important;
+}
+.tkc-ticker {
+  background: var(--sub-ink) !important;
+  color: var(--sub-signal) !important;
+  border-top: 1px solid var(--sub-rule) !important;
+  border-bottom: 2px solid var(--sub-rule) !important;
+}
+/* ─── Outcome Card Reveal (v3.4) ─── */
+.outcome-card-container {
+  perspective: 1200px;
+}
+.outcome-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transform-style: preserve-3d;
+}
+.outcome-card.flipped {
+  transform: rotateY(180deg);
+}
+.card-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.card-back {
+  transform: rotateY(180deg);
+}

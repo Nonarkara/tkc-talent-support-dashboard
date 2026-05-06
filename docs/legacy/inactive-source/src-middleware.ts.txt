@@ -1,0 +1,60 @@
+/**
+ * Site-wide access gate.
+ *
+ * Every request to the deployed URL must carry a valid `tkc_access`
+ * cookie. Without it, the visitor is redirected to /login.
+ *
+ * What is NOT gated (public):
+ *   /login          — the login page itself
+ *   /api/auth/*     — login POST handler
+ *   /_next/*        — Next.js static assets
+ *   /favicon.ico    — browser default request
+ *
+ * On localhost the gate is bypassed when DASHBOARD_PASSWORD is unset,
+ * so development is frictionless. Set DASHBOARD_PASSWORD in .env.local
+ * to test the gate locally.
+ *
+ * Cookie: `tkc_access`, HttpOnly, Secure, SameSite=Lax, 7-day expiry.
+ * Value: the raw password. Simple enough for "show someone" security —
+ * not storing financial data, just internal HR context.
+ */
+
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+
+const PUBLIC_PATHS = ["/login", "/api/auth", "/_next", "/favicon.ico"];
+
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // Always pass public paths.
+  if (PUBLIC_PATHS.some((p) => pathname.startsWith(p))) {
+    return NextResponse.next();
+  }
+
+  const password = process.env.DASHBOARD_PASSWORD;
+
+  // No password set (local dev without .env.local) → open access.
+  if (!password) return NextResponse.next();
+
+  const cookie = request.cookies.get("tkc_access");
+  if (cookie?.value === password) return NextResponse.next();
+
+  // Not authenticated — redirect to login, preserve intended destination.
+  const loginUrl = request.nextUrl.clone();
+  loginUrl.pathname = "/login";
+  loginUrl.searchParams.set("next", pathname + request.nextUrl.search);
+  return NextResponse.redirect(loginUrl);
+}
+
+export const config = {
+  matcher: [
+    /*
+     * Match all request paths EXCEPT:
+     * - _next/static (static files)
+     * - _next/image  (image optimisation)
+     * - favicon.ico
+     */
+    "/((?!_next/static|_next/image|favicon.ico).*)",
+  ],
+};
