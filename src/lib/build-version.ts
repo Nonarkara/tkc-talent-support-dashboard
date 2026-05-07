@@ -37,13 +37,18 @@
  *                             gains a `party_order` column; the Formation
  *                             Sheets mirror encodes `empid@dim@order` and
  *                             emits front_count / mid_count / back_count.
- *   v4.2 · Fluid Legend      SNES-grade 16-bit sprites (64x64) with 
+ *   v4.2 · Fluid Legend      SNES-grade 16-bit sprites (64x64) with
  *                             shading and vocation gear. Obsidian-style
  *                             Social Graph in Lobby. URL-based routing.
  *                             Optimized path-based SVG rendering.
+ *   v4.3 · Alive             Org Grade (S/A/B/C/D/F) on home screen.
+ *                             Sprint countdown (days to cycle end).
+ *                             Editable hero attributes in Roster.
+ *                             MatrixGrid scenario rebuild (Codex).
+ *                             Ticker shows ORG not SET (synthetic price).
  *
  * Bump both fields together. Codename stays one or two words.
  */
 
-export const BUILD_VERSION = "v4.2";
-export const BUILD_CODENAME = "Fluid Legend";
+export const BUILD_VERSION = "v4.3";
+export const BUILD_CODENAME = "Alive";

@@ -17,12 +17,35 @@ import {
   quarterlyBurn,
   tkcTicker,
 } from "@/lib/company-pulse";
+import type { DeptKpi } from "../_shared/types";
 import { OutcomeReveal } from "@/components/OutcomeReveal";
 import { WorldTicker } from "@/components/WorldTicker";
 import { FourPillarsPanel } from "@/components/FourPillarsPanel";
 
 const thb = (n: number) =>
   new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(n);
+
+function cockpitGrade(
+  teams: DashboardPayload["teams"],
+  employees: DashboardPayload["employees"],
+  kpis: DeptKpi[],
+): { grade: string; color: string; label: string } {
+  const baseChemistry =
+    teams.length > 0
+      ? Math.round(teams.reduce((s, t) => s + (t.chemistry_score ?? 50), 0) / teams.length)
+      : 0;
+  const kpiScore =
+    kpis.length > 0
+      ? Math.round((kpis.filter((k) => k.status === "on_track").length / kpis.length) * 100)
+      : 50;
+  const score = teams.length > 0 ? baseChemistry * 0.6 + kpiScore * 0.4 : 0;
+  if (score >= 82) return { grade: "S", color: "#f3b61f", label: "Elite" };
+  if (score >= 70) return { grade: "A", color: "#86CD7E", label: "Strong" };
+  if (score >= 58) return { grade: "B", color: "#86D1FF", label: "Functional" };
+  if (score >= 44) return { grade: "C", color: "#FB923C", label: "Fragmented" };
+  if (score >= 30) return { grade: "D", color: "#F87171", label: "Unstable" };
+  return { grade: employees.length === 0 ? "—" : "F", color: "#888888", label: employees.length === 0 ? "No data" : "Critical" };
+}
 
 export function CockpitTab({ dash }: { dash: DashboardPayload }) {
   const ticker = tkcTicker({ teams: dash.teams, projects: dash.projects });
@@ -32,6 +55,7 @@ export function CockpitTab({ dash }: { dash: DashboardPayload }) {
     supportActions: dash.support_actions,
     kpis: dash.kpis,
   });
+  const grade = cockpitGrade(dash.teams, dash.employees, dash.kpis);
 
   // ─── Single-viewport layout ───────────────────────────────────────
   // Three rows in the .cc-tab-frame:
@@ -57,11 +81,12 @@ export function CockpitTab({ dash }: { dash: DashboardPayload }) {
           }}
         >
           <Tile
-            title="TKC Price"
-            value={ticker.price.toFixed(2)}
-            sub={`${ticker.delta_pct >= 0 ? "▲" : "▼"} ${ticker.delta_pct >= 0 ? "+" : ""}${ticker.delta_pct.toFixed(2)}%`}
-            subColor={ticker.delta_pct >= 0 ? "var(--flux-up)" : "var(--flux-down)"}
-            accent="var(--rpg-blue)"
+            title="Org Grade"
+            value={grade.grade}
+            sub={grade.label}
+            subColor={grade.color}
+            accent={grade.color}
+            mono
           />
           <Tile
             title="Quarterly Burn"
@@ -256,12 +281,14 @@ function Tile({
   sub,
   subColor = "var(--ink-1)",
   accent,
+  mono = false,
 }: {
   title: string;
   value: string;
   sub: string;
   subColor?: string;
   accent: string;
+  mono?: boolean;
 }) {
   return (
     <div
@@ -289,9 +316,10 @@ function Tile({
         style={{
           fontSize: 28,
           fontWeight: 700,
-          color: "var(--ink-0)",
-          letterSpacing: "-0.01em",
+          color: mono ? accent : "var(--ink-0)",
+          letterSpacing: mono ? "0.04em" : "-0.01em",
           lineHeight: 1.1,
+          fontFamily: mono ? "var(--font-mono, monospace)" : undefined,
         }}
       >
         {value}

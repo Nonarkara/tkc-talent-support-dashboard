@@ -74,6 +74,42 @@ function metaFor(route: RouteScreen, loc: Locale): RouteMeta {
 
 const HIGH_RISK_DEPTS = new Set(["PROCURE", "ACCT", "DIGITAL"]);
 
+// ─── Org Grade ────────────────────────────────────────────────────────
+// S/A/B/C/D/F derived from chemistry, hero count, and open risk signals.
+// Mirrors the DQ3 "org grade" concept — the compass reading on overall
+// org health. Not a judgment; a direction.
+function orgGrade(chemistry: number, heroCount: number, atRisk: number): {
+  grade: "S" | "A" | "B" | "C" | "D" | "F";
+  color: string;
+  label: string;
+} {
+  const riskPenalty = heroCount > 0 ? Math.min(30, (atRisk / heroCount) * 200) : 0;
+  const score = Math.max(0, chemistry - riskPenalty);
+  if (score >= 82) return { grade: "S", color: "#f3b61f", label: "Elite cohesion" };
+  if (score >= 70) return { grade: "A", color: "#86CD7E", label: "Strong formation" };
+  if (score >= 58) return { grade: "B", color: "#86D1FF", label: "Functional" };
+  if (score >= 44) return { grade: "C", color: "#FB923C", label: "Fragmented" };
+  if (score >= 30) return { grade: "D", color: "#F87171", label: "Unstable" };
+  return { grade: "F", color: "#d45e4e", label: "Critical" };
+}
+
+// ─── Sprint Countdown ─────────────────────────────────────────────────
+// Days remaining until end of current quarter (Q2 2026 = 30 Jun).
+// Updates the urgency of the board every day — the "Sprint Lock"
+// from the game design doc.
+function sprintDaysLeft(): number {
+  const now = new Date();
+  // Q2 ends June 30. If past, move to Q3 end (Sep 30), etc.
+  const ends = [
+    new Date(now.getFullYear(), 2, 31),   // Q1: Mar 31
+    new Date(now.getFullYear(), 5, 30),   // Q2: Jun 30
+    new Date(now.getFullYear(), 8, 30),   // Q3: Sep 30
+    new Date(now.getFullYear(), 11, 31),  // Q4: Dec 31
+  ];
+  const next = ends.find((d) => d > now) ?? ends[3];
+  return Math.ceil((next.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+}
+
 type SheetsHealth = {
   ok: boolean;
   enabled: boolean;
@@ -301,6 +337,9 @@ export default function CommandCenterPage() {
         ? "Online"
         : "Standby";
 
+  const grade = orgGrade(chemistryScore, dash.employees.length, atRiskCount);
+  const daysLeft = sprintDaysLeft();
+
   const ticker = useMemo(() => {
     const stockData = liveStock ?? tkcTicker({ teams: dash.teams, projects: dash.projects });
     const { price, delta_pct } = stockData;
@@ -312,9 +351,7 @@ export default function CommandCenterPage() {
     const a = TKC_ANNUAL;
 
     return (
-      `◆ TKC:SET  ${priceLabel}  ${arrow} ${pct}` +
-      `     ✦ MCAP ฿${a.market_cap_b}B` +
-      `     ✦ P/E ${a.pe_ratio}x` +
+      `◆ TKC·ORG  ${priceLabel}  ${arrow} ${pct}` +
       `     ✦ EPS ฿${a.eps_thb}` +
       `     ✦ DIV ฿${a.dividend_thb} (${a.dividend_yield_pct}% yield)` +
       `     ◆ REV ${a.as_of}  ฿${a.revenue_9m_m.toFixed(0)}M` +
@@ -323,9 +360,11 @@ export default function CommandCenterPage() {
       `     ✦ QUESTS ${dash.projects.length}` +
       `     ✦ KPIs ${dash.kpis.length}` +
       `     ✦ CHEMISTRY ${dash.teams.length > 0 ? chemistryScore : "—"}` +
-      `     ✦ CYCLE 2026-Q2`
+      `     ◆ ORG GRADE ${grade.grade} · ${grade.label.toUpperCase()}` +
+      `     ✦ SPRINT LOCK ${daysLeft}d`
     );
-  }, [chemistryScore, dash.employees.length, dash.kpis.length, dash.projects, dash.teams, liveStock]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chemistryScore, dash.employees.length, dash.kpis.length, dash.projects, dash.teams, liveStock, grade.grade, daysLeft]);
 
   function navigateTo(next: RouteScreen) {
     if (screen === next) return;
@@ -494,6 +533,8 @@ export default function CommandCenterPage() {
                   anchorCount,
                   openSupportActions,
                   heroCount: dash.employees.length,
+                  orgGrade: orgGrade(chemistryScore, dash.employees.length, atRiskCount),
+                  sprintDaysLeft: sprintDaysLeft(),
                 }}
               />
             ) : (
@@ -554,6 +595,8 @@ function HomeScreen({
     anchorCount: number;
     openSupportActions: number;
     heroCount: number;
+    orgGrade: { grade: string; color: string; label: string };
+    sprintDaysLeft: number;
   };
   loc: Locale;
 }) {
@@ -612,6 +655,36 @@ function HomeScreen({
         </MenuWindow>
 
         <MenuWindow title={translate(loc, { en: "Board Pulse", th: "ภาพรวมกระดาน" })} className="cc-home-window">
+          {/* Org Grade + Sprint Countdown — the two numbers that tell you
+              everything at a glance before you drill into any screen. */}
+          <div style={{ display: "flex", gap: 12, marginBottom: 14, paddingBottom: 12, borderBottom: "1px solid rgba(245,240,232,0.08)" }}>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 2 }}>
+              <span style={{ fontSize: 8, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-1)" }}>
+                {translate(loc, { en: "Org Grade", th: "เกรดองค์กร" })}
+              </span>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+                <strong style={{ fontSize: 32, fontFamily: "var(--font-mono)", lineHeight: 1, color: summary.orgGrade.color }}>
+                  {summary.orgGrade.grade}
+                </strong>
+                <span style={{ fontSize: 10, color: "var(--ink-1)", letterSpacing: "0.06em" }}>
+                  {summary.orgGrade.label}
+                </span>
+              </div>
+            </div>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 2, textAlign: "right" }}>
+              <span style={{ fontSize: 8, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-1)" }}>
+                {translate(loc, { en: "Sprint Lock", th: "สปรินต์ล็อก" })}
+              </span>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 4, justifyContent: "flex-end" }}>
+                <strong style={{ fontSize: 32, fontFamily: "var(--font-mono)", lineHeight: 1, color: summary.sprintDaysLeft <= 14 ? "var(--rpg-orange)" : "var(--text-primary)" }}>
+                  {summary.sprintDaysLeft}
+                </strong>
+                <span style={{ fontSize: 10, color: "var(--ink-1)", letterSpacing: "0.06em" }}>
+                  {translate(loc, { en: "days", th: "วัน" })}
+                </span>
+              </div>
+            </div>
+          </div>
           <div className="cc-info-list">
             <div className="cc-info-row">
               <span>{translate(loc, { en: "Active Quests", th: "ภารกิจที่ดำเนิน" })}</span>
@@ -619,22 +692,24 @@ function HomeScreen({
             </div>
             <div className="cc-info-row">
               <span>{translate(loc, { en: "Chemistry", th: "เคมีทีม" })}</span>
-              <strong>{summary.chemistryScore}</strong>
+              <strong>{summary.chemistryScore > 0 ? summary.chemistryScore : "—"}</strong>
             </div>
             <div className="cc-info-row">
               <span>{translate(loc, { en: "At-Risk Heroes", th: "พนักงานเสี่ยง" })}</span>
-              <strong>{summary.atRiskCount}</strong>
+              <strong style={{ color: summary.atRiskCount > 5 ? "var(--rpg-red)" : undefined }}>
+                {summary.atRiskCount}
+              </strong>
             </div>
             <div className="cc-info-row">
               <span>{translate(loc, { en: "Anchors", th: "ผู้สืบทอดหลัก" })}</span>
-              <strong>{summary.anchorCount}</strong>
+              <strong style={{ color: "var(--rpg-yellow)" }}>{summary.anchorCount}</strong>
             </div>
             <div className="cc-info-row">
-              <span>{translate(loc, { en: "Open Support Actions", th: "งานสนับสนุนที่เปิดอยู่" })}</span>
+              <span>{translate(loc, { en: "Open Support", th: "งานสนับสนุน" })}</span>
               <strong>{summary.openSupportActions}</strong>
             </div>
             <div className="cc-info-row">
-              <span>{translate(loc, { en: "Heroes Loaded", th: "จำนวนพนักงาน" })}</span>
+              <span>{translate(loc, { en: "Heroes", th: "พนักงาน" })}</span>
               <strong>{summary.heroCount}</strong>
             </div>
           </div>
