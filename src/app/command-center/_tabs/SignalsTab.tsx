@@ -22,7 +22,51 @@ import type { DashboardPayload, Employee } from "../_shared/types";
 
 type Signal = "anchor" | "ok" | "watch" | "risk";
 
-const HIGH_RISK_DEPTS = new Set(["PROCURE", "ACCT", "DIGITAL"]);
+// Departments with historically elevated turnover — used for risk signals.
+const HIGH_RISK_DEPTS = new Set(["PROCURE", "ACCT", "DIGITAL", "PROCUREMENT", "PROC"]);
+
+// ─── Tenure milestones ─────────────────────────────────────────────────
+// The "Animal Crossing birthday" mechanic. Heroes approaching a milestone
+// (1 / 5 / 10 / 20 yr) within the next 60 days deserve recognition before
+// the moment passes. Tenure is stored in whole years; we simulate the
+// "days to milestone" as a fraction of the next calendar year.
+const MILESTONE_YEARS = [1, 3, 5, 10, 15, 20];
+
+function milestonesApproaching(
+  employees: Employee[],
+  windowDays = 60,
+): Array<{ emp: Employee; milestone: number; daysLeft: number }> {
+  const today = new Date();
+  const results: Array<{ emp: Employee; milestone: number; daysLeft: number }> = [];
+
+  for (const emp of employees) {
+    const tenure = typeof emp.tenure_years === "number" ? emp.tenure_years : null;
+    if (tenure === null) continue;
+
+    for (const m of MILESTONE_YEARS) {
+      // Already past this milestone — skip
+      if (tenure >= m) continue;
+
+      // Days until milestone = fractional years remaining × 365
+      const yearsLeft = m - tenure;
+      const daysLeft = Math.round(yearsLeft * 365);
+
+      if (daysLeft <= windowDays) {
+        results.push({ emp, milestone: m, daysLeft });
+      }
+      break; // Only the NEAREST upcoming milestone per person
+    }
+  }
+
+  return results.sort((a, b) => a.daysLeft - b.daysLeft).slice(0, 12);
+}
+
+function milestoneColor(milestone: number): string {
+  if (milestone >= 20) return "#f3b61f"; // gold — legend
+  if (milestone >= 10) return "#86CD7E"; // green — veteran
+  if (milestone >= 5)  return "#86D1FF"; // blue — senior
+  return "var(--ink-1)";                 // grey — standard
+}
 
 function riskFor(emp: Employee): Signal {
   const tenure = typeof emp.tenure_years === "number" ? emp.tenure_years : 0;
@@ -44,6 +88,7 @@ export function SignalsTab({ dash }: { dash: DashboardPayload }) {
   const openActions = dash.support_actions.filter(
     (a) => a.status === "open" || a.status === "in_progress",
   );
+  const milestones = milestonesApproaching(dash.employees);
 
   return (
     <div style={{ display: "grid", gap: 20 }}>
@@ -121,6 +166,69 @@ export function SignalsTab({ dash }: { dash: DashboardPayload }) {
                     }}
                   >
                     {a.status}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </MenuWindow>
+
+      {/* ── Tenure Milestones ─────────────────────────────────────
+          The "Animal Crossing birthday" mechanic. Somebody is always
+          approaching a milestone. Recognise them before the moment passes.
+          Windows: 60 days → shows up here. 14 days → urgent (orange).
+      ── */}
+      <MenuWindow title="Tenure Milestones · Next 60 Days">
+        {milestones.length === 0 ? (
+          <div style={{ color: "var(--ink-1)", fontSize: 12 }}>
+            No milestones approaching in the next 60 days.
+          </div>
+        ) : (
+          <div style={{ display: "grid", gap: 6 }}>
+            {milestones.map(({ emp, milestone, daysLeft }) => {
+              const color = milestoneColor(milestone);
+              const urgent = daysLeft <= 14;
+              return (
+                <div
+                  key={emp.id}
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "64px minmax(0,1fr) auto auto",
+                    alignItems: "center",
+                    gap: 10,
+                    padding: "8px 10px",
+                    background: "var(--ink-4)",
+                    border: `1px solid ${urgent ? "var(--rpg-orange)" : "var(--border-subtle)"}`,
+                    fontSize: 12,
+                    color: "var(--ink-0)",
+                  }}
+                >
+                  <span
+                    className="pixel"
+                    style={{
+                      color,
+                      fontSize: 9,
+                      letterSpacing: "0.12em",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    {milestone}yr
+                  </span>
+                  <span>{emp.display_name}</span>
+                  <span style={{ color: "var(--ink-1)", fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                    {emp.dept_code ?? "—"}
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: "var(--font-mono)",
+                      fontSize: 10,
+                      color: urgent ? "var(--rpg-orange)" : "var(--ink-1)",
+                      textAlign: "right",
+                      minWidth: 50,
+                    }}
+                  >
+                    {daysLeft}d
                   </span>
                 </div>
               );
