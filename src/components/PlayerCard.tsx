@@ -159,6 +159,23 @@ export function PlayerCard({
   const code = employee.employee_code ?? employee.id.slice(0, 6).toUpperCase();
   const title = employee.title ?? ARCHETYPE_LABEL[archetype];
   
+  // ICA Index — the composite "power level" derived purely from the six attributes.
+  // Impact    = execution + experience + resilience  (STR×3 + WIS×2 + CON×1) / 6
+  // Collab    = influence + adaptability + resilience (CHA×3 + DEX×2 + CON×1) / 6
+  // Advance   = analysis + adaptability + experience  (INT×3 + DEX×2 + WIS×1) / 6
+  // Overall   = impact×0.4 + collab×0.3 + advance×0.3
+  // Scale: attrs are 1–20, output is 0–100.
+  const _str = employee.attr_str ?? 10;
+  const _int = employee.attr_int ?? 10;
+  const _wis = employee.attr_wis ?? 10;
+  const _cha = employee.attr_cha ?? 10;
+  const _dex = employee.attr_dex ?? 10;
+  const _con = employee.attr_con ?? 10;
+  const icaImpact       = Math.round((_str * 3 + _wis * 2 + _con * 1) / 6 * (100 / 20));
+  const icaCollab       = Math.round((_cha * 3 + _dex * 2 + _con * 1) / 6 * (100 / 20));
+  const icaAdvance      = Math.round((_int * 3 + _dex * 2 + _wis * 1) / 6 * (100 / 20));
+  const icaOverall      = Math.round(icaImpact * 0.4 + icaCollab * 0.3 + icaAdvance * 0.3);
+
   // XP & Leveling Logic (v3.5+)
   const totalXp = employee.xp ?? 0;
   const levelBonus = Math.floor(Math.sqrt(totalXp / 100));
@@ -375,6 +392,31 @@ export function PlayerCard({
           ))}
         </div>
 
+        {/* ICA Index — the composite power level that reacts to every stat change.
+            Three components + overall score. This is the number that matters for
+            team building: Impact (delivery), Collaboration (chemistry), Advancement (growth). */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            padding: "5px 0",
+            borderTop: "1px solid rgba(245,240,232,0.08)",
+          }}
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: 2, flex: 1 }}>
+            <IcaBar label="I" value={icaImpact} color="var(--rpg-orange)" />
+            <IcaBar label="C" value={icaCollab}  color="var(--rpg-blue)" />
+            <IcaBar label="A" value={icaAdvance}  color="var(--rpg-purple)" />
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", minWidth: 38 }}>
+            <span style={{ fontSize: 7, color: "var(--ink-1)", letterSpacing: "0.14em", textTransform: "uppercase" }}>ICA</span>
+            <strong style={{ fontSize: 18, fontFamily: "var(--font-mono)", color: tone, lineHeight: 1 }}>
+              {icaOverall}
+            </strong>
+          </div>
+        </div>
+
         <div
           style={{
             display: "grid",
@@ -532,6 +574,32 @@ function MiniReadout({
       <div style={{ color: tone, fontSize: 13, fontWeight: 800, lineHeight: 1.1 }}>
         {value}
       </div>
+    </div>
+  );
+}
+
+// ICA component bar — compact horizontal bar showing one ICA dimension.
+// The bar width is proportional to 0-100. Label is I, C, or A.
+function IcaBar({ label, value, color }: { label: string; value: number; color: string }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+      <span style={{ fontSize: 7, color, letterSpacing: "0.12em", minWidth: 8, fontWeight: 700 }}>
+        {label}
+      </span>
+      <div style={{ flex: 1, height: 3, background: "rgba(245,240,232,0.08)", position: "relative" }}>
+        <div
+          style={{
+            position: "absolute",
+            left: 0, top: 0, bottom: 0,
+            width: `${Math.min(100, value)}%`,
+            background: color,
+            transition: "width 0.3s ease",
+          }}
+        />
+      </div>
+      <span style={{ fontSize: 8, color, fontFamily: "var(--font-mono)", minWidth: 20, textAlign: "right" }}>
+        {value}
+      </span>
     </div>
   );
 }
