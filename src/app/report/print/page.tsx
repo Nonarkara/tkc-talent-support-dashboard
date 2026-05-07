@@ -244,7 +244,7 @@ export default function PrintReportPage() {
         {/* ══ DOCUMENT HEADER ══ */}
         <div className="doc-header">
           <div className="org-name">
-            Talent Knowledge Collaborative
+            บริษัท เทิร์นคีย์ คอมมูนิเคชั่น เซอร์วิส จำกัด (มหาชน)
           </div>
           <h1 className="t-title" style={{ marginBottom: 4 }}>
             รายงานสรุปขอบเขตงานและการตรวจรับงาน
@@ -260,7 +260,7 @@ export default function PrintReportPage() {
             <tbody>
               <tr>
                 <td>ผู้ว่าจ้าง</td>
-                <td>Talent Knowledge Collaborative</td>
+                <td>บริษัท เทิร์นคีย์ คอมมูนิเคชั่น เซอร์วิส จำกัด (มหาชน)</td>
               </tr>
               <tr>
                 <td>ผู้รับจ้าง</td>
@@ -313,7 +313,7 @@ export default function PrintReportPage() {
           <div className="section-header">1. วัตถุประสงค์</div>
           <p className="t-body">
             รายงานฉบับนี้จัดทำขึ้นเพื่อสรุปขอบเขตงานที่ผู้รับจ้างได้ดำเนินการพัฒนา
-            ระบบสนับสนุนและพัฒนาทรัพยากรมนุษย์ของTalent Knowledge Collaborative
+            ระบบสนับสนุนและพัฒนาทรัพยากรมนุษย์ของบริษัท เทิร์นคีย์ คอมมูนิเคชั่น เซอร์วิส จำกัด (มหาชน)
             (TKC Digital Twin) ให้แล้วเสร็จตามขอบเขตที่ตกลงไว้
             โดยระบบที่พัฒนาขึ้นเป็นแพลตฟอร์มดิจิทัลสำหรับการบริหารและพัฒนาบุคลากร
             ผ่านกลไกการจัดการทีมแบบ Gamification เพื่อให้ผู้บริหารสามารถมองเห็น

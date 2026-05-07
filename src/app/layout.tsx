@@ -36,8 +36,8 @@ const pressStart = Press_Start_2P({
 });
 
 export const metadata: Metadata = {
-  title: "TKC X — Talent Knowledge Collaborative",
-  description: "TKC X · Talent Knowledge Collaborative — the cassette for TKC's people, resources, and missions.",
+  title: "TKC X — บริษัท เทิร์นคีย์ คอมมูนิเคชั่น เซอร์วิส จำกัด (มหาชน)",
+  description: "TKC X · บริษัท เทิร์นคีย์ คอมมูนิเคชั่น เซอร์วิส จำกัด (มหาชน) — the cassette for TKC's people, resources, and missions.",
 };
 
 export default function RootLayout({

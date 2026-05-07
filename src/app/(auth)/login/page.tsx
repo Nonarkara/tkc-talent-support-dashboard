@@ -14,10 +14,18 @@
 import { useRef, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
+function getSafeNextPath(next: string | null) {
+  if (!next || !next.startsWith("/") || next.startsWith("//")) {
+    return "/command-center";
+  }
+
+  return next;
+}
+
 function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
-  const next = params.get("next") || "/command-center";
+  const next = getSafeNextPath(params.get("next"));
 
   const [pin, setPin] = useState("");
   const [shaking, setShaking] = useState(false);
@@ -87,7 +95,7 @@ function LoginForm() {
               color: "rgba(245,240,232,0.45)",
             }}
           >
-            Talent Knowledge Collaborative
+            บริษัท เทิร์นคีย์ คอมมูนิเคชั่น เซอร์วิส จำกัด (มหาชน)
           </div>
         </div>
 

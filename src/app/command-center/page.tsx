@@ -283,6 +283,15 @@ export default function CommandCenterPage() {
       overloadedHeroes,
     ],
   );
+  const homeHeaderMetrics = useMemo<RouteMetric[]>(
+    () => [
+      { label: "Heroes", value: String(dash.employees.length) },
+      { label: "Active Quests", value: String(activeProjects) },
+      { label: "KPIs", value: String(dash.kpis.length) },
+    ],
+    [activeProjects, dash.employees.length, dash.kpis.length],
+  );
+  const headerMetrics = screen === "home" ? homeHeaderMetrics : routeMetrics;
 
   const statusText = dash.loading
     ? "Syncing"
@@ -351,7 +360,7 @@ export default function CommandCenterPage() {
         <div className="cc-brand-row">
           <div className="cc-brand-lockup">
             <span className="cc-wordmark pixel">TKC X</span>
-            <span className="cc-product-name">Talent Knowledge Collaborative</span>
+            <span className="cc-product-name">บริษัท เทิร์นคีย์ คอมมูนิเคชั่น เซอร์วิส จำกัด (มหาชน)</span>
             <span
               className="cc-build-pill"
               title={`Build ${BUILD_VERSION} — ${BUILD_CODENAME}. See src/lib/build-version.ts for the version log.`}
@@ -450,9 +459,9 @@ export default function CommandCenterPage() {
             </div>
 
             <div className="cc-console-metrics" aria-label="Command center totals">
-              {routeMetrics.map((metric) => (
+              {headerMetrics.map((metric) => (
                 <MetricPill
-                  key={`${activeRoute}-${metric.label}`}
+                  key={`${screen}-${activeRoute}-${metric.label}`}
                   label={metric.label}
                   value={metric.value}
                 />
@@ -717,6 +726,11 @@ function RouteMenuOverlay({
       <div className="cc-overlay-scrim" onClick={onClose} />
       <div className="cc-overlay-window">
         <MenuWindow title={translate(loc, { en: "Route Menu", th: "เมนูเส้นทาง" })}>
+          <div className="cc-overlay-actions">
+            <button type="button" className="cc-nav-button" onClick={onClose}>
+              {translate(loc, { en: "Close", th: "ปิด" })}
+            </button>
+          </div>
           <div className="cc-overlay-list">
             {ROUTES.map((route) => {
               const m = metaFor(route.key, loc);
