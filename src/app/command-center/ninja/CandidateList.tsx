@@ -57,6 +57,7 @@ export function CandidateList({
   searchQuery,
   onSearchChange,
   activeTeamName = "squad",
+  recruitingEnabled = true,
   onSkillsUpdated,
 }: {
   candidates: Employee[];
@@ -68,6 +69,7 @@ export function CandidateList({
   searchQuery: string;
   onSearchChange: (q: string) => void;
   activeTeamName?: string;
+  recruitingEnabled?: boolean;
   onSkillsUpdated?: (employeeId: string, newSkills: Skill[]) => void;
 }) {
   const [capped, setCapped] = useState(true);
@@ -156,6 +158,7 @@ export function CandidateList({
                 onAdd={(fte) => onAdd(emp, fte)}
                 onDragStart={onDragStart ? (event) => onDragStart(emp, event) : undefined}
                 addTitle={`Send to ${activeTeamName}`}
+                recruitingEnabled={recruitingEnabled}
                 onSkillsUpdated={onSkillsUpdated}
               />
             ))}
@@ -195,6 +198,7 @@ function CandidateRow({
   onAdd,
   onDragStart,
   addTitle,
+  recruitingEnabled,
   onSkillsUpdated,
 }: {
   emp: Employee;
@@ -204,6 +208,7 @@ function CandidateRow({
   onAdd: (fte: number) => void;
   onDragStart?: (event: React.DragEvent<HTMLDivElement>) => void;
   addTitle: string;
+  recruitingEnabled: boolean;
   onSkillsUpdated?: (employeeId: string, newSkills: Skill[]) => void;
 }) {
   const archetype = getArchetype(emp);
@@ -265,7 +270,7 @@ function CandidateRow({
         ? "rgba(212,168,67,0.08)"
         : "rgba(0,0,0,0.15)";
 
-  const isDraggable = !assignedHere && !atCapacity && Boolean(onDragStart);
+  const isDraggable = recruitingEnabled && !assignedHere && !atCapacity && Boolean(onDragStart);
 
   return (
     <div
@@ -537,6 +542,7 @@ function CandidateRow({
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
+                if (!recruitingEnabled) return;
                 if (hasAssignmentsElsewhere) {
                   // Hero already busy — ask boss to pick FTE split
                   setFtePicking(true);
@@ -545,19 +551,26 @@ function CandidateRow({
                   onAdd(1.0);
                 }
               }}
-              title={hasAssignmentsElsewhere ? "Pick FTE split (hero already on another mission)" : addTitle}
+              disabled={!recruitingEnabled}
+              title={
+                !recruitingEnabled
+                  ? "Open the mission before recruiting."
+                  : hasAssignmentsElsewhere
+                    ? "Pick FTE split (hero already on another mission)"
+                    : addTitle
+              }
               style={{
                 width: 28,
                 height: 28,
                 borderRadius: "50%",
-                border: "1.5px solid var(--rpg-purple, #8B6FB5)",
-                background: "var(--rpg-purple, #8B6FB5)",
-                color: "var(--ink-4)",
+                border: `1.5px solid ${recruitingEnabled ? "var(--rpg-purple, #8B6FB5)" : "var(--ink-2)"}`,
+                background: recruitingEnabled ? "var(--rpg-purple, #8B6FB5)" : "var(--ink-3)",
+                color: recruitingEnabled ? "var(--ink-4)" : "var(--ink-1)",
                 fontFamily: "inherit",
                 fontSize: 16,
                 fontWeight: 700,
                 lineHeight: 1,
-                cursor: "pointer",
+                cursor: recruitingEnabled ? "pointer" : "not-allowed",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",

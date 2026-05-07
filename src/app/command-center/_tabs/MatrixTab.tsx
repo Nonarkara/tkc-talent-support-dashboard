@@ -16,11 +16,9 @@ import { MenuWindow } from '@/components/MenuWindow';
 import { capabilityFit } from '@/lib/capability-fit';
 import {
   DEFAULT_FUNCTIONS,
-  DEFAULT_COES,
   createBlankScenario,
   recomputeMetrics,
   setAllocation,
-  isOverAllocated,
   type MatrixScenario,
 } from '@/lib/matrix-scenarios';
 import type { DashboardPayload } from '../_shared/types';
@@ -102,8 +100,7 @@ export function MatrixTab({ dash }: Props) {
   };
 
   const handleAllocate = (employeeId: string, coeName: string, pct: number) => {
-    const updated = setAllocation(scenario, employeeId, coeName, pct);
-    setScenario(updated);
+    setScenario((current) => setAllocation(current, employeeId, coeName, pct));
     setLastMsg(null);
   };
 
@@ -161,6 +158,7 @@ export function MatrixTab({ dash }: Props) {
         <div style={{ display: 'grid', gap: 12, minHeight: 0 }}>
           <MatrixGrid
             scenario={scenarioWithMetrics}
+            allEmployees={dash.employees}
             filteredEmployees={filtered}
             selectedSkills={Array.from(selectedSkills)}
             competencyStandards={dash.competency_standards}

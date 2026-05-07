@@ -18,11 +18,11 @@ export function MetricsPanel({ report }: { report: MatrixScenario }) {
   if (!report.metrics) return null;
 
   const { coe_readiness, function_utilization, skill_scarcity, total_over_allocation_count } = report.metrics;
+  const coeReports = Object.values(coe_readiness);
 
-  const avgReadiness = Math.round(
-    Object.values(coe_readiness).reduce((a, r) => a + r.overall_pct, 0) /
-      Object.values(coe_readiness).length
-  );
+  const avgReadiness = coeReports.length > 0
+    ? Math.round(coeReports.reduce((a, r) => a + r.overall_pct, 0) / coeReports.length)
+    : 0;
 
   return (
     <div style={{ display: 'grid', gap: 12 }}>
@@ -88,7 +88,7 @@ export function MetricsPanel({ report }: { report: MatrixScenario }) {
               >
                 <span>{FUNCTION_LABELS[func] || func}</span>
                 <span style={{ fontWeight: 700 }}>
-                  {util.allocated_headcount}/{util.total_headcount} ({util.utilization_pct}%)
+                  {formatMetricNumber(util.allocated_headcount)}/{util.total_headcount} ({util.utilization_pct}%)
                 </span>
               </div>
               <div
@@ -185,6 +185,10 @@ export function MetricsPanel({ report }: { report: MatrixScenario }) {
       </div>
     </div>
   );
+}
+
+function formatMetricNumber(value: number) {
+  return Number.isInteger(value) ? String(value) : value.toFixed(1);
 }
 
 function MetricCard({

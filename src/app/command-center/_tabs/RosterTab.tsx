@@ -60,6 +60,15 @@ function numberOr(value: unknown, fallback: number) {
   return Number.isFinite(next) ? next : fallback;
 }
 
+function attrDraftsForEmployee(emp: Employee): Record<AttrKey, string> {
+  return Object.fromEntries(
+    ATTR_CONTROLS.map((control) => [
+      control.key,
+      String(numberOr(emp[control.field], 10)),
+    ]),
+  ) as Record<AttrKey, string>;
+}
+
 export function RosterTab({ dash }: { dash: DashboardPayload }) {
   const [viewMode, setViewMode] = useState<ViewMode>("cards");
   const [search, setSearch] = useState("");
@@ -612,6 +621,9 @@ function Drawer({
   const [err, setErr] = useState<string | null>(null);
   const [valueBusy, setValueBusy] = useState(false);
   const [valueNotice, setValueNotice] = useState<string | null>(null);
+  const [attrDrafts, setAttrDrafts] = useState<Record<AttrKey, string>>(() =>
+    attrDraftsForEmployee(emp),
+  );
 
   // Lazy fetch on mount. The /api/db/events endpoint may not exist yet
   // (it's a future read helper on the Phase 2 events table); the UI
@@ -642,6 +654,10 @@ function Drawer({
     };
   }, [emp.id]);
 
+  useEffect(() => {
+    setAttrDrafts(attrDraftsForEmployee(emp));
+  }, [emp]);
+
   async function mutateValues(
     action: "seed" | "lock" | "unlock" | "adjust",
     values?: { attributes?: Partial<Record<AttrKey, number>> },
@@ -656,7 +672,10 @@ function Drawer({
           : action === "unlock"
             ? "Unlocking stats for approved adjustment"
             : "Manual stat adjustment after approved review");
-    const reason = window.prompt("Reason for audit log", defaultReason);
+    const reason =
+      action === "adjust"
+        ? defaultReason
+        : window.prompt("Reason for audit log", defaultReason);
     if (!reason?.trim()) return;
 
     setValueBusy(true);
@@ -704,10 +723,28 @@ function Drawer({
     if (emp.stat_locked || valueBusy) return;
     const next = Math.max(1, Math.min(20, current + delta));
     if (next === current) return;
+    setAttrDrafts((currentDrafts) => ({ ...currentDrafts, [key]: String(next) }));
     void mutateValues(
       "adjust",
       { attributes: { [key]: next } },
       `${key.toUpperCase()} ${current} -> ${next} after approved review`,
+    );
+  }
+
+  function commitAttributeDraft(control: (typeof ATTR_CONTROLS)[number], current: number) {
+    if (emp.stat_locked || valueBusy) return;
+    const raw = Number(attrDrafts[control.key]);
+    if (!Number.isFinite(raw)) {
+      setAttrDrafts((currentDrafts) => ({ ...currentDrafts, [control.key]: String(current) }));
+      return;
+    }
+    const next = Math.max(1, Math.min(20, Math.round(raw)));
+    setAttrDrafts((currentDrafts) => ({ ...currentDrafts, [control.key]: String(next) }));
+    if (next === current) return;
+    void mutateValues(
+      "adjust",
+      { attributes: { [control.key]: next } },
+      `${control.key.toUpperCase()} ${current} -> ${next} after approved review`,
     );
   }
 
@@ -850,7 +887,7 @@ function Drawer({
                         key={control.key}
                         style={{
                           display: "grid",
-                          gridTemplateColumns: "44px 1fr auto auto",
+                          gridTemplateColumns: "44px minmax(58px, 1fr) auto auto",
                           gap: 8,
                           alignItems: "center",
                           border: "1px solid var(--rpg-blue-deep)",
@@ -861,9 +898,38 @@ function Drawer({
                         <span className="pixel" style={{ color: "var(--rpg-yellow)", fontSize: 8 }}>
                           {control.label}
                         </span>
-                        <span style={{ color: "var(--ink-0)", fontSize: 12, fontWeight: 800 }}>
-                          {current}
-                        </span>
+                        <input
+                          type="number"
+                          min={1}
+                          max={20}
+                          step={1}
+                          value={attrDrafts[control.key] ?? String(current)}
+                          onChange={(event) =>
+                            setAttrDrafts((currentDrafts) => ({
+                              ...currentDrafts,
+                              [control.key]: event.target.value,
+                            }))
+                          }
+                          onBlur={() => commitAttributeDraft(control, current)}
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter") {
+                              event.currentTarget.blur();
+                            }
+                          }}
+                          disabled={disabled}
+                          aria-label={`${control.label} value`}
+                          style={{
+                            minWidth: 0,
+                            width: "100%",
+                            border: "1px solid var(--ink-2)",
+                            background: disabled ? "var(--ink-3)" : "rgba(0,0,0,0.2)",
+                            color: disabled ? "var(--ink-1)" : "var(--ink-0)",
+                            fontFamily: "inherit",
+                            fontSize: 12,
+                            fontWeight: 800,
+                            padding: "5px 6px",
+                          }}
+                        />
                         <button
                           onClick={() => adjustAttribute(control.key, current, -1)}
                           disabled={disabled || current <= 1}

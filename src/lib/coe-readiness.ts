@@ -122,8 +122,10 @@ export function functionUtilization(
   totalHeadcount: number,
   allocatedHeadcount: number
 ): FunctionUtilizationReport {
-  const utilization_pct = (allocatedHeadcount / totalHeadcount) * 100;
+  const utilization_pct = totalHeadcount > 0 ? (allocatedHeadcount / totalHeadcount) * 100 : 0;
   const idle_headcount = totalHeadcount - allocatedHeadcount;
+  const roundedAllocated = Math.round(allocatedHeadcount * 10) / 10;
+  const roundedIdle = Math.round(Math.max(0, idle_headcount) * 10) / 10;
 
   let warning: FunctionUtilizationReport['warning'] = null;
   if (allocatedHeadcount > totalHeadcount) {
@@ -135,9 +137,9 @@ export function functionUtilization(
   return {
     function_code: functionCode,
     total_headcount: totalHeadcount,
-    allocated_headcount: allocatedHeadcount,
+    allocated_headcount: roundedAllocated,
     utilization_pct: Math.round(utilization_pct),
-    idle_headcount: Math.max(0, idle_headcount),
+    idle_headcount: roundedIdle,
     warning,
   };
 }

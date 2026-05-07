@@ -77,21 +77,26 @@ export function setAllocation(
   pct: number
 ): MatrixScenario {
   const clamped = Math.max(0, Math.min(100, pct));
-
-  if (!scenario.allocations[employeeId]) {
-    scenario.allocations[employeeId] = {};
-  }
+  const currentEmployeeAllocations = scenario.allocations[employeeId] ?? {};
+  const nextEmployeeAllocations = { ...currentEmployeeAllocations };
+  const nextAllocations = { ...scenario.allocations };
 
   if (clamped === 0) {
-    delete scenario.allocations[employeeId][coeName];
-    if (Object.keys(scenario.allocations[employeeId]).length === 0) {
-      delete scenario.allocations[employeeId];
+    delete nextEmployeeAllocations[coeName];
+    if (Object.keys(nextEmployeeAllocations).length === 0) {
+      delete nextAllocations[employeeId];
+    } else {
+      nextAllocations[employeeId] = nextEmployeeAllocations;
     }
   } else {
-    scenario.allocations[employeeId][coeName] = clamped;
+    nextEmployeeAllocations[coeName] = clamped;
+    nextAllocations[employeeId] = nextEmployeeAllocations;
   }
 
-  return scenario;
+  return {
+    ...scenario,
+    allocations: nextAllocations,
+  };
 }
 
 /**
@@ -148,12 +153,12 @@ export function recomputeMetrics(
   const function_utilization: Record<string, FunctionUtilizationReport> = {};
   for (const func of scenario.function_codes) {
     const total = employeesByFunction.get(func)?.length || 0;
-    const allocations = Object.values(scenario.allocations);
-    const allocated = allocations.filter((allocMap: Record<string, number>) => {
-      // Count how many of this function's people are in this allocMap
-      // For now, rough proxy: if person is in any allocation, they're allocated
-      return Object.values(allocMap).some((pct: number) => pct > 0);
-    }).length;
+    const allocated = Object.entries(scenario.allocations).reduce((sum, [employeeId, allocMap]) => {
+      const employee = employeeMap.get(employeeId);
+      if (employee?.dept_code !== func) return sum;
+      const allocatedPct = Object.values(allocMap).reduce((a, b) => a + b, 0);
+      return sum + allocatedPct / 100;
+    }, 0);
     function_utilization[func] = functionUtilization(func, total, allocated);
   }
 

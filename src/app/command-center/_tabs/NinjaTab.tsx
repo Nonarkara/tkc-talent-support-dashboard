@@ -360,6 +360,10 @@ export function NinjaTab({ dash }: Props) {
 
     const status = empStatuses.get(emp.id);
 
+    if (!configLocked[team]) {
+      setTeamMessage(team, `Open ${mission.callSign} before recruiting.`);
+      return;
+    }
     if (status?.assignedHere) {
       setTeamMessage(team, `${emp.display_name} is already in ${mission.callSign}.`);
       return;
@@ -524,6 +528,7 @@ export function NinjaTab({ dash }: Props) {
         memberCount={membersByTeam[activeTeam].length}
       />
 
+      <div style={{ order: 3 }}>
       <MenuWindow title="Workshop Controls">
         <div
           style={{
@@ -625,10 +630,12 @@ export function NinjaTab({ dash }: Props) {
           </div>
         </div>
       </MenuWindow>
+      </div>
 
       <div
         className="cc-two-pane"
         style={{
+          order: 2,
           display: "grid",
           gridTemplateColumns: "minmax(0, 1.35fr) 390px",
           gap: 16,
@@ -722,10 +729,11 @@ export function NinjaTab({ dash }: Props) {
                 required={activeRequired}
                 empStatuses={empStatuses}
                 onAdd={(emp, fte) => addToTeam(activeTeam, emp, fte)}
-                onDragStart={handleCandidateDragStart}
+                onDragStart={configLocked[activeTeam] ? handleCandidateDragStart : undefined}
                 searchQuery={search}
                 onSearchChange={setSearch}
                 activeTeamName={activeMission.callSign}
+                recruitingEnabled={configLocked[activeTeam]}
                 onSkillsUpdated={handleSkillsUpdated}
               />
             </div>

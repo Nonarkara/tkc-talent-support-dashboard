@@ -898,6 +898,12 @@ body:has(.cc-root) {
   gap: 8px;
 }
 
+.cc-overlay-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
 .cc-command-list,
 .cc-linkage-list,
 .cc-diagnostic-list,
@@ -1300,6 +1306,7 @@ body:has(.cc-root) {
   /* Default: no special behaviour. Parent rules (e.g. .cc-home-window)
      can opt in to internal scroll. Keeps backwards compatibility for
      every existing MenuWindow caller. */
+  flex: 1 1 auto;
   min-height: 0;
 }
 .menu-window-title {
@@ -1436,23 +1443,54 @@ body:has(.cc-root) {
 }
 
 @media (max-width: 1120px) {
+  html:has(.cc-root),
   body:has(.cc-root) {
-    overflow: auto;
+    height: auto !important;
+    min-height: 100%;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
   }
 
   .cc-root {
-    height: auto;
+    display: block;
+    grid-template-rows: auto auto auto;
+    height: auto !important;
     min-height: 100svh;
+    overflow: visible !important;
+  }
+
+  .cc-main {
+    display: block;
+    height: auto;
+    min-height: 0;
     overflow: visible;
   }
 
   .cc-console {
+    display: block;
     width: 100%;
     aspect-ratio: auto;
     max-height: none;
-    height: auto;
+    height: auto !important;
     min-height: calc(100svh - 188px);
-    overflow: visible;
+    overflow: visible !important;
+  }
+
+  .cc-console-body,
+  .cc-route-stage,
+  .cc-tab-frame {
+    height: auto !important;
+    min-height: 0;
+    overflow: visible !important;
+  }
+
+  .cc-tab-frame {
+    grid-template-rows: auto !important;
+  }
+
+  .cc-two-pane {
+    height: auto !important;
+    overflow: visible !important;
   }
 
   .cc-console-header,
@@ -1498,8 +1536,42 @@ body:has(.cc-root) {
 
 @media (max-width: 860px) {
   .cc-main {
-    overflow: auto;
+    height: auto;
+    overflow: visible;
     place-items: stretch;
+  }
+
+  .cc-overlay {
+    position: fixed;
+    inset: 0;
+    overflow-y: auto;
+    padding: 148px 14px 24px;
+    box-sizing: border-box;
+  }
+
+  .cc-overlay-window {
+    position: relative;
+    inset: auto;
+    transform: none;
+    width: min(100%, 560px);
+    max-height: none;
+    margin: 0 auto;
+    z-index: 1;
+  }
+
+  .cc-overlay-list {
+    grid-template-columns: 1fr;
+  }
+
+  .cc-sync-popup {
+    position: fixed;
+    top: 132px;
+    left: 14px;
+    right: 14px;
+    min-width: 0;
+    max-width: none;
+    max-height: calc(100svh - 156px);
+    overflow-y: auto;
   }
 
   .cc-two-pane,

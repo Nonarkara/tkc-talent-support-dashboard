@@ -34,6 +34,8 @@ export function FormationTab({ dash }: { dash: DashboardPayload }) {
 
   return (
     <div style={{ display: "grid", gap: 14 }}>
+      <FormationCanvas dash={dash} />
+
       <MenuWindow title="Workshop Controls">
         <div
           style={{
@@ -99,8 +101,6 @@ export function FormationTab({ dash }: { dash: DashboardPayload }) {
           </div>
         </div>
       </MenuWindow>
-
-      <FormationCanvas dash={dash} />
 
       <MenuWindow title="Project Scores">
         <ProjectScorePanel />
