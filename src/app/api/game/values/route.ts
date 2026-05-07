@@ -302,6 +302,8 @@ async function lockEmployee(row: EmployeeRow, locked: boolean, reason: string, s
     after,
     reason,
   });
+  // Mirror lock state to Sheets immediately so Players tab stays in sync
+  void mirrorPlayer(row.id);
   return { skipped: false };
 }
 
@@ -408,6 +410,8 @@ async function lockProject(row: ProjectRow, locked: boolean, reason: string, sou
     after,
     reason,
   });
+  // Mirror lock state to Sheets immediately so Projects tab stays in sync
+  void mirrorProject(row.code);
   return { skipped: false };
 }
 
@@ -739,11 +743,19 @@ export async function POST(request: Request) {
         force: body.force,
       });
 
+      // Mirror all employees + projects to Sheets snapshot tabs after bulk seed.
+      // Fire-and-forget — does not block the response but ensures Sheets stays
+      // in sync without requiring a manual bootstrap call.
+      void Promise.all([
+        ...employees.map((emp) => mirrorPlayer(emp.id)),
+        ...projects.map((proj) => mirrorProject(proj.code)),
+      ]);
+
       return apiJson({
         ok: true,
         touched: employeeResult.touched + projectResult.touched,
         skipped: employeeResult.skipped + projectResult.skipped,
-        sheets: "Bulk audit/history rows queued; run sheets bootstrap to refresh Players and Projects snapshots.",
+        sheets: "Players and Projects snapshot tabs queued for refresh after bulk seed.",
       });
     }
 
