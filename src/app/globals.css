@@ -617,6 +617,39 @@ body:has(.cc-root) {
   background: var(--rpg-orange);
 }
 
+/* Demo mode — seeded fallback, not real DB data */
+.cc-status[data-state="demo"]::before {
+  background: var(--rpg-purple, #8B6FB5);
+}
+.cc-status[data-state="demo"] {
+  color: var(--rpg-purple, #8B6FB5);
+}
+
+/* Live mode — real Neon DB */
+.cc-status[data-state="live"]::before {
+  background: var(--flux-up);
+}
+.cc-status[data-state="live"] {
+  color: var(--flux-up);
+}
+
+/* Clickable status acts as a subtle resync button */
+button.cc-status {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-family: var(--font-mono, monospace);
+  letter-spacing: 0.12em;
+}
+button.cc-status:hover {
+  opacity: 0.75;
+}
+button.cc-status:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 .cc-top-controls {
   display: flex;
   align-items: center;

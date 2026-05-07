@@ -329,13 +329,15 @@ export default function CommandCenterPage() {
   );
   const headerMetrics = screen === "home" ? homeHeaderMetrics : routeMetrics;
 
+  // LIVE = real Neon DB data. DEMO = seeded fallback (auth missing or API down).
+  // The user must always know which world they're navigating.
   const statusText = dash.loading
     ? "Syncing"
     : dash.error
       ? "Offline"
       : dash.live
-        ? "Online"
-        : "Standby";
+        ? "Live"
+        : "Demo";
 
   const grade = orgGrade(chemistryScore, dash.employees.length, atRiskCount);
   const daysLeft = sprintDaysLeft();
@@ -457,9 +459,16 @@ export default function CommandCenterPage() {
               health={sheetsHealth}
               onClick={() => setSyncOpen((prev) => !prev)}
             />
-            <div className="cc-status" data-state={statusText.toLowerCase()}>
+            <button
+              type="button"
+              className="cc-status"
+              data-state={statusText.toLowerCase()}
+              onClick={() => void dash.refresh()}
+              disabled={dash.loading}
+              title={dash.live ? "Live data from Neon DB — click to resync" : "Demo mode — click to retry live DB connection"}
+            >
               <span className="cc-status-label">{statusText}</span>
-            </div>
+            </button>
           </div>
         </div>
       </header>
