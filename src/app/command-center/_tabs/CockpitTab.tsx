@@ -21,6 +21,7 @@ import type { DeptKpi } from "../_shared/types";
 import { OutcomeReveal } from "@/components/OutcomeReveal";
 import { WorldTicker } from "@/components/WorldTicker";
 import { FourPillarsPanel } from "@/components/FourPillarsPanel";
+import { ProjectTrajectoryStrip } from "@/components/ProjectTrajectoryStrip";
 
 const thb = (n: number) =>
   new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(n);
@@ -248,6 +249,48 @@ export function CockpitTab({ dash }: { dash: DashboardPayload }) {
                 ))}
             </div>
           </MenuWindow>
+
+          {/* Project trajectory — financial projection per active quest.
+              Updates live as allocations change. Sparkline shows
+              projected cost vs straight-line budget. */}
+          {dash.projects.filter((p) => p.status !== "done").length > 0 && (
+            <MenuWindow title="Quest Trajectory · Financial Burn">
+              <div style={{ display: "grid", gap: 8 }}>
+                {dash.projects
+                  .filter((p) => p.status !== "done")
+                  .slice(0, 4)
+                  .map((p) => {
+                    const projAllocs = (dash.employee_availability ?? [])
+                      .flatMap((a) => a.active_allocations ?? [])
+                      .filter((a) => a.project_code === p.code)
+                      .map((a) => ({ employee_id: a.employee_id, fte: Number(a.fte ?? 0) }));
+                    return (
+                      <div key={p.code} style={{ display: "grid", gap: 4 }}>
+                        <div style={{ fontSize: 10, color: "var(--ink-1)", letterSpacing: "0.06em" }}>
+                          <strong style={{ color: "var(--rpg-yellow)" }}>{p.code}</strong> · {p.name}
+                        </div>
+                        <ProjectTrajectoryStrip
+                          project={{
+                            code: p.code,
+                            budget_thb: typeof p.budget_thb === "number" ? p.budget_thb : Number(p.budget_thb) || null,
+                            monthly_ceiling: typeof p.monthly_ceiling === "number" ? p.monthly_ceiling : Number(p.monthly_ceiling) || null,
+                            due_date: null,
+                            progress_pct: p.progress_pct ?? null,
+                            team_size: p.team_size ?? null,
+                          }}
+                          allocations={projAllocs}
+                          employees={dash.employees.map((e) => ({
+                            id: e.id,
+                            salary_thb: e.salary_thb ?? null,
+                          }))}
+                          compact
+                        />
+                      </div>
+                    );
+                  })}
+              </div>
+            </MenuWindow>
+          )}
         </div>
 
       </div>

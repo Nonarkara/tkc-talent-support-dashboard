@@ -46,9 +46,20 @@
  *                             Editable hero attributes in Roster.
  *                             MatrixGrid scenario rebuild (Codex).
  *                             Ticker shows ORG not SET (synthetic price).
+ *   v4.4 · Talk-to-Fill      Conversational stat builder. Open any
+ *                             hero card → "Compose with AI" → answer 3-4
+ *                             questions → AI proposes full DQ3 profile.
+ *                             Review, nudge, approve. Writes Postgres +
+ *                             Sheets + AI live context all in one chain.
+ *                             ICA Index (I/C/A bars + score) on every
+ *                             card — reacts live to stat changes.
+ *                             Live AI context: chatbot reads real DB on
+ *                             every call (heroes, formations, anchors).
+ *                             ProjectTrajectoryStrip: financial burn /
+ *                             weeks-left / projected / margin + spark.
  *
  * Bump both fields together. Codename stays one or two words.
  */
 
-export const BUILD_VERSION = "v4.3";
-export const BUILD_CODENAME = "Alive";
+export const BUILD_VERSION = "v4.4";
+export const BUILD_CODENAME = "Talk-to-Fill";

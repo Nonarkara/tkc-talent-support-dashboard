@@ -12,6 +12,7 @@
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { PlayerCard } from "@/components/PlayerCard";
+import { ProfileWizard } from "@/components/ProfileWizard";
 import { DQ3HeroSprite } from "@/components/DQ3HeroSprite";
 import { MenuWindow } from "@/components/MenuWindow";
 import {
@@ -621,6 +622,7 @@ function Drawer({
   const [err, setErr] = useState<string | null>(null);
   const [valueBusy, setValueBusy] = useState(false);
   const [valueNotice, setValueNotice] = useState<string | null>(null);
+  const [wizardOpen, setWizardOpen] = useState(false);
   const [attrDrafts, setAttrDrafts] = useState<Record<AttrKey, string>>(() =>
     attrDraftsForEmployee(emp),
   );
@@ -871,6 +873,14 @@ function Drawer({
                   </button>
                 </div>
                 <button
+                  onClick={() => setWizardOpen(true)}
+                  disabled={valueBusy || Boolean(emp.stat_locked)}
+                  style={miniActionButton("var(--rpg-purple)", valueBusy || Boolean(emp.stat_locked))}
+                  title="Talk to the Interviewer about this hero. Answer 3 questions; AI proposes the full profile; you approve or adjust."
+                >
+                  Compose with AI
+                </button>
+                <button
                   onClick={() => void mutateValues("seed")}
                   disabled={valueBusy || Boolean(emp.stat_locked)}
                   style={miniActionButton("var(--rpg-yellow)", valueBusy || Boolean(emp.stat_locked))}
@@ -1095,6 +1105,16 @@ function Drawer({
           </div>
         </div>
       </div>
+
+      {wizardOpen && (
+        <ProfileWizard
+          target={{ type: "employee", id: emp.id, display_name: emp.display_name }}
+          onClose={() => setWizardOpen(false)}
+          onCommitted={() => {
+            void onRefresh();
+          }}
+        />
+      )}
     </div>
   );
 }
