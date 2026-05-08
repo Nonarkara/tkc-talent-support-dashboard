@@ -126,12 +126,35 @@ export function CockpitTab({ dash }: { dash: DashboardPayload }) {
         }}
       >
         {/* Column A — The Four Pillars (the morning question) */}
-        <div className="cc-scroll" style={{ display: "grid", gap: 12, alignContent: "start" }}>
+        <div
+          className="cc-scroll"
+          style={{
+            display: "grid",
+            // Pin each child to its own content-sized row so siblings stack
+            // honestly inside the constrained-height scroll column instead
+            // of collapsing into the same implicit row track.
+            gridAutoRows: "max-content",
+            gap: 12,
+            alignContent: "start",
+          }}
+        >
           <FourPillarsPanel />
         </div>
 
         {/* Column B — KPI grid + Active Quests, the working numbers */}
-        <div className="cc-scroll" style={{ display: "grid", gap: 12, alignContent: "start" }}>
+        <div
+          className="cc-scroll"
+          style={{
+            display: "grid",
+            // Same pin: without this, the three MenuWindow children render
+            // on top of each other when their combined natural height
+            // exceeds the column's allotted 1fr of viewport (KPIs + Quests
+            // + Trajectory all occupied row 1, hence the visible collision).
+            gridAutoRows: "max-content",
+            gap: 12,
+            alignContent: "start",
+          }}
+        >
           <MenuWindow title="Department KPIs">
             {dash.kpis.length === 0 ? (
               <div style={{ color: "var(--ink-1)", fontSize: 11, padding: "8px 0" }}>
