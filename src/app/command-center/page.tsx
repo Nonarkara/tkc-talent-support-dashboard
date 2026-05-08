@@ -141,6 +141,16 @@ export default function CommandCenterPage() {
     exchange: string;
     live: boolean;
   } | null>(null);
+  const [liveFinancials, setLiveFinancials] = useState<{
+    revenue_9m_m: number;
+    net_profit_9m_m: number;
+    eps_thb: number;
+    market_cap_b: number;
+    pe_ratio: number;
+    dividend_thb: number;
+    dividend_yield_pct: number;
+    as_of: string;
+  } | null>(null);
 
   useEffect(() => {
     async function fetchStock() {
@@ -165,8 +175,24 @@ export default function CommandCenterPage() {
       }
     }
 
+    async function fetchFinancials() {
+      try {
+        const res = await fetch("/api/tkc/financials");
+        const data = await res.json();
+        if (typeof data.revenue_9m_m === "number") {
+          setLiveFinancials(data);
+        }
+      } catch {
+        // Silent — ticker uses TKC_ANNUAL fallback.
+      }
+    }
+
     void fetchStock();
-    const interval = setInterval(() => void fetchStock(), 5 * 60 * 1000);
+    void fetchFinancials();
+    const interval = setInterval(() => {
+      void fetchStock();
+      void fetchFinancials();
+    }, 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, []);
 
@@ -363,7 +389,7 @@ export default function CommandCenterPage() {
     const pct = `${delta_pct >= 0 ? "+" : ""}${delta_pct.toFixed(2)}%`;
     const priceLabel = isLive ? `${price.toFixed(2)} THB` : `${price.toFixed(2)}*`;
 
-    const a = TKC_ANNUAL;
+    const a = liveFinancials ?? TKC_ANNUAL;
     const tickerName = liveStock?.ticker ?? "ORG";
     const tickerExchange = liveStock?.exchange ?? "DEMO";
 
@@ -381,7 +407,7 @@ export default function CommandCenterPage() {
       `     ✦ SPRINT LOCK ${daysLeft}d`
     );
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chemistryScore, dash.employees.length, dash.kpis.length, dash.projects, dash.teams, liveStock, grade.grade, daysLeft]);
+  }, [chemistryScore, dash.employees.length, dash.kpis.length, dash.projects, dash.teams, liveStock, liveFinancials, grade.grade, daysLeft]);
 
   function navigateTo(next: RouteScreen) {
     if (screen === next) return;
