@@ -290,63 +290,77 @@ export function useDashboard(): DashboardPayload {
     setLoading(true);
     setError(null);
     try {
-      const dashRes = await fetch("/api/db/dashboard");
+      const dashRes = await fetch("/api/db/dashboard", {
+        credentials: "same-origin",
+        headers: { Accept: "application/json" },
+      });
+
+      // If the middleware bounced us to /login (HTML, not JSON), don't
+      // fall back to mock data — redirect the user to authenticate.
+      const contentType = dashRes.headers.get("content-type") ?? "";
+      if (!contentType.includes("application/json")) {
+        if (typeof window !== "undefined") {
+          window.location.href = `/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+        }
+        return;
+      }
+
       const dash = await dashRes.json();
       if (!dashRes.ok) {
         throw new Error(dash.error ?? `HTTP ${dashRes.status}`);
       }
-      const source = needsSeededFallback(dash)
-        ? seededDashboard(Array.isArray(dash.diagnostics) ? dash.diagnostics : [])
-        : dash;
+
+      // Always use what the API returned. No seeded fallback —
+      // mock people overwriting real people is worse than empty arrays.
+      // If the DB is empty, it's empty. The UI shows that honestly.
       setEmployees(
-        Array.isArray(source.employees)
-          ? source.employees.map((employee: Partial<Employee>) => normalizeEmployee(employee))
+        Array.isArray(dash.employees)
+          ? dash.employees.map((employee: Partial<Employee>) => normalizeEmployee(employee))
           : [],
       );
       setProjects(
-        Array.isArray(source.projects)
-          ? source.projects.map((project: Partial<Project>) => normalizeProject(project))
+        Array.isArray(dash.projects)
+          ? dash.projects.map((project: Partial<Project>) => normalizeProject(project))
           : [],
       );
-      setTeams(Array.isArray(source.teams) ? source.teams : []);
-      setSupportActions(Array.isArray(source.support_actions) ? source.support_actions : []);
+      setTeams(Array.isArray(dash.teams) ? dash.teams : []);
+      setSupportActions(Array.isArray(dash.support_actions) ? dash.support_actions : []);
       setCompetencyStandards(
-        Array.isArray(source.competency_standards) ? source.competency_standards : [],
+        Array.isArray(dash.competency_standards) ? dash.competency_standards : [],
       );
       setEmployeeAvailability(
-        Array.isArray(source.employee_availability) ? source.employee_availability : [],
+        Array.isArray(dash.employee_availability) ? dash.employee_availability : [],
       );
       setEmployeeProfileFacets(
-        Array.isArray(source.employee_profile_facets) ? source.employee_profile_facets : [],
+        Array.isArray(dash.employee_profile_facets) ? dash.employee_profile_facets : [],
       );
-      setSentiment(Array.isArray(source.sentiment) ? source.sentiment : []);
-      setProjectVariance(Array.isArray(source.project_variance) ? source.project_variance : []);
-      setOutcomes(Array.isArray(source.outcomes) ? source.outcomes : []);
-      setWorldEvents(Array.isArray(source.world_events) ? source.world_events : []);
-      setIntegrationStatus(Array.isArray(source.integration_status) ? source.integration_status : []);
-      setKpis(Array.isArray(source.kpis) ? source.kpis : []);
-      setLive(Boolean(source.live));
-      setDiagnostics(Array.isArray(source.diagnostics) ? source.diagnostics : []);
+      setSentiment(Array.isArray(dash.sentiment) ? dash.sentiment : []);
+      setProjectVariance(Array.isArray(dash.project_variance) ? dash.project_variance : []);
+      setOutcomes(Array.isArray(dash.outcomes) ? dash.outcomes : []);
+      setWorldEvents(Array.isArray(dash.world_events) ? dash.world_events : []);
+      setIntegrationStatus(Array.isArray(dash.integration_status) ? dash.integration_status : []);
+      setKpis(Array.isArray(dash.kpis) ? dash.kpis : []);
+      setLive(Boolean(dash.live));
+      setDiagnostics(Array.isArray(dash.diagnostics) ? dash.diagnostics : []);
     } catch (err) {
-      const fallback = seededDashboard([
-        err instanceof Error ? err.message : "Dashboard fetch failed.",
-      ]);
-      setEmployees(fallback.employees.map((employee) => normalizeEmployee(employee)));
-      setProjects(fallback.projects.map((project) => normalizeProject(project)));
-      setTeams(fallback.teams);
-      setSupportActions(fallback.support_actions);
-      setCompetencyStandards(fallback.competency_standards);
-      setEmployeeAvailability(fallback.employee_availability);
-      setEmployeeProfileFacets(fallback.employee_profile_facets);
-      setSentiment(fallback.sentiment);
-      setProjectVariance(fallback.project_variance);
-      setOutcomes(fallback.outcomes);
-      setWorldEvents(fallback.world_events);
-      setIntegrationStatus(fallback.integration_status);
-      setKpis(fallback.kpis);
+      // No mock-data fallback. Show empty + error so the user knows
+      // the load failed instead of getting fake names.
+      setEmployees([]);
+      setProjects([]);
+      setTeams([]);
+      setSupportActions([]);
+      setCompetencyStandards([]);
+      setEmployeeAvailability([]);
+      setEmployeeProfileFacets([]);
+      setSentiment([]);
+      setProjectVariance([]);
+      setOutcomes([]);
+      setWorldEvents([]);
+      setIntegrationStatus([]);
+      setKpis([]);
       setLive(false);
-      setDiagnostics(fallback.diagnostics);
-      setError(null);
+      setError(err instanceof Error ? err.message : "Dashboard fetch failed.");
+      setDiagnostics([]);
     } finally {
       setLoading(false);
     }

@@ -137,15 +137,28 @@ export default function CommandCenterPage() {
   const [liveStock, setLiveStock] = useState<{
     price: number;
     delta_pct: number;
+    ticker: string;
+    exchange: string;
+    live: boolean;
   } | null>(null);
 
   useEffect(() => {
     async function fetchStock() {
       try {
         const res = await fetch("/api/tkc/ticker");
-        const data = (await res.json()) as { ok?: boolean; price?: number; delta_pct?: number };
+        const data = (await res.json()) as {
+          ok?: boolean; live?: boolean;
+          price?: number; delta_pct?: number;
+          ticker?: string; exchange?: string;
+        };
         if (data.ok && typeof data.price === "number") {
-          setLiveStock({ price: data.price, delta_pct: data.delta_pct ?? 0 });
+          setLiveStock({
+            price: data.price,
+            delta_pct: data.delta_pct ?? 0,
+            ticker: data.ticker ?? "ORG",
+            exchange: data.exchange ?? "DEMO",
+            live: Boolean(data.live),
+          });
         }
       } catch {
         // Silent — falls back to synthetic indicator.
@@ -345,15 +358,17 @@ export default function CommandCenterPage() {
   const ticker = useMemo(() => {
     const stockData = liveStock ?? tkcTicker({ teams: dash.teams, projects: dash.projects });
     const { price, delta_pct } = stockData;
-    const isLive = liveStock !== null;
+    const isLive = liveStock?.live === true;
     const arrow = delta_pct >= 0 ? "▲" : "▼";
     const pct = `${delta_pct >= 0 ? "+" : ""}${delta_pct.toFixed(2)}%`;
     const priceLabel = isLive ? `${price.toFixed(2)} THB` : `${price.toFixed(2)}*`;
 
     const a = TKC_ANNUAL;
+    const tickerName = liveStock?.ticker ?? "ORG";
+    const tickerExchange = liveStock?.exchange ?? "DEMO";
 
     return (
-      `◆ TKC·ORG  ${priceLabel}  ${arrow} ${pct}` +
+      `◆ ${tickerName}·${tickerExchange}  ${priceLabel}  ${arrow} ${pct}` +
       `     ✦ EPS ฿${a.eps_thb}` +
       `     ✦ DIV ฿${a.dividend_thb} (${a.dividend_yield_pct}% yield)` +
       `     ◆ REV ${a.as_of}  ฿${a.revenue_9m_m.toFixed(0)}M` +
