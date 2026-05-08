@@ -23,6 +23,35 @@ import type {
   TeamComposition,
 } from "@/app/command-center/_shared/types";
 
+// ─── Anchor predicate — single source of truth ─────────────────────────
+//
+// Three call sites used to compute "anchors" with two different rules,
+// producing 32 vs 48 on the same dashboard. The honest definition is
+// the looser one: an anchor is institutional memory + relational glue,
+// and EITHER high CON (resilience under pressure) OR high CHA (the
+// person teammates seek out) qualifies.
+//
+// Applies uniformly to:
+//   - /api/pulse `hiring_summary` (the PulseBanner anchor count)
+//   - command-center page-level routeMetrics (header pills)
+//   - SignalsTab "Anchor Bench" section
+//
+// 10 years AND (CON ≥ 14 OR CHA ≥ 14).
+
+export function isAnchor(employee: {
+  tenure_years?: number | null;
+  attr_con?: number | null;
+  attr_cha?: number | null;
+}): boolean {
+  const tenure = typeof employee.tenure_years === "number" ? employee.tenure_years : 0;
+  const con = typeof employee.attr_con === "number" ? employee.attr_con : 0;
+  const cha = typeof employee.attr_cha === "number" ? employee.attr_cha : 0;
+  return tenure >= 10 && (con >= 14 || cha >= 14);
+}
+
+/** Human-readable rule for UI captions (sub-label under the count). */
+export const ANCHOR_RULE_LABEL = "≥10yr · CON or CHA ≥14";
+
 // ─── Company snapshot (representative placeholder data) ─────────────────
 //
 // All figures are fictional and for demonstration purposes only.

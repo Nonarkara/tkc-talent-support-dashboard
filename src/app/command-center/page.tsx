@@ -26,7 +26,7 @@ import { LedgerTab } from "./_tabs/LedgerTab";
 import { InsightsTab } from "./_tabs/InsightsTab";
 import { useDashboard } from "./_shared/useDashboard";
 import type { DashboardPayload, RouteScreen, Screen } from "./_shared/types";
-import { tkcTicker, TKC_ANNUAL } from "@/lib/company-pulse";
+import { tkcTicker, TKC_ANNUAL, isAnchor } from "@/lib/company-pulse";
 import { BUILD_VERSION, BUILD_CODENAME } from "@/lib/build-version";
 import { translate, useLocale, type Locale } from "@/lib/i18n";
 import { NAV, SCREEN } from "@/lib/i18n-dict";
@@ -1065,10 +1065,9 @@ function riskSignalFor(employee: {
   attr_cha?: number | null;
   dept_code?: string | null;
 }) {
+  if (isAnchor(employee)) return "anchor" as const;
   const tenure = typeof employee.tenure_years === "number" ? employee.tenure_years : 0;
   const con = typeof employee.attr_con === "number" ? employee.attr_con : 10;
-  const cha = typeof employee.attr_cha === "number" ? employee.attr_cha : 10;
-  if (tenure >= 10 && (con >= 14 || cha >= 14)) return "anchor" as const;
   if (tenure < 1) return "watch" as const;
   if (HIGH_RISK_DEPTS.has(employee.dept_code ?? "") && con < 9) return "risk" as const;
   return "ok" as const;

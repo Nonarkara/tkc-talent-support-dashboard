@@ -21,6 +21,13 @@
  */
 
 import { isDbConfigured, query } from "@/lib/db";
+import { isAnchor } from "@/lib/company-pulse";
+import {
+  computeOpenings,
+  summarizeOpenings,
+  readJobboardManifest,
+  type HiringHero,
+} from "@/lib/hiring-gauge";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 60;
@@ -68,6 +75,7 @@ interface DivRow {
 }
 interface AttrRow {
   attr_con: number | null;
+  attr_cha: number | null;
   rpg_class: string | null;
   tenure_years: number | null;
   gender: "m" | "f" | null;
@@ -108,7 +116,7 @@ export async function GET() {
         ORDER BY cnt DESC
       `),
       query<AttrRow>(`
-        SELECT ea.con AS attr_con, ea.rpg_class, e.tenure_years, e.gender, e.skills, d.code AS dept_code
+        SELECT ea.con AS attr_con, ea.cha AS attr_cha, ea.rpg_class, e.tenure_years, e.gender, e.skills, d.code AS dept_code
         FROM employees e
         LEFT JOIN employee_attributes ea ON ea.employee_id = e.id
         LEFT JOIN departments d ON d.id = e.department_id
@@ -159,36 +167,42 @@ export async function GET() {
       }))
       .sort((a, b) => b.count - a.count);
 
-    // Tenure brackets + anchors
+    // Tenure brackets + anchors. The anchor predicate lives in lib so the
+    // pulse banner, the command-center header pill, and the Risk-Signals
+    // tab all read the same number. (Pre-fix: pulse used CON-only and
+    // showed 32, while the other two used CON-or-CHA and showed 48.)
     let fresh = 0, mid = 0, anchor = 0, anchors_count = 0;
     for (const r of attrRows) {
       const t = r.tenure_years ?? 0;
       if (t < 2) fresh++;
       else if (t < 10) mid++;
       else anchor++;
-      if (t >= 10 && (r.attr_con ?? 0) >= 14) anchors_count++;
+      if (isAnchor({ tenure_years: r.tenure_years, attr_con: r.attr_con, attr_cha: r.attr_cha })) {
+        anchors_count++;
+      }
     }
 
-    // Hiring summary — derive from manifest at runtime
-    let hiring_summary = { hot: 0, warm: 0, covered: 0, deep: 0 };
-    try {
-      const { readFileSync } = await import("node:fs");
-      const { join } = await import("node:path");
-      const manifest = JSON.parse(
-        readFileSync(join(process.cwd(), "public/jobboard/manifest.json"), "utf-8"),
-      ) as Array<{ label: string; is_numeric_only: boolean }>;
-      const real = manifest.filter((m) => !m.is_numeric_only && m.label !== "Position");
-      // Quick heuristic — let the /api/hiring route do the proper match;
-      // this just tells the home banner the rough shape.
-      hiring_summary = {
-        hot: Math.round(real.length * 0.35),
-        warm: Math.round(real.length * 0.30),
-        covered: Math.round(real.length * 0.25),
-        deep: Math.round(real.length * 0.10),
-      };
-    } catch {
-      // manifest missing — leave at zeros
-    }
+    // Hiring summary — same lib as /api/hiring so the banner and the
+    // detail panel never disagree. (Pre-fix: pulse used a 35/30/25/10
+    // heuristic that ignored the actual roster, so HOT etc. drifted
+    // from reality.)
+    const manifest = readJobboardManifest();
+    const heroPool = await query<HiringHero>(
+      `SELECT
+         COALESCE(NULLIF(e.full_name_en,''), NULLIF(e.nickname,''), e.full_name_th) AS display_name,
+         e.title_en, e.skills
+       FROM employees e
+       WHERE e.is_active = true`,
+      [],
+    ).catch(() => [] as HiringHero[]);
+    const openings = computeOpenings(manifest, heroPool);
+    const { by_gauge } = summarizeOpenings(openings);
+    const hiring_summary = {
+      hot: by_gauge.HOT,
+      warm: by_gauge.WARM,
+      covered: by_gauge.COVERED,
+      deep: by_gauge.DEEP,
+    };
 
     return Response.json({
       ok: true,

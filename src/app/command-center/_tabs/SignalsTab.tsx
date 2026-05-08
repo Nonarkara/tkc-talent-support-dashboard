@@ -11,14 +11,17 @@
  * All content is derived from the dashboard payload. No writes.
  */
 
+import { useState } from "react";
 import { MenuWindow } from "@/components/MenuWindow";
 import { ClassGlyph } from "@/components/ClassGlyph";
+import { isAnchor } from "@/lib/company-pulse";
 import {
   ARCHETYPE_LABEL,
   getArchetype,
   type Archetype,
 } from "@/lib/token-economy";
 import type { DashboardPayload, Employee } from "../_shared/types";
+import { InspectModal } from "./RosterTab";
 
 type Signal = "anchor" | "ok" | "watch" | "risk";
 
@@ -69,16 +72,18 @@ function milestoneColor(milestone: number): string {
 }
 
 function riskFor(emp: Employee): Signal {
+  if (isAnchor(emp)) return "anchor";
   const tenure = typeof emp.tenure_years === "number" ? emp.tenure_years : 0;
   const con = typeof emp.attr_con === "number" ? emp.attr_con : 10;
-  const cha = typeof emp.attr_cha === "number" ? emp.attr_cha : 10;
-  if (tenure >= 10 && (con >= 14 || cha >= 14)) return "anchor";
   if (tenure < 1) return "watch";
   if (HIGH_RISK_DEPTS.has(emp.dept_code ?? "") && con < 9) return "risk";
   return "ok";
 }
 
 export function SignalsTab({ dash }: { dash: DashboardPayload }) {
+  const [inspectId, setInspectId] = useState<string | null>(null);
+  const inspected = inspectId ? dash.employees.find((e) => e.id === inspectId) ?? null : null;
+
   const atRisk = dash.employees
     .map((e) => ({ emp: e, signal: riskFor(e) }))
     .filter((r) => r.signal === "risk" || r.signal === "watch");
@@ -105,6 +110,7 @@ export function SignalsTab({ dash }: { dash: DashboardPayload }) {
                 emp={emp}
                 tone={signal === "risk" ? "var(--rpg-red)" : "var(--rpg-orange)"}
                 tag={signal.toUpperCase()}
+                onInspect={() => setInspectId(emp.id)}
               />
             ))}
           </div>
@@ -253,8 +259,11 @@ export function SignalsTab({ dash }: { dash: DashboardPayload }) {
             {anchors.map((emp) => {
               const a: Archetype = getArchetype(emp);
               return (
-                <div
+                <button
                   key={emp.id}
+                  type="button"
+                  onClick={() => setInspectId(emp.id)}
+                  title={`Open dossier for ${emp.display_name ?? "this anchor"}`}
                   style={{
                     display: "flex",
                     alignItems: "center",
@@ -264,6 +273,16 @@ export function SignalsTab({ dash }: { dash: DashboardPayload }) {
                     border: "1px solid var(--rpg-yellow)",
                     fontSize: 12,
                     color: "var(--ink-0)",
+                    textAlign: "left",
+                    font: "inherit",
+                    cursor: "pointer",
+                    transition: "background 90ms ease-out",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "rgba(243,182,31,0.08)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "var(--ink-4)";
                   }}
                 >
                   <ClassGlyph archetype={a} size={16} />
@@ -280,12 +299,14 @@ export function SignalsTab({ dash }: { dash: DashboardPayload }) {
                       {ARCHETYPE_LABEL[a]} · {emp.dept_code ?? "—"}
                     </span>
                   </div>
-                </div>
+                </button>
               );
             })}
           </div>
         )}
       </MenuWindow>
+
+      {inspected && <InspectModal emp={inspected} onClose={() => setInspectId(null)} />}
     </div>
   );
 }
@@ -294,14 +315,19 @@ function SignalRow({
   emp,
   tone,
   tag,
+  onInspect,
 }: {
   emp: Employee;
   tone: string;
   tag: string;
+  onInspect?: () => void;
 }) {
   const a: Archetype = getArchetype(emp);
   return (
-    <div
+    <button
+      type="button"
+      onClick={onInspect}
+      title={`Open dossier for ${emp.display_name ?? "this hero"}`}
       style={{
         display: "grid",
         gridTemplateColumns: "minmax(56px, 70px) minmax(0, 1fr) auto auto",
@@ -312,6 +338,16 @@ function SignalRow({
         border: `1px solid ${tone}`,
         fontSize: 12,
         color: "var(--ink-0)",
+        textAlign: "left",
+        font: "inherit",
+        cursor: onInspect ? "pointer" : "default",
+        transition: "background 90ms ease-out",
+      }}
+      onMouseEnter={(e) => {
+        if (onInspect) e.currentTarget.style.background = "rgba(255,255,255,0.04)";
+      }}
+      onMouseLeave={(e) => {
+        if (onInspect) e.currentTarget.style.background = "var(--ink-4)";
       }}
     >
       <span
@@ -347,6 +383,6 @@ function SignalRow({
       >
         {ARCHETYPE_LABEL[a]}
       </span>
-    </div>
+    </button>
   );
 }

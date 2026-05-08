@@ -501,8 +501,11 @@ function GalleryCell({ emp, onClick }: { emp: Employee; onClick: () => void }) {
 }
 
 // ─── Inspect modal (gallery mode) ────────────────────────────────────────
+// Exported so SignalsTab (and any future tab) can reuse the same Hero
+// Dossier slide-out instead of re-implementing it. Click a row in
+// Signals → opens this modal with the same chrome as Roster.
 
-function InspectModal({ emp, onClose }: { emp: Employee; onClose: () => void }) {
+export function InspectModal({ emp, onClose }: { emp: Employee; onClose: () => void }) {
   const archetype: Archetype = getArchetype(emp);
   const hero = useMemo(() => buildHeroForEmployee(emp.id, archetype), [emp.id, archetype]);
   const bigCanvasRef = useRef<HTMLCanvasElement>(null);

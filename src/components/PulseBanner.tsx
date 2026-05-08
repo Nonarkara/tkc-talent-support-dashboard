@@ -155,7 +155,7 @@ export function PulseBanner() {
         <BigStat
           label="Anchors"
           value={pulse.anchors_count}
-          sub="≥10yr · CON ≥14"
+          sub="≥10yr · CON or CHA ≥14"
           accent="var(--rpg-yellow)"
         />
         <BigStat
