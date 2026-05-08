@@ -667,40 +667,43 @@ function HomeScreen({
   const activeMeta = metaFor(selected, loc);
 
   return (
-    <div className="cc-home-grid">
-      <MenuWindow title={translate(loc, { en: "Command List", th: "รายการคำสั่ง" })} className="cc-home-window">
-        <div className="cc-command-list">
-          {ROUTES.map((route) => {
-            const m = metaFor(route.key, loc);
-            return (
-              <button
-                key={route.key}
-                type="button"
-                className="cc-command-button"
-                data-active={selected === route.key ? "true" : "false"}
-                onMouseEnter={() => onPreview(route.key)}
-                onFocus={() => onPreview(route.key)}
-                onClick={() => onOpen(route.key)}
-              >
-                <span className="cc-command-shortcut pixel">{route.shortcut}</span>
-                <span className="cc-command-label">{m.title}</span>
-                <span className="cc-command-deck">{m.deck}</span>
-              </button>
-            );
-          })}
-        </div>
-      </MenuWindow>
+    <div className="cc-home-page">
 
-      <div className="cc-home-center">
-        {/* The Pulse Banner — first thing the boss sees after login.
-            Active heroes, in-office today, anchors, ghosts; skill family
-            distribution; department head-counts; hiring gauge summary. */}
+      {/* Hero band — full width, above the 3-column grid.
+          Pulse first (org snapshot), Hiring Now second (open roles).
+          Both are fed by /api/pulse + /api/hiring + /api/tkc/{ticker,financials}. */}
+      <div className="cc-home-hero">
         <PulseBanner />
-
-        <MenuWindow title={translate(loc, { en: "Hiring Now", th: "กำลังจ้าง" })} className="cc-home-window">
+        <MenuWindow title={translate(loc, { en: "Hiring Now", th: "กำลังจ้าง" })} className="cc-home-hero-window">
           <HiringNow />
         </MenuWindow>
+      </div>
 
+      <div className="cc-home-grid">
+        <MenuWindow title={translate(loc, { en: "Command List", th: "รายการคำสั่ง" })} className="cc-home-window">
+          <div className="cc-command-list">
+            {ROUTES.map((route) => {
+              const m = metaFor(route.key, loc);
+              return (
+                <button
+                  key={route.key}
+                  type="button"
+                  className="cc-command-button"
+                  data-active={selected === route.key ? "true" : "false"}
+                  onMouseEnter={() => onPreview(route.key)}
+                  onFocus={() => onPreview(route.key)}
+                  onClick={() => onOpen(route.key)}
+                >
+                  <span className="cc-command-shortcut pixel">{route.shortcut}</span>
+                  <span className="cc-command-label">{m.title}</span>
+                  <span className="cc-command-deck">{m.deck}</span>
+                </button>
+              );
+            })}
+          </div>
+        </MenuWindow>
+
+      <div className="cc-home-center">
         {/* The Briefing Ritual — the autotelic morning loop. First thing
             the boss sees. Lazy-fetched so the rest of the home grid paints
             instantly. */}
@@ -853,6 +856,7 @@ function HomeScreen({
             </div>
           )}
         </MenuWindow>
+      </div>
       </div>
     </div>
   );
