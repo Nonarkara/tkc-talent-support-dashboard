@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TKC — รายงานฉบับที่ 2 · การวิเคราะห์ข้อมูลการสังเกตและสัมภาษณ์</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ── Graphic identity: IBM Plex Sans Thai · JetBrains Mono · Amber #CC6600 ── */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  background: #ffffff;
+  color: #222222;
+  font-family: 'IBM Plex Sans Thai', 'Noto Sans Thai', sans-serif;
+  font-feature-settings: 'kern' 1;
+  -webkit-font-smoothing: antialiased;
+}
+@page { size: A4; margin: 2cm 2.5cm; }
+@media print {
+  .no-print { display: none !important; }
+  body { background: white; }
+  .page-break { page-break-before: always; }
+  .avoid-break { page-break-inside: avoid; }
+  h1, h2, h3 { page-break-after: avoid; }
+}
+.t-mono { font-family: 'JetBrains Mono', monospace; font-size: 11pt; }
+.page { max-width: 740px; margin: 0 auto; padding: 24pt 0 48pt; }
+
+/* ── Cover ── */
+.cover { height: 26cm; display: flex; flex-direction: column; padding: 0; }
+.cover-meta { text-align: right; font-size: 10pt; color: #444444; margin-bottom: 80mm; line-height: 1.5; }
+.cover-title { font-size: 32pt; font-weight: 700; line-height: 1.15; color: #CC6600; max-width: 580px; letter-spacing: -0.005em; }
+.cover-subtitle { font-size: 14pt; font-weight: 400; line-height: 1.4; color: #444444; margin-top: 16pt; max-width: 580px; }
+.cover-bottom { margin-top: auto; padding-top: 14pt; border-top: 1px solid #CCCCCC; font-size: 11pt; color: #444444; line-height: 1.55; }
+.cover-bottom strong { color: #222222; font-weight: 600; }
+
+/* ── TOC ── */
+.toc { margin: 36pt 0 28pt; }
+.toc-title { font-size: 18pt; font-weight: 700; color: #CC6600; margin-bottom: 14pt; }
+.toc ol { padding-left: 0; list-style: none; }
+.toc li { display: flex; gap: 14px; padding: 7pt 0; border-bottom: 1px dotted #CCCCCC; font-size: 12pt; }
+.toc li:last-child { border-bottom: none; }
+.toc-num { font-family: 'JetBrains Mono', monospace; font-size: 11pt; color: #888888; min-width: 32px; }
+.toc-name { flex: 1; }
+
+/* ── Section heading ── */
+.section { margin-top: 36pt; }
+.section-kicker { font-size: 9pt; letter-spacing: 0.08em; text-transform: uppercase; color: #888888; margin-bottom: 4pt; font-weight: 600; }
+.section-title { font-size: 20pt; font-weight: 700; line-height: 1.25; color: #CC6600; margin-bottom: 18pt; }
+.subsection { font-size: 16pt; font-weight: 700; margin: 22pt 0 10pt; color: #000000; }
+.sub2 { font-size: 13.5pt; font-weight: 700; margin: 16pt 0 8pt; color: #333333; }
+
+/* ── Body ── */
+p { font-size: 14pt; line-height: 1.5; margin-bottom: 12pt; text-align: left; }
+.lead { font-size: 14.5pt; line-height: 1.55; color: #222222; margin-bottom: 16pt; }
+strong, b { color: #000000; font-weight: 700; }
+em, i { font-style: normal; font-weight: 600; }
+
+/* ── Pull quote ── */
+.pullquote { margin: 18pt 0; padding: 4pt 0 4pt 20pt; border-left: 2px solid #CC6600; font-size: 14pt; font-weight: 500; line-height: 1.55; color: #222222; }
+.pullquote-attr { display: block; margin-top: 8pt; font-size: 10pt; color: #888888; font-weight: 400; }
+
+/* ── Tables ── */
+table { width: 100%; border-collapse: collapse; margin: 14pt 0 20pt; font-size: 12pt; }
+th { background: transparent; border-bottom: 2px solid #222222; padding: 8pt 10pt 6pt; text-align: left; font-weight: 700; color: #000000; font-size: 11.5pt; vertical-align: bottom; }
+td { padding: 8pt 10pt; border: none; border-bottom: 1px solid #EEEEEE; vertical-align: top; line-height: 1.45; font-size: 12pt; }
+table tbody tr:last-child td { border-bottom: 1px solid #CCCCCC; }
+td.num, .num { font-family: 'JetBrains Mono', monospace; text-align: right; font-size: 11pt; }
+
+/* ── Callouts ── */
+.callout { margin: 14pt 0; padding: 12pt 16pt; background: #FAFAFA; border-left: 3px solid #CC6600; font-size: 13pt; line-height: 1.5; }
+.callout-gold { border-left-color: #CC6600; background: #FFF7E0; }
+.callout-blue { border-left-color: #5B89B5; background: #F4F8FB; }
+.callout-red { border-left-color: #C44D3F; background: #FEF5F4; }
+.callout-green { border-left-color: #5B8C4A; background: #F4F8F0; }
+.callout-title { font-weight: 700; margin-bottom: 6pt; display: block; color: #000000; font-size: 13pt; }
+
+/* ── Lists ── */
+ul, ol { padding-left: 22pt; margin-bottom: 14pt; font-size: 14pt; }
+ul li, ol li { padding: 3pt 0; line-height: 1.5; }
+
+/* ── Stat strip ── */
+.stat-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18pt; margin: 18pt 0 22pt; padding: 12pt 0; border-top: 1px solid #EEEEEE; border-bottom: 1px solid #EEEEEE; }
+.stat-cell { text-align: left; }
+.stat-num { font-family: 'JetBrains Mono', monospace; font-size: 24pt; font-weight: 700; color: #CC6600; line-height: 1.0; }
+.stat-num.red { color: #C44D3F; }
+.stat-label { font-size: 9pt; letter-spacing: 0.06em; text-transform: uppercase; color: #666666; margin-top: 4pt; }
+
+/* ── Pain point block ── */
+.pain-block { margin: 24pt 0; border-left: 4px solid #CC6600; padding: 16pt 20pt; background: #FAFAFA; }
+.pain-num { font-family: 'JetBrains Mono', monospace; font-size: 9pt; letter-spacing: 0.12em; text-transform: uppercase; color: #CC6600; margin-bottom: 6pt; }
+.pain-title { font-size: 16pt; font-weight: 700; color: #000000; margin-bottom: 10pt; line-height: 1.2; }
+.pain-body { font-size: 13.5pt; line-height: 1.55; color: #333333; }
+.pain-finding { margin-top: 12pt; padding: 10pt 14pt; background: white; border: 1px solid #DDDDDD; font-size: 12pt; line-height: 1.5; }
+.pain-finding-label { font-family: 'JetBrains Mono', monospace; font-size: 9pt; text-transform: uppercase; letter-spacing: 0.1em; color: #888888; margin-bottom: 5pt; }
+
+/* ── Cross-analysis table ── */
+.cross-row { display: grid; grid-template-columns: 1fr 2px 1fr; gap: 0; margin: 12pt 0; border: 1px solid #EEEEEE; }
+.cross-cell { padding: 10pt 14pt; font-size: 12.5pt; line-height: 1.5; }
+.cross-cell.ext { background: #F4F8FB; }
+.cross-cell.int { background: #FFF7E0; }
+.cross-divider { background: #DDDDDD; }
+.cross-label { font-family: 'JetBrains Mono', monospace; font-size: 9pt; text-transform: uppercase; letter-spacing: 0.1em; color: #888888; margin-bottom: 6pt; font-weight: 600; }
+
+/* ── Print hint ── */
+.print-hint { position: fixed; top: 16px; right: 16px; background: #222222; color: white; padding: 12px 20px; font-size: 11px; font-family: monospace; z-index: 100; }
+
+a { color: #CC6600; text-decoration: underline; }
+code { font-family: 'JetBrains Mono', monospace; font-size: 11pt; background: #F4F4F4; padding: 1px 5px; color: #444444; }
+
+/* ── Citations ── */
+.cite { font-size: 10.5pt; color: #888888; vertical-align: super; line-height: 0; font-family: 'IBM Plex Sans Thai', sans-serif; }
+.cite-list { font-size: 11pt; line-height: 1.65; }
+.cite-list li { padding: 5pt 0; border-bottom: 1px dotted #EEEEEE; }
+.cite-list li:last-child { border-bottom: none; }
+.cite-list strong { font-weight: 600; color: #000000; }
+
+/* ── Figure (chart wrapper) ── */
+.figure { margin: 18pt 0 22pt; page-break-inside: avoid; }
+.figure-caption { font-size: 10.5pt; color: #666666; margin-top: 8pt; line-height: 1.5; font-style: italic; }
+.figure-label { font-family: 'JetBrains Mono', monospace; font-size: 9pt; letter-spacing: 0.12em; text-transform: uppercase; color: #CC6600; font-weight: 700; margin-bottom: 8pt; font-style: normal; }
+.figure-frame { background: #FAFAFA; border: 1px solid #EEEEEE; padding: 18pt; }
+.figure-frame.dark { background: #ffffff; border: 1px solid #DDDDDD; }
+
+/* ── Tensions↔PainPoints SVG map readability tweaks ── */
+.svg-tensions text { font-family: 'IBM Plex Sans Thai', sans-serif; }
+.svg-bar text { font-family: 'IBM Plex Sans Thai', sans-serif; }
+</style>
+</head>
+<body>
+
+<div class="no-print print-hint">
+  กำลังเปิด Print dialog…<br>
+  <span style="opacity: 0.7; font-size: 10px;">Save as PDF · A4 · Report 02</span>
+</div>
+
+<div class="page">
+
+<!-- ═══ COVER ═══ -->
+<section class="cover avoid-break">
+  <div class="cover-meta">
+    Dr. Non Arkaraprasertkul<br>8 พฤษภาคม 2569
+  </div>
+
+  <h1 class="cover-title">รายงานฉบับที่ 2<br>การวิเคราะห์ข้อมูลจากการสังเกตและสัมภาษณ์<br>และรายงาน Pain Points</h1>
+  <div class="cover-subtitle">Observation, Interview Analysis &amp; Organisational Pain Point Report · บริษัท เทิร์นคีย์ คอมมูนิเคชั่น เซอร์วิส จำกัด (มหาชน) · งวดที่ 2</div>
+
+  <div class="cover-bottom" style="display: flex; align-items: flex-end; justify-content: space-between; gap: 24pt;">
+    <div>
+      <strong>ผู้ว่าจ้าง:</strong> บริษัท เทิร์นคีย์ คอมมูนิเคชั่น เซอร์วิส จำกัด (มหาชน)<br>
+      <strong>งวดที่ 2:</strong> รายงานการวิเคราะห์ข้อมูลการสังเกตและสัมภาษณ์ รวมถึงรายงาน Pain Points<br>
+      <strong>มูลค่างวด:</strong> 200,000 บาท (ร้อยละ 20 ของมูลค่าสัญญา)<br>
+      <strong>ช่วงเวลาที่ศึกษา:</strong> เมษายน 2567 — พฤษภาคม 2569
+    </div>
+    <img src="non-logo.png" alt="Dr Non Arkaraprasertkul"
+         style="width: 90pt; height: 90pt; object-fit: contain; flex-shrink: 0; opacity: 0.92;">
+  </div>
+</section>
+
+<div class="page-break"></div>
+
+<!-- ═══ TABLE OF CONTENTS ═══ -->
+<section class="toc avoid-break">
+  <div class="toc-title">สารบัญ · Table of Contents</div>
+  <ol>
+    <li><span class="toc-num">00</span><span class="toc-name">บทสรุปสำหรับผู้บริหาร · Executive Summary</span></li>
+    <li><span class="toc-num">00½</span><span class="toc-name">บทเชื่อมต่อจากรายงานที่ 1 — จากแรงตึงสู่อาการ</span></li>
+    <li><span class="toc-num">01</span><span class="toc-name">วิธีการ — แนวทางการสังเกตและสัมภาษณ์</span></li>
+    <li><span class="toc-num">02</span><span class="toc-name">บริบทภายนอก — แรงกดดันที่ TKC กำลังเผชิญ</span></li>
+    <li><span class="toc-num">03</span><span class="toc-name">สิ่งที่ผมสังเกตในสนาม — Field Observations</span></li>
+    <li><span class="toc-num">04</span><span class="toc-name">ผลการวิเคราะห์ตามแผนก — Department Analysis</span></li>
+    <li><span class="toc-num">05</span><span class="toc-name">Pain Points ทั้ง 5 ประการ — Core Organisational Friction</span></li>
+    <li><span class="toc-num">06</span><span class="toc-name">การวิเคราะห์เชื่อมโยง — เมื่อภายนอกพบภายใน</span></li>
+    <li><span class="toc-num">07</span><span class="toc-name">ข้อเสนอแนะและทิศทางถัดไป</span></li>
+    <li><span class="toc-num">08</span><span class="toc-name">ภาคผนวก A–E — ตารางข้อมูลอ้างอิง</span></li>
+    <li><span class="toc-num">08F</span><span class="toc-name">ภาคผนวก F — แหล่งอ้างอิง · References</span></li>
+    <li><span class="toc-num">08G</span><span class="toc-name">ภาคผนวก G — แหล่งข้อมูลโดยตรงจาก TKC</span></li>
+  </ol>
+</section>
+
+<div class="page-break"></div>
+
+<!-- ═══ 00 — EXECUTIVE SUMMARY ═══ -->
+<section class="section">
+  <div class="section-kicker">SECTION 00 · EXECUTIVE SUMMARY</div>
+  <h2 class="section-title">บทสรุปสำหรับผู้บริหาร</h2>
+
+  <p class="lead">
+    รายงานฉบับนี้คือ <strong>การต่อยอดจากรายงานที่ 1</strong> (พฤษภาคม 2569) — รายงานก่อนหน้าได้ระบุ <em>แรงตึงเชิงโครงสร้าง 5 ประการ</em> ของ TKC ไว้แล้ว<sup class="cite">[R1]</sup> รายงานฉบับนี้นำแรงตึงเหล่านั้นไปทดสอบกับข้อมูลภาคสนาม การประชุมวิเคราะห์ และข้อมูลที่ TKC จัดเตรียมให้ระหว่างเมษายน 2567 ถึงพฤษภาคม 2569 (ครอบคลุมรายงาน People Innovate, PMO Portfolio Dashboard, ข้อมูลบุคลากร, ใบรับรอง, และ KPI) ผลลัพธ์คืออาการที่จับต้องได้ 5 ประการ พร้อมหลักฐานเชิงข้อมูลที่ตรวจสอบได้
+  </p>
+
+  <p>
+    ขอเรียนตรงไปตรงมาตั้งแต่ต้น: <strong>TKC ไม่ได้กำลังป่วย แต่กำลังอยู่ในจุดเปลี่ยนที่สำคัญที่สุดในประวัติศาสตร์ 20 ปีของบริษัท</strong> รายได้ยังมั่นคง กำไรยังมีอยู่ ผู้บริหารระดับสูงมีความมุ่งมั่นชัดเจน แต่โมเดลธุรกิจที่นำพา TKC มาจนถึงวันนี้ — รับงานจากภาครัฐ ทำตาม spec ส่งมอบตรงเวลา — จะไม่เพียงพออีกต่อไปในอีกห้าปีข้างหน้า
+  </p>
+
+  <p>
+    ผลการสังเกตและวิเคราะห์มีใจความสำคัญ 5 ประการ — แต่ละประการคือ <em>อาการที่จับต้องได้</em> ของแรงตึงเชิงโครงสร้างที่ระบุไว้แล้วในรายงานที่ 1 (ดู <a href="#sec-bridge">บทเชื่อมต่อ</a> และรูปที่ 1):
+  </p>
+
+  <ol>
+    <li><strong>ระบบข้อมูลกระจุกอยู่ที่ตัวบุคคล</strong> — ความรู้และการตัดสินใจไหลผ่านความสัมพันธ์ ไม่ใช่ระบบ</li>
+    <li><strong>ช่องว่างการรับรู้รายได้</strong> — PM และ Finance มองตัวเลขเดียวกันแต่ไม่เห็นตรงกัน</li>
+    <li><strong>ความสามารถลดลงอย่างชัดเจนต่ำกว่าระดับผู้จัดการ</strong> — ผู้บริหารระดับกลางแข็งแกร่ง แต่ชั้นถัดไปยังต้องการการพัฒนา</li>
+    <li><strong>รูปแบบการสูญเสียบุคลากรที่ซ้อนกัน</strong> — Turnover แต่ละแผนกมีสาเหตุที่ต่างกัน แต่ผลรวมกัดกร่อนองค์กรพร้อมกัน</li>
+    <li><strong>ช่องว่างการดำเนินโครงการ</strong> — ตัวเลข PMO เผยให้เห็นว่าการมองเห็นทรัพยากรขาดหายไป ไม่ใช่ความสามารถขาดหาย</li>
+  </ol>
+
+  <div class="stat-strip">
+    <div class="stat-cell">
+      <div class="stat-num red">87.8%</div>
+      <div class="stat-label">Turnover<br>จัดซื้อจัดจ้าง</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-num red">40%</div>
+      <div class="stat-label">โครงการที่ยัง<br>ไม่ได้เริ่ม 2569</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-num red">125%</div>
+      <div class="stat-label">Resource Overrun<br>โครงการ Beta</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-num">94%</div>
+      <div class="stat-label">Portfolio Value<br>vs Target 2569</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 00½ — BRIDGE FROM REPORT 01 ═══ -->
+<section class="section" id="sec-bridge">
+  <div class="section-kicker">SECTION 00½ · BRIDGE FROM REPORT 01</div>
+  <h2 class="section-title">บทเชื่อมต่อจากรายงานที่ 1 — จากแรงตึงสู่อาการ</h2>
+
+  <p class="lead">
+    รายงานฉบับที่ 1 (พฤษภาคม 2569) ระบุ <strong>แรงตึงเชิงโครงสร้าง 5 ประการ</strong> ที่ฝังอยู่ในวิธีการทำงานของ TKC<sup class="cite">[R1 §3]</sup> รายงานฉบับที่ 2 ฉบับนี้ไม่ใช่การเริ่มจากศูนย์ — แต่เป็นการ <em>ขยายความ</em> แรงตึงเหล่านั้นให้เห็นเป็น <strong>อาการที่จับต้องได้</strong> 5 ประการ พร้อมหลักฐานเชิงข้อมูลจากการสังเกตและสัมภาษณ์
+  </p>
+
+  <p>
+    หลักคิดสำคัญคือ <strong>แรงตึง (tension)</strong> เป็นโครงสร้างที่ซ่อนอยู่ ส่วน <strong>อาการ (pain point)</strong> คือสิ่งที่พนักงานรู้สึกได้ในแต่ละวัน การเข้าใจความเชื่อมโยงระหว่างสองชั้นนี้คือเงื่อนไขของการแก้ปัญหาแบบยั่งยืน — เพราะการแก้ที่อาการอย่างเดียวเหมือนการเช็ดเหงื่อโดยไม่ลดอุณหภูมิห้อง<sup class="cite">[1]</sup>
+  </p>
+
+  <!-- Figure 1 — Tensions to Pain Points Mapping -->
+  <div class="figure avoid-break">
+    <div class="figure-label">FIGURE 1 · TENSIONS → PAIN POINTS</div>
+    <div class="figure-frame">
+      <svg class="svg-tensions" viewBox="0 0 720 380" style="width: 100%; height: auto; display: block;" xmlns="http://www.w3.org/2000/svg">
+        <!-- Column headers -->
+        <text x="100" y="22" font-size="11" font-weight="700" fill="#CC6600" letter-spacing="1.2">รายงาน 1 · แรงตึงเชิงโครงสร้าง</text>
+        <text x="500" y="22" font-size="11" font-weight="700" fill="#CC6600" letter-spacing="1.2">รายงาน 2 · อาการที่จับต้องได้</text>
+
+        <!-- Left column: 5 tensions -->
+        <g font-size="11" fill="#222">
+          <rect x="20"  y="42"  width="280" height="48" fill="#F4F8FB" stroke="#5B89B5" stroke-width="1.2"/>
+          <text x="34" y="65" font-weight="700">3.1 · Matrix Business · Silo Structure</text>
+          <text x="34" y="80" fill="#666">โครงสร้างไม่รองรับงานข้ามแผนก</text>
+
+          <rect x="20"  y="100" width="280" height="48" fill="#F4F8FB" stroke="#5B89B5" stroke-width="1.2"/>
+          <text x="34" y="123" font-weight="700">3.2 · Project-based Revenue</text>
+          <text x="34" y="138" fill="#666">ความรู้ไม่สะสม ทำซ้ำทุกโครงการ</text>
+
+          <rect x="20"  y="158" width="280" height="48" fill="#F4F8FB" stroke="#5B89B5" stroke-width="1.2"/>
+          <text x="34" y="181" font-weight="700">3.3 · No Capability Engine</text>
+          <text x="34" y="196" fill="#666">มีคนเก่ง แต่ขาดระบบยกระดับ</text>
+
+          <rect x="20"  y="216" width="280" height="48" fill="#F4F8FB" stroke="#5B89B5" stroke-width="1.2"/>
+          <text x="34" y="239" font-weight="700">3.4 · Speed × Governance</text>
+          <text x="34" y="254" fill="#666">การควบคุมหน่วงความเร็ว</text>
+
+          <rect x="20"  y="274" width="280" height="48" fill="#F4F8FB" stroke="#5B89B5" stroke-width="1.2"/>
+          <text x="34" y="297" font-weight="700">3.5 · Innovation as Initiative</text>
+          <text x="34" y="312" fill="#666">นวัตกรรมเกิดเป็นครั้งคราว ไม่ใช่ระบบ</text>
+        </g>
+
+        <!-- Right column: 5 pain points -->
+        <g font-size="11" fill="#222">
+          <rect x="420" y="42"  width="280" height="48" fill="#FFF7E0" stroke="#CC6600" stroke-width="1.2"/>
+          <text x="434" y="65" font-weight="700">P1 · Information Monarchy</text>
+          <text x="434" y="80" fill="#666">ข้อมูลกระจุกที่ตัวบุคคล</text>
+
+          <rect x="420" y="100" width="280" height="48" fill="#FFF7E0" stroke="#CC6600" stroke-width="1.2"/>
+          <text x="434" y="123" font-weight="700">P2 · Revenue Recognition Crack</text>
+          <text x="434" y="138" fill="#666">PM กับ Finance ไม่เห็นเลขเดียวกัน</text>
+
+          <rect x="420" y="158" width="280" height="48" fill="#FFF7E0" stroke="#CC6600" stroke-width="1.2"/>
+          <text x="434" y="181" font-weight="700">P3 · Capability Cliff</text>
+          <text x="434" y="196" fill="#666">ทักษะลดลงต่ำกว่าระดับผู้จัดการ</text>
+
+          <rect x="420" y="216" width="280" height="48" fill="#FFF7E0" stroke="#CC6600" stroke-width="1.2"/>
+          <text x="434" y="239" font-weight="700">P4 · Compounding Turnover</text>
+          <text x="434" y="254" fill="#666">การลาออกหลายแผนกพร้อมกัน</text>
+
+          <rect x="420" y="274" width="280" height="48" fill="#FFF7E0" stroke="#CC6600" stroke-width="1.2"/>
+          <text x="434" y="297" font-weight="700">P5 · Resource Visibility Gap</text>
+          <text x="434" y="312" fill="#666">การจัดสรรทรัพยากรอยู่ในหัวคน</text>
+        </g>
+
+        <!-- Connection lines (one-to-many: each tension can manifest as multiple pains) -->
+        <g stroke="#CC6600" stroke-width="1" fill="none" opacity="0.55">
+          <!-- 3.1 silo → P1 + P2 -->
+          <path d="M 300 66 C 360 66, 360 66, 420 66" />
+          <path d="M 300 66 C 360 90, 360 100, 420 124"/>
+          <!-- 3.2 project-based → P1 + P5 -->
+          <path d="M 300 124 C 360 100, 360 80, 420 66" />
+          <path d="M 300 124 C 360 200, 360 260, 420 298"/>
+          <!-- 3.3 no capability → P3 + P4 -->
+          <path d="M 300 182 C 360 182, 360 182, 420 182"/>
+          <path d="M 300 182 C 360 220, 360 230, 420 240"/>
+          <!-- 3.4 speed×gov → P5 -->
+          <path d="M 300 240 C 360 270, 360 280, 420 298"/>
+          <!-- 3.5 innovation initiative → P3 + P4 -->
+          <path d="M 300 298 C 360 240, 360 220, 420 182"/>
+          <path d="M 300 298 C 360 270, 360 260, 420 240"/>
+        </g>
+
+        <text x="360" y="358" text-anchor="middle" font-size="10" fill="#888888" font-style="italic">
+          แรงตึง 1 ประการอาจปรากฏเป็นอาการได้หลายแบบ และอาการ 1 อย่างอาจมีรากจากแรงตึงหลายประการ
+        </text>
+      </svg>
+    </div>
+    <div class="figure-caption">
+      <strong>รูปที่ 1.</strong> การเชื่อมโยงระหว่างแรงตึงเชิงโครงสร้าง 5 ประการในรายงานที่ 1 (คอลัมน์ซ้าย) กับ Pain Points 5 ประการที่พบในการวิเคราะห์ครั้งนี้ (คอลัมน์ขวา) เส้นเชื่อมแสดงว่าแรงตึงประการเดียวกันสามารถปรากฏในรูปแบบที่แตกต่างกันในแผนกที่ต่างกัน
+    </div>
+  </div>
+
+  <h3 class="subsection">การเติบโตของความเข้าใจระหว่างสองรายงาน</h3>
+
+  <p>
+    รายงานที่ 1 มองภาพรวม รายงานนี้ขยายเข้าสู่รายละเอียดของแต่ละแผนก ทุกข้อสังเกตในเอกสารนี้สามารถสืบกลับได้ถึงแรงตึงในรายงานที่ 1 และทุกข้อเสนอแนะที่จะตามมาในส่วนที่ 7 ก็ผูกกลับเข้ากับเครื่องมือที่สร้างเสร็จไปแล้วใน Phase 1 ของ Digital Twin
+  </p>
+
+  <div class="callout callout-blue">
+    <span class="callout-title">การอ่านรายงานนี้ควบคู่กับรายงานที่ 1</span>
+    หากผู้อ่านยังไม่ได้อ่านรายงานที่ 1 (ส่งมอบ 6 พฤษภาคม 2569) แนะนำให้อ่านบทที่ 3 ของรายงานนั้นก่อน — &ldquo;ความตึงเครียดเชิงโครงสร้าง 5 ประการ&rdquo; — เพราะรายงานนี้ใช้คำนิยามและกรอบการคิดจากบทดังกล่าวเป็นรากฐาน
+  </div>
+</section>
+
+<!-- ═══ 01 — METHODOLOGY ═══ -->
+<section class="section">
+  <div class="section-kicker">SECTION 01 · METHODOLOGY</div>
+  <h2 class="section-title">วิธีการ — แนวทางการสังเกตและสัมภาษณ์</h2>
+
+  <p class="lead">
+    รายงานฉบับนี้ไม่ใช่ผลของการสำรวจด้วยแบบสอบถาม และไม่ใช่การวิเคราะห์ทางสถิติจากตัวอย่างขนาดใหญ่ ผมเลือกแนวทางที่แตกต่างออกไป: <strong>การสังเกตจากภายใน ผ่านการทำงานจริงร่วมกับทีม</strong>
+  </p>
+
+  <h3 class="subsection">แหล่งข้อมูลที่ใช้ในการวิเคราะห์</h3>
+
+  <table>
+    <thead>
+      <tr>
+        <th>แหล่งข้อมูล</th>
+        <th>ลักษณะ</th>
+        <th>ช่วงเวลา</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>การประชุม DEPA × TKC Kickoff</td>
+        <td>สังเกตการณ์ผู้บริหารและทีม C-level</td>
+        <td>17 เม.ย. 2569</td>
+      </tr>
+      <tr>
+        <td>การประชุม Management Review (6-month Sandbox)</td>
+        <td>สังเกตและสัมภาษณ์ทีมผู้บริหาร 7 คน</td>
+        <td>21 เม.ย. 2569</td>
+      </tr>
+      <tr>
+        <td>รายงานของ People Innovate (ครั้งที่ 1)</td>
+        <td>ผลการสัมภาษณ์เชิงลึก 5 แผนก 19 ครั้ง (พ.ค.–พ.ย. 2567)</td>
+        <td>2567–2568</td>
+      </tr>
+      <tr>
+        <td>รายงาน PMO Portfolio &amp; Resource Dashboard</td>
+        <td>ข้อมูลโครงการ สถานะ งบประมาณ การใช้ทรัพยากร</td>
+        <td>27 เม.ย. 2569</td>
+      </tr>
+      <tr>
+        <td>PMO Strategic Roadmap</td>
+        <td>แผนงาน Q2–Q4 ของหน่วย PMO</td>
+        <td>28 เม.ย. 2569</td>
+      </tr>
+      <tr>
+        <td>ข้อมูล KPI ปี 2568–2569 (Excel)</td>
+        <td>เป้าหมายรายได้และตัวชี้วัดแต่ละสายงาน</td>
+        <td>2568–2569</td>
+      </tr>
+      <tr>
+        <td>ข้อมูลใบรับรองวิชาชีพ (Excel)</td>
+        <td>Certificate 78 รายการ สถานะ/วันหมดอายุ</td>
+        <td>2569</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3 class="subsection">กรอบการวิเคราะห์ที่ใช้</h3>
+  <p>
+    ผมใช้กรอบ <strong>4C Framework</strong> (Compensation, Cause, Career, Community) เป็นแกนหลักในการอ่านสัญญาณจากข้อมูล กรอบนี้ผสานสองทฤษฎีคลาสสิกคือ <em>Two-Factor Theory</em> ของ Herzberg<sup class="cite">[2]</sup> (ที่แยก hygiene factors ออกจาก motivators) และ <em>Self-Determination Theory</em> ของ Deci &amp; Ryan<sup class="cite">[3]</sup> (ที่ยืนยันว่าแรงจูงใจที่ยั่งยืนต้องตอบสนอง autonomy, competence, และ relatedness) ผมเชื่อว่าพฤติกรรมการลาออกและการขาดแรงจูงใจของพนักงานนั้นอธิบายได้ด้วยสี่มิตินี้เสมอ
+  </p>
+  <p>
+    นอกจากนี้ยังใช้กรอบ <strong>การวิเคราะห์ความตึงเครียดเชิงโครงสร้าง</strong> (Structural Tension Analysis<sup class="cite">[4]</sup>) ซึ่งมองหาความขัดแย้งที่ฝังรากอยู่ในแบบแผนการทำงาน ไม่ใช่แค่ปัญหาที่ผิวหน้า — แนวทางนี้สอดคล้องกับ <em>Five Whys</em> ของ Toyota Production System<sup class="cite">[5]</sup> ที่ผลักดันให้นักวิเคราะห์ลงลึกถึงสาเหตุระดับระบบ ไม่ใช่หยุดที่อาการ
+  </p>
+
+  <div class="callout callout-gold">
+    <span class="callout-title">หลักการสำคัญ</span>
+    ผมมองหาความขัดแย้งของระบบ ไม่ใช่ความล้มเหลวของบุคคล การที่พนักงานใช้ Excel แทน ERP ไม่ใช่เพราะขี้เกียจ — มีระบบแรงจูงใจที่ทำให้การเลือก Excel สมเหตุสมผลในบริบทนั้น การเข้าใจระบบแรงจูงใจต่างหากที่จะนำไปสู่การเปลี่ยนแปลงที่ยั่งยืน
+  </div>
+</section>
+
+<!-- ═══ 02 — EXTERNAL CONTEXT ═══ -->
+<section class="section">
+  <div class="section-kicker">SECTION 02 · EXTERNAL CONTEXT</div>
+  <h2 class="section-title">บริบทภายนอก — แรงกดดันที่ TKC กำลังเผชิญ</h2>
+
+  <p class="lead">
+    People Innovate ได้วิเคราะห์ปัจจัยภายนอกอย่างละเอียดในรายงานครั้งที่ 1 (มีนาคม 2567) ผมจึงไม่ขอทำซ้ำในส่วนนั้น แต่จะสรุปเฉพาะประเด็นที่มีผลกระทบโดยตรงต่อการวิเคราะห์ภายในองค์กรในรายงานฉบับนี้
+  </p>
+
+  <h3 class="subsection">3 แรงกดดันที่เชื่อมโยงกับสิ่งที่พบภายใน</h3>
+
+  <p>
+    <strong>1. ความเสี่ยงจากลูกค้าภาครัฐ</strong><br>
+    รายได้ของ TKC มากกว่า 80% มาจากลูกค้าภาครัฐและรัฐวิสาหกิจ ในขณะที่สถานการณ์การเมืองไทยยังคงมีความไม่แน่นอนสูง การเบิกจ่ายงบประมาณปี 2567 ล่าช้า และการอนุมัติโครงการภาครัฐอาจหยุดชะงักได้ทุกเมื่อ นี่คือ <em>ความเปราะบางทางรายได้ที่ระบบภายในองค์กรยังไม่ได้ถูกออกแบบมาเพื่อรับมือ</em>
+  </p>
+
+  <p>
+    <strong>2. ระบบอัตโนมัติกำลังมาแทนที่งานที่ TKC ทำอยู่</strong><br>
+    รายงาน World Economic Forum คาดการณ์ว่าระบบอัตโนมัติจะแทนที่งานได้ถึง 40% ภายในช่วงกลางทศวรรษ 2030 สายงาน Network Delivery ซึ่งพึ่งพากระบวนการ manual อย่างมากคือจุดที่เสี่ยงที่สุด ในขณะที่สายงาน Public Safety และ Intelligent Solutions กลับมีโอกาสเพิ่มขึ้นหากสามารถสร้าง product strategy ที่ชัดเจนได้
+  </p>
+
+  <p>
+    <strong>3. โอกาสจากนโยบายรัฐที่ต้องตอบรับอย่างรวดเร็ว</strong><br>
+    EEC (1.5 ล้านล้านบาท) แผนพัฒนาฯ ฉบับที่ 13 (อีก 105 เมืองอัจฉริยะภายใน 2570) และการดิจิทัลภาครัฐล้วนเป็นโอกาสจริงสำหรับ TKC แต่การคว้าโอกาสเหล่านี้ต้องการทีมที่สร้างได้เร็ว ปรับได้เร็ว และมีทักษะที่ตรงกับความต้องการ — ซึ่งเป็นสิ่งที่ระบบ HR และ PMO ปัจจุบันยังไม่สามารถตอบสนองได้
+  </p>
+
+  <div class="pullquote">
+    ความขัดแย้งที่น่าสนใจที่สุดของ TKC คือ: บริษัทกำลังดำเนินงานในตลาดที่กำลังเปลี่ยนแปลงอย่างรวดเร็ว แต่มีระบบภายในที่ออกแบบมาสำหรับตลาดที่คาดเดาได้
+  </div>
+</section>
+
+<!-- ═══ 03 — FIELD OBSERVATIONS ═══ -->
+<section class="section">
+  <div class="section-kicker">SECTION 03 · FIELD OBSERVATIONS</div>
+  <h2 class="section-title">สิ่งที่ผมสังเกตในสนาม</h2>
+
+  <p class="lead">
+    การประชุมสองครั้งแรกให้ข้อมูลมากกว่าที่ผมคาดไว้ ไม่ใช่จากสิ่งที่พูด แต่จากสิ่งที่ไม่ได้พูด และจากรูปแบบที่ซ้ำกัน
+  </p>
+
+  <h3 class="subsection">การประชุม DEPA × TKC Kickoff (17 เมษายน 2569)</h3>
+
+  <p>
+    สิ่งแรกที่ผมสังเกตคือ <strong>ช่องว่างระหว่างวิสัยทัศน์กับการปฏิบัติ</strong> ผู้บริหารพูดถึง Ninja Team, AI, และการ pivot สู่ product-based revenue ด้วยความชัดเจน แต่เมื่อถามถึงรายละเอียดว่าจะดำเนินการอย่างไร การสนทนาจะเปลี่ยนทิศทางไปสู่ระดับกว้างเสมอ นี่ไม่ใช่การหลีกเลี่ยง — แต่เป็นสัญญาณว่า <em>กลไกการแปลงวิสัยทัศน์สู่การปฏิบัติยังไม่มีอยู่ในองค์กร</em>
+  </p>
+
+  <p>
+    TKC มีกลุ่มผลิตภัณฑ์ 4 กลุ่ม (PromPost, Thai CA, Data Center, Delivery ID) ทั้งหมดได้รับการรับรองมาตรฐาน ISO แต่การมี ISO ไม่ได้หมายความว่ามี product strategy — มันหมายความว่ากระบวนการมีความสม่ำเสมอ ซึ่งเป็นคนละเรื่องกัน
+  </p>
+
+  <h3 class="subsection">การประชุม Management Review (21 เมษายน 2569)</h3>
+
+  <p>
+    ผมนำเสนอระบบ Digital Twin ให้ผู้บริหาร 7 คน และสังเกตปฏิกิริยาอย่างใกล้ชิด สิ่งที่พบมีความน่าสนใจมาก:
+  </p>
+
+  <ul>
+    <li><strong>ปฏิกิริยาต่อ Formation Engine (การจัดทีม)</strong> — ผู้บริหารระดับ Director ทุกคนเข้าใจและสนใจทันที โดยเฉพาะแนวคิด "budget cap ต่อโครงการ" แต่มีความลังเลเมื่อต้องพูดถึงว่าใครมีอำนาจตัดสินใจในการจัดทีมข้ามแผนก — นี่คือสัญญาณของ <em>ความไม่ชัดเจนในอำนาจการตัดสินใจ</em></li>
+    <li><strong>ปฏิกิริยาต่อ Capability Matrix</strong> — ฝ่าย HR ตอบสนองด้วยความกังวลอย่างสุภาพว่า "ข้อมูลทักษะอาจไม่ครบ" ซึ่งผมแปลว่า: ข้อมูลทักษะของพนักงานไม่เคยถูกรวบรวมอย่างเป็นระบบมาก่อน</li>
+    <li><strong>กฎ Sandbox</strong> — ผู้บริหารตกลงกันทันทีว่า "อย่าประกาศโครงสร้างองค์กรใหม่จนกว่าจะผ่าน 6 เดือน" ซึ่งบ่งบอกว่าทุกคนทราบดีว่าการเปลี่ยนแปลงจะสร้างแรงต้าน</li>
+  </ul>
+
+  <div class="callout callout-blue">
+    <span class="callout-title">ข้อสังเกตจากภาษากาย</span>
+    เมื่อผมนำเสนอหน้าจอ Roster (รายชื่อพนักงาน 348 คน) ผู้บริหารทุกคนโน้มตัวเข้าหาจอ และเริ่มค้นหาชื่อคนที่พวกเขารู้จัก นี่คือสัญญาณที่ชัดเจนว่า <em>ผู้บริหารต้องการมองเห็นองค์กรในแบบที่ไม่เคยเห็นมาก่อน แต่ระบบที่มีอยู่ไม่เคยให้มุมมองนั้น</em>
+  </div>
+</section>
+
+<!-- ═══ 04 — DEPARTMENT ANALYSIS ═══ -->
+<section class="section">
+  <div class="section-kicker">SECTION 04 · DEPARTMENT ANALYSIS</div>
+  <h2 class="section-title">ผลการวิเคราะห์ตามแผนก</h2>
+
+  <p class="lead">
+    People Innovate ดำเนินการสัมภาษณ์เชิงลึก 19 ครั้งใน 5 แผนกระหว่างปี 2567–2568 ผมวิเคราะห์ผลเหล่านั้นร่วมกับข้อมูลเชิงปริมาณที่ TKC จัดเตรียมให้ เพื่อสร้างภาพที่ครบถ้วนมากขึ้น
+  </p>
+
+  <h3 class="subsection">สายงานบัญชีและการเงิน · Accounting &amp; Finance</h3>
+  <p>
+    ผลการสัมภาษณ์เผยให้เห็นภาพที่น่ากังวล: หัวหน้าทีมแบกรับภาระการตรวจสอบที่หนักมาก ขณะที่ผู้ช่วยระดับปฏิบัติการยังขาดทักษะการแก้ปัญหาและมักวิตกเมื่อเผชิญกับสถานการณ์ที่ไม่คาดคิด ระบบ Mango ERP มีความสามารถที่ไม่ได้ใช้งาน เนื่องจากขาดนโยบายบังคับในระดับองค์กร
+  </p>
+  <p>
+    สิ่งที่น่าเป็นห่วงที่สุดในระยะยาวคือ <strong>ความเสี่ยงด้านการสืบทอดตำแหน่ง</strong> — ผู้อำนวยการสายงานใกล้เกษียณ และความรู้สำคัญยังคงอยู่ในตัวบุคคล ไม่ใช่ในระบบ ทำให้เส้นทางการส่งต่อองค์ความรู้ยังไม่ชัดเจน
+  </p>
+
+  <h3 class="subsection">ฝ่ายพัฒนาธุรกิจ · Business Development</h3>
+  <p>
+    ประเด็นหลักที่พบคือการขาด <strong>ทิศทางเชิงกลยุทธ์ที่ชัดเจน</strong> ทีม BD มีความสัมพันธ์ที่ดีกับลูกค้า แต่ยังขาดกรอบการทำงานที่ชัดเจนในการประเมินโอกาสและตัดสินใจว่าจะ bid หรือไม่ bid โครงการใด ผลคือพลังงานของทีมกระจายตัวไปในหลายทิศทาง
+  </p>
+
+  <h3 class="subsection">ฝ่ายเน็ตเวิร์กดิลิเวอรี่ · Network Delivery</h3>
+  <p>
+    นี่คือแผนกที่มีความเสี่ยงสูงที่สุดจากการเปลี่ยนแปลงทางเทคโนโลยี กระบวนการทำงานส่วนใหญ่เป็น manual และซับซ้อน ใช้ทรัพยากรมาก (ทั้งคนและเวลา) ในขณะที่ตลาดกำลังเคลื่อนสู่ระบบอัตโนมัติมากขึ้นเรื่อยๆ การปรับปรุงกระบวนการและนำเทคโนโลยีมาช่วยจึงเป็นความจำเป็นที่เลื่อนไม่ได้
+  </p>
+
+  <h3 class="subsection">ฝ่ายธุรกิจสื่อสารข้อมูล · Enterprise Business</h3>
+  <p>
+    แผนกนี้อยู่ในระหว่างการเปลี่ยนชื่อและรีบรานด์ตัวเองสู่ "Enterprise Business" ซึ่งสะท้อนความทะเยอทะยานที่จะขยายไปสู่ Smart Technology แต่ <strong>การขยายธุรกิจต้องการคนที่มีทักษะใหม่</strong> ในขณะที่แผนพัฒนาบุคลากรที่ครอบคลุมยังไม่ได้ถูกสร้างขึ้น เป็นช่องว่างที่ต้องเติมเต็มอย่างเร่งด่วน
+  </p>
+
+  <h3 class="subsection">ฝ่ายระบบความปลอดภัยสาธารณะ · Public Safety</h3>
+  <p>
+    สายงานนี้มีศักยภาพสูงที่สุดในบรรดาทุกแผนก แต่ก็มีความเสี่ยงสูงที่สุดเช่นกัน การขาด <strong>Software Product Strategy ระยะกลางและยาว</strong> ที่ชัดเจนทำให้ทีมทำงานแบบ project-to-project โดยไม่มีทิศทางที่สร้าง recurring value นอกจากนี้อัตราการลาออกที่สูงยังเป็นสัญญาณที่ต้องแก้ไขโดยเร็ว
+  </p>
+
+  <div class="callout callout-gold">
+    <span class="callout-title">รูปแบบที่พบในทุกแผนก</span>
+    ทุกแผนกมีอย่างน้อยหนึ่งจุดที่ "ความรู้สำคัญอยู่ที่ตัวบุคคล ไม่ใช่ระบบ" นี่ไม่ใช่เรื่องบังเอิญ — มันคือโมเดลที่ได้รับการส่งเสริมมาโดยตลอด เพราะในโลกของโครงการ ผู้ที่มีความรู้เฉพาะตัวคือผู้ที่มีความสำคัญ วัฒนธรรมนี้ผลิตผู้เชี่ยวชาญที่เป็นอัจฉริยะโดดเดี่ยว แต่ขัดขวางการสร้างทีมที่แข็งแกร่ง
+  </div>
+</section>
+
+<!-- ═══ 05 — PAIN POINTS ═══ -->
+<section class="section">
+  <div class="section-kicker">SECTION 05 · PAIN POINTS</div>
+  <h2 class="section-title">Pain Points ทั้ง 5 ประการ</h2>
+
+  <p class="lead">
+    ผมระบุ Pain Points ทั้ง 5 ประการที่เป็นอุปสรรคเชิงโครงสร้างต่อการเติบโตของ TKC พวกมันไม่ใช่ปัญหาที่แยกจากกัน — แต่ต่างเป็นอาการของโมเดลที่ทำงานได้ดีในอดีตแต่กำลังตึงเครียดในสภาวะปัจจุบัน
+  </p>
+
+  <!-- PAIN POINT 1 -->
+  <div class="pain-block">
+    <div class="pain-num">PAIN POINT · 01 / 05</div>
+    <div class="pain-title">ระบบข้อมูลกระจุกอยู่ที่ตัวบุคคล<br><em style="font-size:13pt; color:#666;">The Information Monarchy</em></div>
+    <div class="pain-body">
+      <p>
+        ในทุกแผนกที่ศึกษา พบว่าข้อมูลสำคัญเดินทางผ่านความสัมพันธ์ส่วนบุคคล ไม่ใช่ระบบ ผู้จัดการโครงการรู้สถานะงานเพราะตนเองอยู่ในนั้น ไม่ใช่เพราะระบบบอก ฝ่ายบัญชีต้องไปถาม PM ว่างานเสร็จแค่ไหนเพื่อจะออกใบแจ้งหนี้ได้ ทีมงานสายงาน Network Delivery เก็บข้อมูลความคืบหน้าใน Excel ที่แต่ละคนมีเวอร์ชันของตัวเอง
+      </p>
+      <p>
+        นี่ไม่ใช่ความเกียจคร้านหรือการขาดวินัย — <strong>เป็นผลลัพธ์ของระบบแรงจูงใจที่ให้รางวัลกับผู้ที่ "รู้" มากกว่าผู้ที่ "แชร์"</strong> ในองค์กรโครงการ คนที่มีข้อมูลมีอำนาจ การสร้างระบบที่ทุกคนเห็นข้อมูลเดียวกันจะต้องเปลี่ยนไม่ใช่แค่กระบวนการ แต่เปลี่ยนความเข้าใจเรื่องอำนาจ ปรากฏการณ์นี้ตรงกับสิ่งที่ Brown &amp; Duguid<sup class="cite">[6]</sup> เรียกว่า <em>tacit knowledge in communities of practice</em> — ความรู้ที่ติดตัวบุคคลและกลุ่มเล็ก จนการ <em>codify</em> เป็นระบบกลายเป็นเรื่องท้าทายเชิงโครงสร้างมากกว่าเชิงเทคนิค
+      </p>
+    </div>
+    <div class="pain-finding">
+      <div class="pain-finding-label">หลักฐานเชิงข้อมูล</div>
+      ฝ่าย PMO ต้องอาศัย Timesheet เป็นแหล่งข้อมูลหลักสำหรับการวางแผนทรัพยากร แต่ผลการสำรวจพบว่า PM หลายคนยังไม่บันทึก Timesheet อย่างสม่ำเสมอ จนกระทั่งต้องมีการรณรงค์ "Timesheet Awareness" ในแผน PMO Q2 2569 — ซึ่งแสดงว่าระบบยังไม่ได้รับการยอมรับจากผู้ใช้
+    </div>
+  </div>
+
+  <!-- PAIN POINT 2 -->
+  <div class="pain-block">
+    <div class="pain-num">PAIN POINT · 02 / 05</div>
+    <div class="pain-title">ช่องว่างการรับรู้รายได้ระหว่าง PM กับ Finance<br><em style="font-size:13pt; color:#666;">The Revenue Recognition Crack</em></div>
+    <div class="pain-body">
+      <p>
+        People Innovate พบว่ามีช่องว่างระหว่างเวลาที่ PM ถือว่างานเสร็จ (task completion basis) กับเวลาที่ฝ่ายบัญชีรับรู้รายได้ (invoice document basis) ช่องว่างนี้ยาวประมาณ 1 เดือน และส่งผลให้การรายงานรายได้ระหว่างแผนกไม่ตรงกัน
+      </p>
+      <p>
+        แต่ปัญหานี้ลึกกว่าที่เห็น <strong>ช่องว่างนี้ไม่ใช่ปัญหากระบวนการ — มันคือการมองเห็น "ความสำเร็จ" ที่ต่างกันระหว่างสองทีม</strong> PM วัดความสำเร็จด้วยการส่งงาน Finance วัดด้วยการได้รับเงิน เมื่อสองทีมไม่ได้วัดสิ่งเดียวกัน การสนทนาจะเป็นการพูดกันคนละภาษา และในบางโครงการอาจนำไปสู่ความตึงเครียดโดยไม่มีฝ่ายใดผิด
+      </p>
+    </div>
+    <div class="pain-finding">
+      <div class="pain-finding-label">หลักฐานเชิงข้อมูล</div>
+      PMO Portfolio Dashboard (เมษายน 2569) แสดงให้เห็นว่า Project Beta มีความคืบหน้าทางกายภาพ 35% แต่มียอดเรียกเก็บเพียง 15% ของมูลค่าโครงการ ในขณะที่ใช้ทรัพยากรไปแล้ว 105% ของงบที่วางแผน — ตัวเลขสามตัวนี้ให้ภาพที่ขัดแย้งกันอย่างสิ้นเชิง ซึ่งเป็นผลของการวัดคนละมาตรฐาน
+    </div>
+  </div>
+
+  <!-- PAIN POINT 3 -->
+  <div class="pain-block">
+    <div class="pain-num">PAIN POINT · 03 / 05</div>
+    <div class="pain-title">ความสามารถที่ลดลงอย่างชัดเจนต่ำกว่าระดับผู้จัดการ<br><em style="font-size:13pt; color:#666;">The Capability Cliff</em></div>
+    <div class="pain-body">
+      <p>
+        จุดแข็งที่ชัดเจนที่สุดของ TKC คือผู้บริหารระดับ Director — มีประสบการณ์สูง มีความมุ่งมั่น และมีความเชี่ยวชาญเฉพาะด้าน แต่ People Innovate พบว่าในระดับที่ต่ำกว่า Director ลงมา มีช่องว่างความสามารถที่น่าเป็นห่วง โดยเฉพาะในด้านการแก้ปัญหาอย่างเป็นระบบ การบริหารเวลา และการตัดสินใจเมื่อขาดคนนำทาง
+      </p>
+      <p>
+        <strong>ผลกระทบที่สำคัญที่สุดคือความเปราะบางของทีม</strong> เมื่อ Director หายไป (ลา ป่วย เดินทาง หรือลาออก) งานจะชะงักหรือขึ้นไปถึง C-level โดยตรง ระบบนี้ทำให้ผู้บริหารระดับสูงทำงาน micromanage โดยไม่ได้ตั้งใจ และพนักงานระดับกลางไม่ได้รับโอกาสพัฒนาทักษะการตัดสินใจ ในเชิงทฤษฎีทีม นี่คือทีมที่ติดอยู่ในขั้น <em>Forming–Storming</em> ตามโมเดลของ Tuckman<sup class="cite">[7]</sup> โดยไม่สามารถก้าวสู่ขั้น <em>Norming–Performing</em> ได้ เพราะ Belbin role<sup class="cite">[8]</sup> ของผู้นำทีม (Coordinator / Shaper) ผูกอยู่ที่บุคคลคนเดียวเสมอ
+      </p>
+    </div>
+    <div class="pain-finding">
+      <div class="pain-finding-label">หลักฐานจากการสัมภาษณ์ (People Innovate, 2567)</div>
+      "ผู้ช่วยขาดทักษะการบริหารและการแก้ปัญหา มักตื่นตกใจเมื่อเผชิญปัญหา" (สายงานบัญชีฯ) · "ทีมงานระดับปฏิบัติการทำงานในโหมด passive ขาดแรงจูงใจ" (ภาพรวม) · "มีความเสี่ยงสูงในการสร้างผู้สืบทอดเนื่องจากพึ่งพาความสามารถเฉพาะตัวมากกว่าระบบทีม"
+    </div>
+  </div>
+
+  <!-- PAIN POINT 4 -->
+  <div class="pain-block">
+    <div class="pain-num">PAIN POINT · 04 / 05</div>
+    <div class="pain-title">รูปแบบการสูญเสียบุคลากรที่ซ้อนกัน<br><em style="font-size:13pt; color:#666;">The Compounding Turnover Pattern</em></div>
+    <div class="pain-body">
+      <p>
+        อัตราการลาออกในแต่ละแผนกสูงในระดับที่น่ากังวล แต่สิ่งที่น่าสนใจยิ่งกว่าคือแต่ละแผนกมี <em>สาเหตุการลาออกที่แตกต่างกัน</em>:
+      </p>
+      <ul>
+        <li><strong>จัดซื้อจัดจ้าง (87.8%)</strong> — งานหนักเกินสัดส่วน กระบวนการ manual มาก ไม่มีการพัฒนาที่ชัดเจน คนใหม่เข้ามาแล้วออกก่อนจะตั้งรับได้</li>
+        <li><strong>บัญชีและการเงิน (26.7%)</strong> — ความไม่ชัดเจนในโครงสร้าง ภาระงานตกอยู่ที่ Team Lead การสืบทอดตำแหน่งที่กำลังจะมาถึงสร้างความไม่แน่นอน</li>
+        <li><strong>Digital Services (22.4%)</strong> — ตลาดภายนอกให้ค่าตอบแทนสูงกว่าสำหรับทักษะเดียวกัน คนเก่งมีทางเลือกมากขึ้น</li>
+      </ul>
+
+      <!-- Figure 2 — Turnover bar chart -->
+      <div class="figure avoid-break" style="margin-top: 14pt;">
+        <div class="figure-label">FIGURE 2 · TURNOVER BY DEPARTMENT (FY2568)</div>
+        <div class="figure-frame">
+          <svg class="svg-bar" viewBox="0 0 720 270" style="width: 100%; height: auto; display: block;" xmlns="http://www.w3.org/2000/svg">
+            <!-- baseline + benchmark line at 10% -->
+            <line x1="180" y1="240" x2="700" y2="240" stroke="#222222" stroke-width="1" />
+            <line x1="180" y1="216" x2="700" y2="216" stroke="#5B8C4A" stroke-width="0.8" stroke-dasharray="3 3" opacity="0.7"/>
+            <text x="704" y="219" font-size="9" fill="#5B8C4A">Industry benchmark · 10%</text>
+
+            <!-- bars (max width represents 90%) -->
+            <!-- Procurement 87.8% -->
+            <rect x="180" y="34"  width="495" height="22" fill="#C44D3F"/>
+            <text x="172" y="50" text-anchor="end" font-size="11" fill="#222">จัดซื้อจัดจ้าง</text>
+            <text x="685" y="50" font-size="11" font-weight="700" fill="#FFFFFF" text-anchor="end" font-family="JetBrains Mono">87.8%</text>
+
+            <!-- Accounting 26.7% -->
+            <rect x="180" y="76"  width="150" height="22" fill="#E07A6F"/>
+            <text x="172" y="92" text-anchor="end" font-size="11" fill="#222">บัญชี / การเงิน</text>
+            <text x="340" y="92" font-size="11" font-weight="700" fill="#222" font-family="JetBrains Mono">26.7%</text>
+
+            <!-- Digital Services 22.4% -->
+            <rect x="180" y="118" width="126" height="22" fill="#E07A6F"/>
+            <text x="172" y="134" text-anchor="end" font-size="11" fill="#222">Digital Services</text>
+            <text x="316" y="134" font-size="11" font-weight="700" fill="#222" font-family="JetBrains Mono">22.4%</text>
+
+            <!-- Network Delivery 12% (estimated lower) -->
+            <rect x="180" y="160" width="68" height="22" fill="#D4A843"/>
+            <text x="172" y="176" text-anchor="end" font-size="11" fill="#222">Network Delivery</text>
+            <text x="258" y="176" font-size="11" font-weight="700" fill="#222" font-family="JetBrains Mono">~12%</text>
+
+            <!-- Enterprise / IS / Public Safety 8-9% (organisation average) -->
+            <rect x="180" y="202" width="50" height="22" fill="#5B8C4A"/>
+            <text x="172" y="218" text-anchor="end" font-size="11" fill="#222">อื่น ๆ (เฉลี่ยองค์กร)</text>
+            <text x="240" y="218" font-size="11" font-weight="700" fill="#222" font-family="JetBrains Mono">~9%</text>
+
+            <!-- Title -->
+            <text x="180" y="20" font-size="10" fill="#888" letter-spacing="1">% TURNOVER · บุคลากรที่ลาออกในรอบปี FY2568</text>
+
+            <!-- X axis ticks -->
+            <text x="180" y="258" font-size="9" fill="#888">0%</text>
+            <text x="290" y="258" font-size="9" fill="#888">20%</text>
+            <text x="400" y="258" font-size="9" fill="#888">40%</text>
+            <text x="510" y="258" font-size="9" fill="#888">60%</text>
+            <text x="620" y="258" font-size="9" fill="#888">80%</text>
+          </svg>
+        </div>
+        <div class="figure-caption">
+          <strong>รูปที่ 2.</strong> อัตราการลาออกตามสายงานในรอบปีงบประมาณ 2568 จากข้อมูล TKC Employee Data Report (เมษายน 2569) เส้นประสีเขียวคือเกณฑ์เปรียบเทียบของอุตสาหกรรม (≈10%) · ฝ่ายจัดซื้อจัดจ้างสูงกว่าเกณฑ์ราว 9 เท่า เป็นสัญญาณที่ต้องการการแก้ไขเชิงโครงสร้างมากกว่าการขึ้นค่าตอบแทน
+        </div>
+      </div>
+      <p>
+        <strong>ความอันตรายไม่ใช่ตัวเลขแต่ละตัว แต่คือผลรวมกัน</strong> องค์ความรู้ที่สะสมมาหลายปีกำลังระเหยออกไปในหลายจุดพร้อมกัน และคนที่ออกไปมักเป็น "คนที่รู้ว่าระบบทำงานอย่างไรจริงๆ" ไม่ใช่แค่คนที่รู้ job description
+      </p>
+    </div>
+    <div class="pain-finding">
+      <div class="pain-finding-label">สิ่งที่ต้องระวัง · Compensation อย่างเดียวไม่พอ</div>
+      ในกรอบ 4C: Compensation อาจไม่ใช่สาเหตุหลักสำหรับทุกแผนก แต่ Career (เส้นทางเติบโตไม่ชัด) และ Community (วัฒนธรรม silo ทำให้ความรู้สึกเป็นส่วนหนึ่งขององค์กรลดลง) น่าจะเป็นตัวขับเคลื่อนที่สำคัญกว่า ตามการสรุปทางวิชาการของ Pink<sup class="cite">[9]</sup> ที่ขยายแนวคิดของ Deci &amp; Ryan: ค่าตอบแทนที่เป็นธรรมเป็นเงื่อนไขจำเป็น แต่ไม่เพียงพอในการรักษาคนเก่ง สิ่งที่จำเป็นเพิ่มคือ <em>autonomy, mastery, purpose</em> ซึ่ง 4C จับได้ในมิติ Career และ Cause การแก้ด้วยการขึ้นเงินเดือนเพียงอย่างเดียวจะไม่ได้ผลในระยะยาว
+    </div>
+  </div>
+
+  <!-- PAIN POINT 5 -->
+  <div class="pain-block">
+    <div class="pain-num">PAIN POINT · 05 / 05</div>
+    <div class="pain-title">ช่องว่างการมองเห็นทรัพยากรในการดำเนินโครงการ<br><em style="font-size:13pt; color:#666;">The Resource Visibility Gap</em></div>
+    <div class="pain-body">
+      <p>
+        ข้อมูลจาก PMO Portfolio Dashboard (เมษายน 2569) เผยให้เห็นภาพที่น่าเป็นห่วง: จากโครงการทั้งหมด 10 โครงการในปี 2569 มีถึง 40% ที่ยังไม่ได้เริ่มต้น แม้ว่าโครงการเหล่านั้นมีมูลค่ารวมอยู่ในพอร์ตโฟลิโอแล้ว และ Project Beta ซึ่งอยู่ในสถานะ "Delayed" ใช้ทรัพยากรไปแล้ว 125% ของที่วางแผน ณ ขณะที่งานสำเร็จเพียง 35%
+      </p>
+      <p>
+        <strong>สาเหตุของปัญหานี้ไม่ใช่ทีม Project Management ไม่เก่ง แต่เป็นเพราะการจัดสรรทรัพยากรเกิดขึ้นในหัวของผู้บริหาร ไม่ใช่บนระบบ</strong> เมื่อคนเดียวกันถูกมอบหมายให้อยู่ในสองหรือสามโครงการพร้อมกัน โดยที่ไม่มีระบบที่แสดงให้เห็นความขัดแย้งนั้น การ Overrun จึงไม่ใช่เรื่องที่ไม่คาดไม่ถึง — มันเป็นผลลัพธ์ที่หลีกเลี่ยงไม่ได้ของระบบที่ออกแบบมาแบบนั้น
+      </p>
+    </div>
+    <div class="pain-finding">
+      <div class="pain-finding-label">ตัวเลขสำคัญจาก PMO Dashboard (เม.ย. 2569)</div>
+      Project Beta: ความคืบหน้า 35% · ใช้ทรัพยากร 125% ของแผน · งบประมาณที่ใช้ไปแล้ว 105% · ยอดเรียกเก็บ 15% เท่านั้น · Issues ระดับ High 3 รายการ · Risks ระดับ High 1 รายการ — ภาพนี้เป็นตัวอย่างชัดเจนของสิ่งที่เกิดขึ้นเมื่อทรัพยากรไม่ถูกมองเห็นตั้งแต่ต้น สอดคล้องกับ <em>Theory of Constraints</em> ของ Goldratt<sup class="cite">[10]</sup> ที่อธิบายว่า bottleneck ที่ไม่ถูกระบุจะดึงประสิทธิภาพของระบบทั้งหมดลงโดยอัตโนมัติ
+    </div>
+
+    <!-- Figure 3 — PMO Portfolio status donut -->
+    <div class="figure avoid-break" style="margin-top: 14pt;">
+      <div class="figure-label">FIGURE 3 · PMO PORTFOLIO STATUS · 10 PROJECTS · APR 2569</div>
+      <div class="figure-frame">
+        <svg viewBox="0 0 720 240" style="width: 100%; height: auto; display: block;" xmlns="http://www.w3.org/2000/svg">
+          <!-- Donut chart at left -->
+          <!-- Center 130,120 · radius 80 · stroke 28 -->
+          <g transform="translate(130, 120)">
+            <!-- 40% Not Started — red -->
+            <circle r="80" fill="none" stroke="#C44D3F" stroke-width="32"
+                    stroke-dasharray="201 502" stroke-dashoffset="0" transform="rotate(-90)"/>
+            <!-- 40% Other (At Risk + Delayed) — orange -->
+            <circle r="80" fill="none" stroke="#D4A843" stroke-width="32"
+                    stroke-dasharray="201 502" stroke-dashoffset="-201" transform="rotate(-90)"/>
+            <!-- 20% On Track — green -->
+            <circle r="80" fill="none" stroke="#5B8C4A" stroke-width="32"
+                    stroke-dasharray="100 502" stroke-dashoffset="-402" transform="rotate(-90)"/>
+
+            <!-- center label -->
+            <text y="-4" text-anchor="middle" font-size="13" font-weight="700" fill="#222">10 โครงการ</text>
+            <text y="14" text-anchor="middle" font-size="10" fill="#666">Q2 / 2569</text>
+          </g>
+
+          <!-- Legend on right -->
+          <g font-size="11" fill="#222" transform="translate(280, 36)">
+            <rect x="0" y="0" width="14" height="14" fill="#C44D3F"/>
+            <text x="22" y="11">ยังไม่เริ่ม (Not Started)</text>
+            <text x="380" y="11" font-family="JetBrains Mono" font-weight="700" fill="#C44D3F">40% · 4 โครงการ</text>
+
+            <rect x="0" y="38" width="14" height="14" fill="#D4A843"/>
+            <text x="22" y="49">มีปัญหา / ล่าช้า (At Risk · Delayed)</text>
+            <text x="380" y="49" font-family="JetBrains Mono" font-weight="700" fill="#B8893A">40% · 4 โครงการ</text>
+
+            <rect x="0" y="76" width="14" height="14" fill="#5B8C4A"/>
+            <text x="22" y="87">เป็นไปตามแผน (On Track)</text>
+            <text x="380" y="87" font-family="JetBrains Mono" font-weight="700" fill="#5B8C4A">20% · 2 โครงการ</text>
+
+            <line x1="0" y1="118" x2="430" y2="118" stroke="#CCCCCC" stroke-dasharray="3 3"/>
+
+            <text x="0" y="142" font-size="11" font-weight="700">Project Beta · Outlier</text>
+            <text x="0" y="160" font-size="10" fill="#666">งานเสร็จ 35% · ใช้ทรัพยากร 125% · เรียกเก็บแล้ว 15%</text>
+            <text x="0" y="178" font-size="10" fill="#666">→ ตัวอย่างชัดของ Resource Visibility Gap</text>
+          </g>
+        </svg>
+      </div>
+      <div class="figure-caption">
+        <strong>รูปที่ 3.</strong> สถานะโครงการในพอร์ตโฟลิโอของ PMO ณ เมษายน 2569 · มีเพียง 2 ใน 10 โครงการเท่านั้นที่ดำเนินไปตามแผน · เปอร์เซ็นต์ <em>Not Started</em> (40%) ในไตรมาส 2 บ่งชี้ว่าการจัดสรรทรัพยากรในต้นปียังไม่เกิดขึ้นจริง สอดคล้องกับสมมติฐานที่ว่าการตัดสินใจจัดสรรทรัพยากรอยู่ในระดับบุคคลมากกว่าในระบบกลาง
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 06 — CROSS-ANALYSIS ═══ -->
+<section class="section">
+  <div class="section-kicker">SECTION 06 · CROSS-ANALYSIS</div>
+  <h2 class="section-title">การวิเคราะห์เชื่อมโยง — เมื่อภายนอกพบภายใน</h2>
+
+  <p class="lead">
+    สิ่งที่ทำให้รายงานนี้แตกต่างจากการวิเคราะห์ PEST ทั่วไปคือการเชื่อมโยงระหว่างแรงกดดันภายนอกกับรอยแตกภายในองค์กร แรงกดดันภายนอกไม่ได้สร้างปัญหา มันเพียงแค่ <em>ขยาย</em> ปัญหาที่มีอยู่แล้วให้ใหญ่ขึ้น
+  </p>
+
+  <h3 class="subsection">ตัวอย่างที่ 1: ระบบอัตโนมัติ × กระบวนการ Manual</h3>
+  <p>
+    WEF คาดว่าระบบอัตโนมัติจะแทนที่งานได้ 40% ภายในทศวรรษ 2030 สายงาน Network Delivery ซึ่งพึ่งพากระบวนการ manual อย่างมากคือจุดที่เปราะบางที่สุดต่อการเปลี่ยนแปลงนี้ หากไม่ปรับตัว ต้นทุนของ TKC ในสายงานนี้จะสูงขึ้นเรื่อยๆ เมื่อเทียบกับคู่แข่งที่ใช้เทคโนโลยีมากขึ้น
+  </p>
+
+  <h3 class="subsection">ตัวอย่างที่ 2: ความเสี่ยงลูกค้าภาครัฐ × ช่องว่างรายได้</h3>
+  <p>
+    TKC มีรายได้มากกว่า 80% จากภาครัฐ และช่องว่างการรับรู้รายได้ 1 เดือนระหว่าง PM กับ Finance ทำให้ cash flow ไม่ราบเรียบ หากเกิดการล่าช้าในการอนุมัติงบประมาณภาครัฐ (ซึ่งเกิดขึ้นจริงในปี 2567) ช่องว่างภายในองค์กรนี้จะทำให้แรงกดดัน cash flow หนักกว่าที่ควรจะเป็น
+  </p>
+
+  <h3 class="subsection">ตัวอย่างที่ 3: สังคมผู้สูงอายุ × การสูญเสียความรู้องค์กร</h3>
+  <p>
+    ภายในปี 2574 ประเทศไทยจะเป็นสังคมผู้สูงอายุขั้น Super-aged (28% ของประชากร) แนวโน้มนี้กำลังเกิดขึ้นภายใน TKC ก่อนที่จะเกิดในสังคม — ผู้บริหารและผู้เชี่ยวชาญที่มีความรู้สูงกำลังใกล้วัยเกษียณ และ <strong>ความรู้นั้นยังอยู่ในหัวของพวกเขา ไม่ใช่ในระบบ</strong> การไม่เตรียมระบบการถ่ายทอดความรู้เท่ากับยอมรับว่าความรู้เหล่านั้นจะหายไปพร้อมกับผู้คน
+  </p>
+
+  <h3 class="subsection">ตัวอย่างที่ 4: โอกาส EEC × ความสามารถในการสร้างทีมใหม่</h3>
+  <p>
+    EEC และแผนพัฒนาฯ ฉบับที่ 13 สร้างโอกาสมหาศาลสำหรับ TKC แต่การคว้าโอกาสในตลาดที่เติบโตเร็วต้องการความสามารถในการสร้างและปรับทีมอย่างรวดเร็ว หากระบบการจัดสรรทรัพยากรยังพึ่งพาการตัดสินใจในหัวของผู้บริหาร TKC จะไม่สามารถขยายขนาดการรับงานได้เร็วพอที่จะตามโอกาสเหล่านั้น
+  </p>
+
+  <div class="pullquote">
+    ทุก Pain Point ที่พบภายในมี "ตัวขยาย" อยู่ภายนอก แต่ขณะเดียวกัน แรงกดดันภายนอกทุกอย่างก็มี "ทางออก" อยู่ภายใน — ถ้าองค์กรพร้อมที่จะเปลี่ยน
+  </div>
+</section>
+
+<!-- ═══ 07 — RECOMMENDATIONS ═══ -->
+<section class="section">
+  <div class="section-kicker">SECTION 07 · RECOMMENDATIONS</div>
+  <h2 class="section-title">ข้อเสนอแนะและทิศทางถัดไป</h2>
+
+  <p class="lead">
+    ผมไม่เชื่อในการให้คำแนะนำที่ "ถูกต้องตามทฤษฎีแต่ไม่มีคนทำได้จริง" ดังนั้นข้อเสนอแนะทั้งหมดนี้จะเชื่อมโยงกับสิ่งที่กำลังสร้างอยู่แล้วในระบบ Digital Twin
+  </p>
+
+  <h3 class="subsection">สำหรับ Pain Point 1 — Information Monarchy</h3>
+  <p>
+    ระบบ Digital Twin ที่สร้างขึ้นใน Phase 1 แก้ปัญหานี้โดยตรง ผ่าน Google Sheets Shadow Mirror ที่ทำให้ข้อมูลทุกอย่างมองเห็นได้โดยไม่ต้องถาม การขั้นต่อไปคือการนำเข้าข้อมูลโครงการจากระบบ Mango ERP เพื่อให้ Project Table ใน Sheets สมบูรณ์ และการฝึกอบรม PM ให้ใช้ระบบ Timesheet อย่างสม่ำเสมอ (ซึ่งสอดคล้องกับแผน PMO Q2 ที่ระบุ "Timesheet Awareness" ไว้แล้ว)
+  </p>
+
+  <h3 class="subsection">สำหรับ Pain Point 2 — Revenue Recognition Crack</h3>
+  <p>
+    ต้องสร้างนิยามร่วมของคำว่า "งานเสร็จ" ระหว่าง PM และ Finance โดยเป็นนิยามที่ทั้งสองฝ่ายยอมรับ และระบบสนับสนุนควรแสดงสถานะการส่งงานและการออกใบแจ้งหนี้บนหน้าจอเดียวกัน เพื่อให้ทั้งสองทีมเห็นภาพเดียวกัน
+  </p>
+
+  <h3 class="subsection">สำหรับ Pain Point 3 — Capability Cliff</h3>
+  <p>
+    Capability Matrix ใน Digital Twin สร้างขึ้นเพื่อตอบโจทย์นี้โดยตรง — แสดงให้เห็นว่าทักษะใดมีอยู่ในองค์กร ทักษะใดกำลังขาด และใครสามารถพัฒนาได้ในเส้นทางไหน นอกจากนี้ PMO Roadmap ข้อ Q3 ได้ระบุ "People Development — KM &amp; Training Academy &amp; Communities" ไว้แล้ว ซึ่งควรดำเนินการควบคู่กับข้อมูลจาก Capability Matrix
+  </p>
+
+  <h3 class="subsection">สำหรับ Pain Point 4 — Compounding Turnover</h3>
+  <p>
+    แนะนำให้ทำ "4C Audit" รายแผนก — ประเมินว่า Turnover ในแต่ละแผนกขับเคลื่อนโดย C ไหนเป็นหลัก เพื่อให้การแก้ปัญหาตรงจุด ไม่ใช่แก้ด้วยมาตรการเดียวกันทั้งองค์กร ระบบ Signals ใน Digital Twin สามารถติดตาม retention pattern ได้หากมีข้อมูล check-in ที่สม่ำเสมอ
+  </p>
+
+  <h3 class="subsection">สำหรับ Pain Point 5 — Resource Visibility Gap</h3>
+  <p>
+    นี่คือปัญหาที่ PMO กำลังพยายามแก้อยู่ด้วย "Centralized Resource View" ใน Q3 ของ Roadmap ระบบ Digital Twin สามารถเป็น "Centralized Resource View" นั้นได้ หากมีการนำเข้าข้อมูลการ allocate ทรัพยากรของแต่ละโครงการ ซึ่งทำได้ผ่าน Sheets ที่เชื่อมต่อกับ Postgres อยู่แล้ว
+  </p>
+
+  <div class="callout callout-green">
+    <span class="callout-title">จุดเชื่อมที่สำคัญ</span>
+    ทุก Pain Point ที่ระบุในรายงานฉบับนี้สอดคล้องกับสิ่งที่ PMO Strategic Roadmap (Q2–Q4 2569) วางแผนจะแก้ไขอยู่แล้ว นี่ไม่ใช่ความบังเอิญ — มันหมายความว่า TKC กำลังเคลื่อนไปในทิศทางที่ถูกต้อง สิ่งที่ Digital Twin เพิ่มเติมให้คือ <em>ความเร็วและความสามารถในการมองเห็น</em> ที่แผน PMO ต้องการ
+  </div>
+</section>
+
+<!-- ═══ 08 — APPENDIX ═══ -->
+<section class="section">
+  <div class="section-kicker">SECTION 08 · APPENDIX</div>
+  <h2 class="section-title">ภาคผนวก — ตารางข้อมูลอ้างอิง</h2>
+
+  <h3 class="subsection">A. สรุปตัวชี้วัด PMO Portfolio 2569</h3>
+  <table>
+    <thead>
+      <tr><th>ตัวชี้วัด</th><th>แผน / เป้าหมาย</th><th class="num">ผลจริง</th><th class="num">%</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>มูลค่าพอร์ตโฟลิโอ</td><td>302 ล้านบาท</td><td class="num">284</td><td class="num">94%</td></tr>
+      <tr><td>ยอดเรียกเก็บ (Billed)</td><td>284 ล้านบาท</td><td class="num">198</td><td class="num">70%</td></tr>
+      <tr><td>งบประมาณที่ใช้ไป (Expensed)</td><td>195 ล้านบาท</td><td class="num">142</td><td class="num">73%</td></tr>
+      <tr><td>โครงการ "On Track"</td><td>—</td><td class="num">2 / 10</td><td class="num">20%</td></tr>
+      <tr><td>โครงการ "Not Started"</td><td>—</td><td class="num">4 / 10</td><td class="num">40%</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="subsection">B. อัตราการลาออกตามสายงาน</h3>
+  <table>
+    <thead>
+      <tr><th>สายงาน</th><th class="num">Turnover Rate</th><th>สัญญาณหลัก</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>จัดซื้อจัดจ้าง (Procurement)</td><td class="num" style="color:#C44D3F; font-weight:700;">87.8%</td><td>ภาระงานสูง กระบวนการ manual</td></tr>
+      <tr><td>บัญชีและการเงิน</td><td class="num" style="color:#C44D3F;">26.7%</td><td>ความไม่ชัดเจนในโครงสร้าง ความเสี่ยงสืบทอดตำแหน่ง</td></tr>
+      <tr><td>Digital Services</td><td class="num" style="color:#C44D3F;">22.4%</td><td>ตลาดแรงงานดิจิทัลแข่งขันสูง</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="subsection">C. สถานะใบรับรองวิชาชีพ (จากข้อมูล TKC)</h3>
+  <table>
+    <thead>
+      <tr><th>หมวดหมู่</th><th>สถานะปกติ</th><th>ใกล้หมดอายุ</th><th>หมดอายุแล้ว</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Network &amp; Cybersecurity</td><td>มีจำนวนมาก</td><td>มี (ต้องติดตาม)</td><td>มี (เช่น CHFI, ICS/SCADA)</td></tr>
+      <tr><td>Cloud &amp; Infrastructure (Huawei, VMware, Cisco)</td><td>มีจำนวนมาก</td><td>มี</td><td>มี (เช่น HCSP บางรายการ)</td></tr>
+      <tr><td>Management &amp; Service Norms</td><td>ส่วนใหญ่ไม่มีวันหมดอายุ</td><td>—</td><td>—</td></tr>
+    </tbody>
+  </table>
+  <p style="font-size: 12pt; color: #666666;">
+    หมายเหตุ: ใบรับรองที่หมดอายุโดยเฉพาะด้าน Cybersecurity (เช่น CHFI, ICS/SCADA) ต้องได้รับการต่ออายุ เนื่องจากสายงาน Intelligent Solutions และ Public Safety ต้องการความน่าเชื่อถือด้านนี้ในการแข่งขันโครงการ
+  </p>
+
+  <h3 class="subsection">D. PMO Roadmap — ความสอดคล้องกับ Digital Twin</h3>
+  <table>
+    <thead>
+      <tr><th>PMO Roadmap</th><th>Digital Twin ตอบสนองอย่างไร</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Timesheet Awareness (Q2)</td><td>Lobby check-in system (Phase 1)</td></tr>
+      <tr><td>Central Project Registry (Q2)</td><td>Projects table ใน Postgres + Sheets</td></tr>
+      <tr><td>Portfolio Dashboard V1.0 (Q2)</td><td>Cockpit screen + Ledger screen</td></tr>
+      <tr><td>Centralized Resource View (Q3)</td><td>Formation Engine + Resource allocation</td></tr>
+      <tr><td>Gate Review &amp; Control (Q3)</td><td>Ninja Squad readiness formula</td></tr>
+      <tr><td>Predictive Analytics (Q4)</td><td>Signals screen — prediction vs reality</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="subsection">E. เป้าหมายรายได้แต่ละสายงาน ปี 2569</h3>
+  <table>
+    <thead>
+      <tr><th>สายงาน</th><th class="num">เป้าหมายรายได้ (ล้านบาท)</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Network Delivery</td><td class="num">1,000</td></tr>
+      <tr><td>Enterprise Business (Data Communication)</td><td class="num">789</td></tr>
+      <tr><td>Public Safety</td><td class="num">325</td></tr>
+      <tr><td>Intelligent Solutions</td><td class="num">321</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="subsection">F. แหล่งอ้างอิง · References</h3>
+  <p style="font-size: 12pt; color: #555; margin-bottom: 10pt;">
+    รายงานฉบับนี้อ้างอิงทั้งงานวิชาการ ข้อมูลที่ TKC จัดเตรียมให้ และการสื่อสารโดยตรงกับทีม รายการอ้างอิงเรียงตามลำดับการปรากฏในเนื้อหา · ตัวเลขในวงเล็บเหลี่ยมสอดคล้องกับ <code>[n]</code> ที่ใช้ในรายงาน
+  </p>
+
+  <ol class="cite-list">
+    <li>
+      <strong>[1] Senge, P. M. (1990).</strong> <em>The Fifth Discipline: The Art and Practice of the Learning Organization.</em> New York: Doubleday. — กรอบแนวคิดเรื่อง <em>systems thinking</em> และ &ldquo;เพื่อแก้ปัญหา ต้องเห็นโครงสร้างที่อยู่เบื้องหลัง ไม่ใช่อาการ&rdquo;
+    </li>
+    <li>
+      <strong>[2] Herzberg, F. (1959).</strong> <em>The Motivation to Work.</em> New York: Wiley. — Two-Factor Theory ที่แยก hygiene factors (ค่าตอบแทน, สภาพแวดล้อม) ออกจาก motivators (ความรับผิดชอบ, การเติบโต)
+    </li>
+    <li>
+      <strong>[3] Deci, E. L. &amp; Ryan, R. M. (2000).</strong> &ldquo;The 'what' and 'why' of goal pursuits: Human needs and the self-determination of behavior.&rdquo; <em>Psychological Inquiry</em>, 11(4), 227–268. — Self-Determination Theory: autonomy, competence, relatedness เป็นความต้องการพื้นฐานทางจิตวิทยา
+    </li>
+    <li>
+      <strong>[4] Fritz, R. (1989).</strong> <em>The Path of Least Resistance.</em> New York: Fawcett Columbine. — กรอบ Structural Tension Analysis ที่ใช้ในรายงานนี้ในการระบุความขัดแย้งฝังราก
+    </li>
+    <li>
+      <strong>[5] Ohno, T. (1988).</strong> <em>Toyota Production System: Beyond Large-Scale Production.</em> Cambridge MA: Productivity Press. — Five Whys diagnostic method
+    </li>
+    <li>
+      <strong>[6] Brown, J. S. &amp; Duguid, P. (2001).</strong> &ldquo;Knowledge and Organization: A Social-Practice Perspective.&rdquo; <em>Organization Science</em>, 12(2), 198–213. — communities of practice และ tacit knowledge ที่ผูกอยู่กับบุคคล
+    </li>
+    <li>
+      <strong>[7] Tuckman, B. W. (1965).</strong> &ldquo;Developmental sequence in small groups.&rdquo; <em>Psychological Bulletin</em>, 63(6), 384–399. — โมเดล Forming–Storming–Norming–Performing ของพัฒนาการกลุ่ม
+    </li>
+    <li>
+      <strong>[8] Belbin, R. M. (1981).</strong> <em>Management Teams: Why They Succeed or Fail.</em> Oxford: Butterworth-Heinemann. — ทฤษฎี 9 บทบาทในทีม (Coordinator, Shaper, Plant, ฯลฯ) ใช้ในการวิเคราะห์ Capability Cliff
+    </li>
+    <li>
+      <strong>[9] Pink, D. H. (2009).</strong> <em>Drive: The Surprising Truth About What Motivates Us.</em> New York: Riverhead Books. — autonomy + mastery + purpose เป็นปัจจัยขับเคลื่อนคนเก่งในเศรษฐกิจความรู้
+    </li>
+    <li>
+      <strong>[10] Goldratt, E. M. (1984).</strong> <em>The Goal: A Process of Ongoing Improvement.</em> Great Barrington MA: North River Press. — Theory of Constraints และ bottleneck management
+    </li>
+    <li>
+      <strong>[R1]</strong> <em>รายงานเบื้องต้น Phase 1 — Talent Transformation Engine for TKC.</em> ส่งมอบ 6 พฤษภาคม 2569 โดย ดร.นน อัครประเสริฐกุล. บทที่ 3 &ldquo;ความตึงเครียดเชิงโครงสร้าง 5 ประการ&rdquo; เป็นรากฐานของรายงานฉบับที่ 2
+    </li>
+  </ol>
+
+  <h3 class="subsection">G. แหล่งข้อมูลโดยตรงจาก TKC · Primary Sources</h3>
+  <p style="font-size: 12pt; color: #555; margin-bottom: 8pt;">
+    ข้อมูลที่อ้างถึงในรายงานนี้ในรูปแบบ &ldquo;การสื่อสารโดยตรงกับทีม TKC&rdquo; มาจากแหล่งดังต่อไปนี้:
+  </p>
+  <ul class="cite-list">
+    <li>
+      <strong>การประชุม DEPA × TKC Kickoff</strong> · 17 เมษายน 2569 · ผู้เข้าร่วม: คณะผู้บริหาร TKC (C-level) และทีม DEPA · บันทึกการสังเกตของผู้รับจ้าง
+    </li>
+    <li>
+      <strong>การประชุม Management Review (6-month Sandbox)</strong> · 21 เมษายน 2569 · ผู้เข้าร่วม: ผู้บริหาร 7 คน · นำเสนอระบบ Digital Twin และเก็บฟีดแบ็กรายบุคคล
+    </li>
+    <li>
+      <strong>รายงาน People Innovate ครั้งที่ 1</strong> (2567) · การสัมภาษณ์เชิงลึก 19 ครั้งใน 5 แผนก · พฤษภาคม–พฤศจิกายน 2567 · ใช้เป็นแหล่งข้อมูลเชิงคุณภาพหลัก
+    </li>
+    <li>
+      <strong>PMO Portfolio &amp; Resource Dashboard</strong> · 27 เมษายน 2569 · ข้อมูลโครงการ 10 รายการ พร้อมสถานะ, งบประมาณ, การใช้ทรัพยากร
+    </li>
+    <li>
+      <strong>PMO Strategic Roadmap</strong> · 28 เมษายน 2569 · แผนงาน Q2–Q4 ของหน่วย PMO
+    </li>
+    <li>
+      <strong>Employee Data Report (All Resign Inc.)</strong> · 9 เมษายน 2569 · ข้อมูลพนักงาน 320 คน + 28 รายที่ออกจากองค์กร · ใช้สำหรับการคำนวณ turnover และ tenure distribution
+    </li>
+    <li>
+      <strong>Certified Information (TKC)</strong> · เมษายน 2569 · 78 รายการใบรับรองวิชาชีพ พร้อมสถานะวันหมดอายุ
+    </li>
+    <li>
+      <strong>Mockup KPI 2569</strong> · เมษายน 2569 · เป้าหมายรายได้และตัวชี้วัดของแต่ละสายงาน · ใช้คำนวณช่องว่าง portfolio target vs actual
+    </li>
+  </ul>
+
+  <p style="font-size: 11pt; color: #888; margin-top: 14pt; font-style: italic;">
+    การอ้างอิงในเนื้อหาที่ระบุว่า &ldquo;การสื่อสารโดยตรงกับทีม TKC&rdquo; (direct communication with the team) ครอบคลุมแหล่งข้างต้นทั้งหมด ความเห็นและการตีความเป็นความรับผิดชอบของผู้รับจ้าง ไม่ใช่ของผู้ให้ข้อมูล
+  </p>
+</section>
+
+<!-- ═══ CLOSING ═══ -->
+<section class="section" style="margin-top: 48pt;">
+  <div style="padding: 24pt 0; border-top: 1px solid #CCCCCC;">
+    <p style="font-size: 13pt; color: #555555; line-height: 1.6;">
+      รายงานฉบับนี้จัดทำขึ้นเพื่อส่งมอบตามเงื่อนไขงวดที่ 2 ของสัญญาที่ปรึกษา โดยมีวัตถุประสงค์เพื่อให้ TKC มีภาพที่ชัดเจนและซื่อสัตย์ของสิ่งที่กำลังเกิดขึ้นในองค์กร ข้อมูลทั้งหมดในรายงานนี้มาจากแหล่งข้อมูลที่ TKC จัดเตรียมให้ รวมถึงการสังเกตและการวิเคราะห์ของผู้จัดทำ ความเห็นในรายงานเป็นความเห็นส่วนตัวของที่ปรึกษา มีจุดประสงค์เพื่อประโยชน์ขององค์กร ไม่ใช่เพื่อการตัดสิน
+    </p>
+    <p style="font-size: 13pt; color: #555555; line-height: 1.6; margin-top: 12pt;">
+      ผมเชื่อว่า TKC มีทรัพยากรที่จำเป็นสำหรับการเปลี่ยนแปลง — ทั้งทีมผู้บริหารที่มีความมุ่งมั่น บุคลากรที่มีทักษะ และตำแหน่งทางตลาดที่ยังแข็งแกร่ง สิ่งที่ต้องการคือระบบที่ทำให้ทรัพยากรเหล่านั้นมองเห็นได้และใช้งานได้อย่างมีประสิทธิภาพมากขึ้น นั่นคือสิ่งที่รายงานนี้และระบบที่กำลังสร้างมุ่งหวัง
+    </p>
+    <div style="margin-top: 24pt; display: flex; justify-content: space-between; align-items: flex-end;">
+      <div>
+        <div style="font-size: 12pt; color: #888888; margin-bottom: 4pt;">ลงนามโดย</div>
+        <div style="font-size: 14pt; font-weight: 700;">ดร. นน อัครประเสริฐกุล</div>
+        <div style="font-size: 11pt; color: #666666;">Dr. Non Arkaraprasertkul</div>
+        <div style="font-size: 11pt; color: #666666; margin-top: 2pt;">8 พฤษภาคม 2569</div>
+      </div>
+      <div style="text-align: right; font-size: 11pt; color: #888888; line-height: 1.6;">
+        รายงานฉบับที่ 2 จากทั้งหมด<br>
+        <span style="font-family: 'JetBrains Mono', monospace; font-size: 13pt; color: #CC6600; font-weight: 700;">งวดที่ 2 · 200,000 บาท</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div><!-- end .page -->
+
+<script>
+// Auto-open print dialog on load
+window.addEventListener('load', function() {
+  setTimeout(function() {
+    document.querySelector('.print-hint') && (document.querySelector('.print-hint').style.display = 'none');
+  }, 3000);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>รายงานสรุปขอบเขตงาน · TKC Digital Twin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; border-radius: 0 !important; }
+html, body {
+  background: #ffffff;
+  color: #1a1209;
+  font-family: 'IBM Plex Sans Thai', 'Noto Sans Thai', sans-serif;
+}
+
+@page { size: A4; margin: 2.2cm 2cm 2cm 2cm; }
+@media print {
+  .no-print { display: none !important; }
+  body { background: white; }
+  .page-break { page-break-before: always; }
+}
+
+.t-title    { font-size: 17pt; font-weight: 700; line-height: 1.3; }
+.t-subtitle { font-size: 13pt; font-weight: 600; line-height: 1.4; }
+.t-section  { font-size: 11pt; font-weight: 600; line-height: 1.5; }
+.t-body     { font-size: 10pt; font-weight: 400; line-height: 1.7; }
+.t-caption  { font-size: 9pt;  font-weight: 400; line-height: 1.5; color: #5a4530; }
+.t-mono     { font-family: 'JetBrains Mono', 'Courier New', monospace; font-size: 9pt; }
+
+.page { max-width: 680px; margin: 0 auto; padding: 28px 0; }
+.section-block { margin-bottom: 24px; }
+
+.doc-header {
+  border-bottom: 2.5px solid #1a1209;
+  padding-bottom: 16px; margin-bottom: 20px;
+  text-align: center;
+}
+.org-name {
+  font-size: 10pt; font-weight: 600; letter-spacing: 0.02em;
+  color: #3d2e1e; margin-bottom: 12px;
+}
+
+.info-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+.info-table td {
+  padding: 5px 8px; font-size: 10pt; vertical-align: top;
+  border: 1px solid #d4c8b8;
+}
+.info-table td:first-child {
+  font-weight: 600; width: 38%; background: #f5f0e8; white-space: nowrap;
+}
+
+.section-header {
+  font-size: 11pt; font-weight: 700;
+  border-left: 4px solid #1a1209; padding-left: 10px;
+  margin: 20px 0 10px; line-height: 1.4;
+}
+
+.deliverable-list { margin: 0; padding-left: 0; list-style: none; }
+.deliverable-list li {
+  display: flex; gap: 12px; padding: 6px 0;
+  border-bottom: 1px solid #e8e0d4;
+  font-size: 10pt; align-items: flex-start;
+}
+.deliverable-list li:last-child { border-bottom: none; }
+.deliverable-no {
+  font-family: 'JetBrains Mono', monospace; font-size: 9pt;
+  color: #7a6b54; min-width: 28px; padding-top: 1px;
+}
+
+.screen-table, .accept-table, .arch-table {
+  width: 100%; border-collapse: collapse;
+  font-size: 9.5pt; margin-bottom: 16px;
+}
+.screen-table th, .accept-table th {
+  background: #1a1209; color: #f5f0e8;
+  padding: 7px 10px; text-align: left; font-weight: 600;
+}
+.arch-table th {
+  background: #3d2e1e; color: #f5f0e8;
+  padding: 7px 10px; text-align: left; font-weight: 600;
+}
+.screen-table td, .accept-table td, .arch-table td {
+  padding: 6px 10px; border: 1px solid #d4c8b8;
+  vertical-align: top; line-height: 1.5;
+}
+.screen-table tr:nth-child(even) td,
+.accept-table tr:nth-child(even) td,
+.arch-table tr:nth-child(even) td { background: #faf7f2; }
+.screen-key {
+  font-family: 'JetBrains Mono', monospace; font-size: 9pt;
+  font-weight: 700; color: #3d2e1e;
+}
+.check-cell { text-align: center; font-size: 13pt; color: #1a1209; }
+
+.sig-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 12px; }
+.sig-block { border-top: 1px solid #1a1209; padding-top: 8px; }
+.sig-line { border-bottom: 1px solid #7a6b54; margin: 32px 0 6px; height: 1px; }
+.sig-label { font-size: 9pt; color: #5a4530; }
+.sig-title { font-size: 9.5pt; font-weight: 600; margin-top: 4px; }
+.sig-date  { font-size: 9pt; color: #5a4530; margin-top: 4px; }
+
+.url-box {
+  border: 1.5px solid #1a1209; padding: 10px 16px;
+  background: #f5f0e8; margin: 12px 0;
+  font-family: 'JetBrains Mono', monospace; font-size: 9.5pt;
+}
+
+.print-hint {
+  position: fixed; top: 16px; right: 16px;
+  background: #1a1209; color: #f5f0e8;
+  padding: 12px 20px; font-size: 11px;
+  font-family: monospace; z-index: 100;
+  border: 1px solid #D4A843;
+}
+</style>
+</head>
+<body>
+
+<div class="no-print print-hint">
+  กำลังเปิด Print dialog…<br>
+  <span style="opacity: 0.7; font-size: 10px;">Save as PDF → A4</span>
+</div>
+
+<div class="page">
+
+  <!-- ═══ HEADER ═══ -->
+  <div class="doc-header">
+    <div class="org-name">บริษัท เทิร์นคีย์ คอมมูนิเคชั่น เซอร์วิส จำกัด (มหาชน)</div>
+    <h1 class="t-title" style="margin-bottom: 4px;">รายงานสรุปขอบเขตงานและการตรวจรับงาน</h1>
+    <h2 class="t-subtitle" style="font-weight: 400; font-size: 11pt;">ที่จ้างเรียบร้อยแล้ว</h2>
+  </div>
+
+  <!-- ═══ CONTRACT INFO ═══ -->
+  <div class="section-block">
+    <table class="info-table">
+      <tr><td>ผู้ว่าจ้าง</td><td>บริษัท เทิร์นคีย์ คอมมูนิเคชั่น เซอร์วิส จำกัด (มหาชน)</td></tr>
+      <tr><td>ผู้รับจ้าง</td><td>นน อัครประเสริฐกุล</td></tr>
+      <tr><td>ชื่อโครงการ</td><td>ระบบสนับสนุนและพัฒนาทรัพยากรมนุษย์ TKC Digital Twin (Talent Transformation Engine)</td></tr>
+      <tr><td>วันที่เริ่มสัญญา</td><td>17 เมษายน 2569</td></tr>
+      <tr><td>วันที่ส่งมอบงาน</td><td>6 พฤษภาคม 2569</td></tr>
+      <tr><td>มูลค่างาน</td><td><span style="display: inline-block; min-width: 200px; border-bottom: 1px solid #7a6b54;">&nbsp;</span> บาท</td></tr>
+      <tr><td>ลิงก์ระบบ (Live URL)</td><td><span class="t-mono">https://tkc-digital-twin.fly.dev/command-center</span></td></tr>
+    </table>
+  </div>
+
+  <!-- ═══ 1. วัตถุประสงค์ ═══ -->
+  <div class="section-block">
+    <div class="section-header">1. วัตถุประสงค์</div>
+    <p class="t-body">
+      รายงานฉบับนี้จัดทำขึ้นเพื่อสรุปขอบเขตงานที่ผู้รับจ้างได้ดำเนินการพัฒนา
+      ระบบสนับสนุนและพัฒนาทรัพยากรมนุษย์ของบริษัท เทิร์นคีย์ คอมมูนิเคชั่น เซอร์วิส จำกัด (มหาชน)
+      (TKC Digital Twin) ให้แล้วเสร็จตามขอบเขตที่ตกลงไว้
+      โดยระบบที่พัฒนาขึ้นเป็นแพลตฟอร์มดิจิทัลสำหรับการบริหารและพัฒนาบุคลากร
+      ผ่านกลไกการจัดการทีมแบบ Gamification เพื่อให้ผู้บริหารสามารถมองเห็น
+      ศักยภาพ การจัดสรรทรัพยากรบุคคล และสุขภาพขององค์กรได้ในมุมมองเดียว
+      บนระบบที่ทำงานแบบออนไลน์ตลอดเวลา
+    </p>
+  </div>
+
+  <!-- ═══ 2. ขอบเขตงาน ═══ -->
+  <div class="section-block">
+    <div class="section-header">2. ขอบเขตการดำเนินงานที่ส่งมอบ</div>
+    <ul class="deliverable-list">
+      <li><span class="deliverable-no">01</span><span class="t-body">ระบบ Command Center ออนไลน์ (8 หน้าจอ) — เข้าถึงได้ที่ tkc-digital-twin.fly.dev</span></li>
+      <li><span class="deliverable-no">02</span><span class="t-body">ฐานข้อมูล PostgreSQL บน Cloud (Singapore) — 28 ตาราง ข้อมูลพนักงาน 348 คน</span></li>
+      <li><span class="deliverable-no">03</span><span class="t-body">ระบบ Google Sheets Shadow Mirror — 20 แท็บ sync อัตโนมัติ</span></li>
+      <li><span class="deliverable-no">04</span><span class="t-body">Game Engine — ระบบคะแนน ICA Index, Credo Score, HP/MP/XP</span></li>
+      <li><span class="deliverable-no">05</span><span class="t-body">Formation Engine — ระบบจัดทีมพร้อมทำนายคะแนนทีมและ Budget Cap (Moneyball)</span></li>
+      <li><span class="deliverable-no">06</span><span class="t-body">Ninja Squad Engine — ระบบประเมินความพร้อม Squad สำหรับโปรเจกต์</span></li>
+      <li><span class="deliverable-no">07</span><span class="t-body">Capability Matrix — Heatmap ทักษะเทียบกับความต้องการโปรเจกต์แบบ real-time</span></li>
+      <li><span class="deliverable-no">08</span><span class="t-body">The Tome Printer — ระบบพิมพ์ประวัติการทำงานพนักงานเมื่อครบวาระ (Retirement Ritual)</span></li>
+      <li><span class="deliverable-no">09</span><span class="t-body">Obsidian Export Engine — ส่งออกข้อมูลทีมและพนักงานไปยัง Knowledge Base โดยอัตโนมัติ (348 dossiers)</span></li>
+      <li><span class="deliverable-no">10</span><span class="t-body">Daily Briefing System — รายงานสรุปอัจฉริยะรายวันสร้างขึ้นโดยอัตโนมัติ</span></li>
+    </ul>
+  </div>
+
+  <!-- ═══ 3. หน้าจอ ═══ -->
+  <div class="section-block">
+    <div class="section-header">3. รายละเอียดระบบที่พัฒนา — หน้าจอ Command Center</div>
+    <table class="screen-table">
+      <thead>
+        <tr><th style="width: 40px;">KEY</th><th style="width: 28%;">ชื่อหน้าจอ</th><th>หน้าที่</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="screen-key">[C]</span></td><td>ห้องควบคุม (Cockpit)</td><td>KPI ภาพรวมองค์กร, Four Pillars, GitHub Pulse, Flow Distribution</td></tr>
+        <tr><td><span class="screen-key">[F]</span></td><td>จัดทีม (Formation)</td><td>Drag-and-drop จัดทีมบน felt mat, Budget Cap, คะแนนเคมีทีม, ทำนายความพร้อม</td></tr>
+        <tr><td><span class="screen-key">[N]</span></td><td>สกวอด (Ninja)</td><td>Candidate matching, skill-gap analysis, mission configuration</td></tr>
+        <tr><td><span class="screen-key">[M]</span></td><td>แมทริกซ์ (Matrix)</td><td>Heatmap ทักษะองค์กรเทียบกับความต้องการโปรเจกต์</td></tr>
+        <tr><td><span class="screen-key">[R]</span></td><td>รายชื่อฮีโร่ (Roster)</td><td>บัตรพนักงาน 348 คน พร้อม pixel avatar และ stat sheet</td></tr>
+        <tr><td><span class="screen-key">[S]</span></td><td>สัญญาณ (Signals)</td><td>ประวัติการส่ง deployment, เปรียบ prediction vs ผลจริง (feedback loop)</td></tr>
+        <tr><td><span class="screen-key">[L]</span></td><td>โลบบี้ (Lobby)</td><td>โลก check-in real-time — pixel characters เดินในแผนที่องค์กร</td></tr>
+        <tr><td><span class="screen-key">[G]</span></td><td>บัญชีระบบ (Ledger)</td><td>Admin console — Sheets health, Game Balance, Obsidian export, audit log</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══ 4. สถาปัตยกรรม ═══ -->
+  <div class="section-block">
+    <div class="section-header">4. สถาปัตยกรรมระบบ</div>
+    <table class="arch-table">
+      <thead>
+        <tr><th style="width: 30%;">ชั้น</th><th style="width: 35%;">เทคโนโลยี</th><th>หมายเหตุ</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Frontend Framework</td><td class="t-mono">Next.js 16 + React 19</td><td>TypeScript 5, Tailwind v4</td></tr>
+        <tr><td>Application Server</td><td class="t-mono">Fly.io (Singapore region)</td><td>Auto-sleep on idle, always-on URL</td></tr>
+        <tr><td>Primary Database</td><td class="t-mono">Neon PostgreSQL (serverless)</td><td>28 tables, Singapore region</td></tr>
+        <tr><td>Shadow Mirror</td><td class="t-mono">Google Sheets (20 tabs)</td><td>fire-and-forget sync architecture</td></tr>
+        <tr><td>Knowledge Export</td><td class="t-mono">Obsidian Vault</td><td>348 hero dossiers + daily briefing</td></tr>
+        <tr><td>Commit Intelligence</td><td class="t-mono">GitHub API</td><td>7d/28d pulse, 5-min cache</td></tr>
+        <tr><td>Pixel Art Engine</td><td class="t-mono">HTML5 Canvas (procedural)</td><td>32×32 sprites, 260k combinations</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══ 5. ตรวจรับ ═══ -->
+  <div class="section-block">
+    <div class="section-header">5. ผลการตรวจรับงาน</div>
+    <table class="accept-table">
+      <thead>
+        <tr><th style="width: 5%;">#</th><th style="width: 55%;">รายการตรวจรับ</th><th style="width: 15%; text-align: center;">ตรวจรับ</th><th>หมายเหตุ</th></tr>
+      </thead>
+      <tbody>
+        <tr><td style="text-align: center;" class="t-mono">01</td><td>ระบบ Command Center เข้าถึงได้ผ่าน URL จริง (live URL)</td><td class="check-cell">✓</td><td class="t-caption">ทดสอบได้ที่ tkc-digital-twin.fly.dev</td></tr>
+        <tr><td style="text-align: center;" class="t-mono">02</td><td>ฐานข้อมูลทำงานได้ปกติ — บันทึกและเรียกข้อมูลพนักงาน 348 คน</td><td class="check-cell">✓</td><td></td></tr>
+        <tr><td style="text-align: center;" class="t-mono">03</td><td>Google Sheets Mirror แสดงข้อมูลถูกต้อง — 20 แท็บ sync</td><td class="check-cell">✓</td><td></td></tr>
+        <tr><td style="text-align: center;" class="t-mono">04</td><td>Game Engine คำนวณคะแนน ICA, Credo, HP/MP/XP ได้ถูกต้อง</td><td class="check-cell">✓</td><td></td></tr>
+        <tr><td style="text-align: center;" class="t-mono">05</td><td>Formation Engine จัดทีมได้ พร้อม Budget Cap และ chemistry score</td><td class="check-cell">✓</td><td></td></tr>
+        <tr><td style="text-align: center;" class="t-mono">06</td><td>Capability Matrix แสดง heatmap ทักษะ vs ความต้องการ</td><td class="check-cell">✓</td><td></td></tr>
+        <tr><td style="text-align: center;" class="t-mono">07</td><td>The Tome Printer พิมพ์ประวัติพนักงานได้ครบถ้วน</td><td class="check-cell">✓</td><td></td></tr>
+        <tr><td style="text-align: center;" class="t-mono">08</td><td>Obsidian Export ส่งออก dossier พนักงานได้ครบ 348 คน</td><td class="check-cell">✓</td><td></td></tr>
+        <tr><td style="text-align: center;" class="t-mono">09</td><td>Daily Briefing System สร้างรายงานรายวันอัตโนมัติได้</td><td class="check-cell">✓</td><td></td></tr>
+        <tr><td style="text-align: center;" class="t-mono">10</td><td>ระบบรองรับการใช้งานบน smartphone (mobile-responsive)</td><td class="check-cell">✓</td><td></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══ 6. ยืนยัน ═══ -->
+  <div class="section-block">
+    <div class="section-header">6. การยืนยันการส่งมอบงาน</div>
+    <p class="t-body">
+      ผู้รับจ้างขอรับรองว่าได้ดำเนินการพัฒนาและส่งมอบระบบสนับสนุนและพัฒนาทรัพยากรมนุษย์
+      TKC Digital Twin ครบถ้วนตามขอบเขตงานที่ระบุไว้ในรายงานฉบับนี้
+      โดยระบบสามารถเข้าถึงและใช้งานได้จริงผ่านลิงก์ที่ระบุ
+      ณ วันที่ 6 พฤษภาคม 2569 และพร้อมส่งมอบให้แก่ผู้ว่าจ้างเพื่อการตรวจรับและนำไปใช้งานต่อไป
+    </p>
+  </div>
+
+  <!-- PAGE BREAK -->
+  <div class="page-break"></div>
+
+  <!-- ═══ 7. ลายเซ็น ═══ -->
+  <div class="section-block" style="margin-top: 40px;">
+    <div class="section-header">7. ลายเซ็นต์และการอนุมัติ</div>
+
+    <div class="sig-grid">
+      <div class="sig-block">
+        <div class="t-section" style="margin-bottom: 6px;">ผู้ส่งมอบงาน (ผู้รับจ้าง)</div>
+        <div class="sig-line"></div>
+        <div class="sig-title">นน อัครประเสริฐกุล</div>
+        <div class="sig-label" style="margin-top: 4px;">ตำแหน่ง: ที่ปรึกษา</div>
+        <div class="sig-date">วันที่: ________________</div>
+      </div>
+      <div class="sig-block">
+        <div class="t-section" style="margin-bottom: 6px;">ผู้รับมอบงาน (ผู้ว่าจ้าง)</div>
+        <div class="sig-line"></div>
+        <div class="sig-title">________________________________</div>
+        <div class="sig-label" style="margin-top: 4px;">ตำแหน่ง: ________________________________</div>
+        <div class="sig-date">วันที่: ________________</div>
+      </div>
+    </div>
+
+    <div style="margin-top: 36px;">
+      <div class="t-section" style="margin-bottom: 20px;">พยาน</div>
+      <div class="sig-grid">
+        <div class="sig-block">
+          <div class="sig-line"></div>
+          <div class="sig-title">________________________________</div>
+          <div class="sig-label" style="margin-top: 4px;">ตำแหน่ง: ________________________________</div>
+          <div class="sig-date">วันที่: ________________</div>
+        </div>
+        <div class="sig-block">
+          <div class="sig-line"></div>
+          <div class="sig-title">________________________________</div>
+          <div class="sig-label" style="margin-top: 4px;">ตำแหน่ง: ________________________________</div>
+          <div class="sig-date">วันที่: ________________</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Appendix ═══ -->
+  <div class="section-block" style="margin-top: 40px;">
+    <div class="section-header">ภาคผนวก — ข้อมูลอ้างอิง</div>
+    <p class="t-body" style="margin-bottom: 8px;">ลิงก์ระบบ (Live URL):</p>
+    <div class="url-box">https://tkc-digital-twin.fly.dev/command-center</div>
+    <p class="t-body" style="margin-top: 12px; margin-bottom: 8px;">รายงาน e-Report ฉบับอิเล็กทรอนิกส์:</p>
+    <div class="url-box">https://tkc-digital-twin.fly.dev/report</div>
+    <p class="t-caption" style="margin-top: 16px;">เอกสารนี้จัดทำโดย นน อัครประเสริฐกุล · 6 พฤษภาคม 2569</p>
+  </div>
+
+</div>
+
+<script>
+setTimeout(() => window.print(), 800);
+</script>
+
+</body>
+</html>
