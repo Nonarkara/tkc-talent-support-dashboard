@@ -68,9 +68,21 @@
  *                             entirely from real DB facts. DQ3 sprite
  *                             takes a real `gender` prop — no more 50/50
  *                             RNG.
+ *   v4.6 · Pulse             Hero-page rebuild around real org pulse:
+ *                             /api/pulse aggregates active heroes, in-
+ *                             office check-ins, skill family stack,
+ *                             department head-counts, anchor count,
+ *                             ghost count; PulseBanner renders it as the
+ *                             first thing you see after login.
+ *                             /api/hiring reads 33 actual TKC job-board
+ *                             banners and computes a need-gauge per
+ *                             role (HOT/WARM/COVERED/DEEP) by token-
+ *                             matching against employee titles + skills.
+ *                             HiringNow component shows the openings
+ *                             with their gauge filter + colored badges.
  *
  * Bump both fields together. Codename stays one or two words.
  */
 
-export const BUILD_VERSION = "v4.5";
-export const BUILD_CODENAME = "Real";
+export const BUILD_VERSION = "v4.6";
+export const BUILD_CODENAME = "Pulse";

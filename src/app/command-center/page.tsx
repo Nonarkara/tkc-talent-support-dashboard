@@ -31,6 +31,8 @@ import { translate, useLocale, type Locale } from "@/lib/i18n";
 import { NAV, SCREEN } from "@/lib/i18n-dict";
 import { LocaleToggle } from "@/components/LocaleToggle";
 import { BriefingPanel } from "@/components/BriefingPanel";
+import { PulseBanner } from "@/components/PulseBanner";
+import { HiringNow } from "@/components/HiringNow";
 
 type RouteMetric = {
   label: string;
@@ -690,6 +692,15 @@ function HomeScreen({
       </MenuWindow>
 
       <div className="cc-home-center">
+        {/* The Pulse Banner — first thing the boss sees after login.
+            Active heroes, in-office today, anchors, ghosts; skill family
+            distribution; department head-counts; hiring gauge summary. */}
+        <PulseBanner />
+
+        <MenuWindow title={translate(loc, { en: "Hiring Now", th: "กำลังจ้าง" })} className="cc-home-window">
+          <HiringNow />
+        </MenuWindow>
+
         {/* The Briefing Ritual — the autotelic morning loop. First thing
             the boss sees. Lazy-fetched so the rest of the home grid paints
             instantly. */}

@@ -1,0 +1,200 @@
+[
+  {
+    "filename": "pm-pm.jpg",
+    "category": "pm",
+    "label": "PM",
+    "is_numeric_only": false
+  },
+  {
+    "filename": "project-co-admin-6.jpg",
+    "category": "project-co-admin",
+    "label": "6",
+    "is_numeric_only": true
+  },
+  {
+    "filename": "project-co-admin-admin-officer.png",
+    "category": "project-co-admin",
+    "label": "Admin Officer",
+    "is_numeric_only": false
+  },
+  {
+    "filename": "project-co-admin-project-coordinator.png",
+    "category": "project-co-admin",
+    "label": "Project Coordinator",
+    "is_numeric_only": false
+  },
+  {
+    "filename": "project-co-admin-ธ-รการโครงการ_ส-ญญาจ-าง.png",
+    "category": "project-co-admin",
+    "label": "ธุรการโครงการ สัญญาจ้าง",
+    "is_numeric_only": false
+  },
+  {
+    "filename": "operation-dev-1.10.png",
+    "category": "operation-dev",
+    "label": "Position",
+    "is_numeric_only": true
+  },
+  {
+    "filename": "operation-dev-1.11.png",
+    "category": "operation-dev",
+    "label": "Position",
+    "is_numeric_only": true
+  },
+  {
+    "filename": "operation-dev-1.12.png",
+    "category": "operation-dev",
+    "label": "Position",
+    "is_numeric_only": true
+  },
+  {
+    "filename": "operation-dev-1.13.png",
+    "category": "operation-dev",
+    "label": "Position",
+    "is_numeric_only": true
+  },
+  {
+    "filename": "operation-dev-1.4.png",
+    "category": "operation-dev",
+    "label": "Position",
+    "is_numeric_only": true
+  },
+  {
+    "filename": "operation-dev-1.5.png",
+    "category": "operation-dev",
+    "label": "Position",
+    "is_numeric_only": true
+  },
+  {
+    "filename": "operation-dev-1.6.png",
+    "category": "operation-dev",
+    "label": "Position",
+    "is_numeric_only": true
+  },
+  {
+    "filename": "operation-dev-1.9.png",
+    "category": "operation-dev",
+    "label": "Position",
+    "is_numeric_only": true
+  },
+  {
+    "filename": "operation-dev-11.jpg",
+    "category": "operation-dev",
+    "label": "11",
+    "is_numeric_only": true
+  },
+  {
+    "filename": "operation-dev-12.jpg",
+    "category": "operation-dev",
+    "label": "12",
+    "is_numeric_only": true
+  },
+  {
+    "filename": "operation-dev-5.jpg",
+    "category": "operation-dev",
+    "label": "5",
+    "is_numeric_only": true
+  },
+  {
+    "filename": "operation-dev-ba.png",
+    "category": "operation-dev",
+    "label": "BA",
+    "is_numeric_only": false
+  },
+  {
+    "filename": "operation-dev-data-com-en..png",
+    "category": "operation-dev",
+    "label": "Data Com En",
+    "is_numeric_only": false
+  },
+  {
+    "filename": "operation-dev-engineer.png",
+    "category": "operation-dev",
+    "label": "Engineer",
+    "is_numeric_only": false
+  },
+  {
+    "filename": "operation-dev-iot.hardware-en..jpg",
+    "category": "operation-dev",
+    "label": "IoT Hardware En",
+    "is_numeric_only": false
+  },
+  {
+    "filename": "operation-dev-network-en.-2.png",
+    "category": "operation-dev",
+    "label": "Network En  (2)",
+    "is_numeric_only": false
+  },
+  {
+    "filename": "operation-dev-software-dev..png",
+    "category": "operation-dev",
+    "label": "Software Dev",
+    "is_numeric_only": false
+  },
+  {
+    "filename": "operation-dev-solution-consultant.png",
+    "category": "operation-dev",
+    "label": "Solution Consultant",
+    "is_numeric_only": false
+  },
+  {
+    "filename": "operation-dev-sr.engineer-cyber.png",
+    "category": "operation-dev",
+    "label": "Senior Engineer Cyber",
+    "is_numeric_only": false
+  },
+  {
+    "filename": "operation-dev-sr.flutter-dev..png",
+    "category": "operation-dev",
+    "label": "Senior Flutter Dev",
+    "is_numeric_only": false
+  },
+  {
+    "filename": "operation-dev-sr.project-controller.png",
+    "category": "operation-dev",
+    "label": "Senior Project Controller",
+    "is_numeric_only": false
+  },
+  {
+    "filename": "operation-dev-sr.system-engineer.png",
+    "category": "operation-dev",
+    "label": "Senior System Engineer",
+    "is_numeric_only": false
+  },
+  {
+    "filename": "operation-dev-sulution-consultant.png",
+    "category": "operation-dev",
+    "label": "Sulution Consultant",
+    "is_numeric_only": false
+  },
+  {
+    "filename": "operation-dev-transmiss-en..jpg",
+    "category": "operation-dev",
+    "label": "Transmiss En",
+    "is_numeric_only": false
+  },
+  {
+    "filename": "operation-dev-transmission-engineer.png",
+    "category": "operation-dev",
+    "label": "Transmission Engineer",
+    "is_numeric_only": false
+  },
+  {
+    "filename": "operation-dev-hiring-dta.png",
+    "category": "operation-dev",
+    "label": "Hiring: DTA",
+    "is_numeric_only": false
+  },
+  {
+    "filename": "operation-dev-hiring-ssv.png",
+    "category": "operation-dev",
+    "label": "Hiring: SSV",
+    "is_numeric_only": false
+  },
+  {
+    "filename": "operation-dev-hiring-site-sup.png",
+    "category": "operation-dev",
+    "label": "Hiring: Site Sup",
+    "is_numeric_only": false
+  }
+]
