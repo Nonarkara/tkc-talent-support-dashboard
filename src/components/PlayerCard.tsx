@@ -26,6 +26,8 @@ export interface EmployeeLike extends EmpStatsInput {
   id: string;
   display_name: string;
   title?: string | null;
+  title_en?: string | null;
+  full_name_en?: string | null;
   employee_code?: string | null;
   tenure_years?: number | null;
   skills?: string[] | null;
@@ -50,6 +52,18 @@ export interface EmployeeLike extends EmpStatsInput {
   next_available_at?: string | null;
   evidence_freshness?: "fresh" | "aging" | "stale" | "unknown" | null;
   availability_fte?: number | null;
+  // ─── May 2026 dossier ────────────────────────────────────────────────
+  gender?: "m" | "f" | null;
+  gender_override?: string | null;
+  date_of_birth?: string | null;
+  education_level?: string | null;
+  education_school?: string | null;
+  education_major?: string | null;
+  is_active?: boolean;
+  resign_status?: "presumed_departed" | "confirmed" | "none" | null;
+  resign_date?: string | null;
+  joined_at?: string | null;
+  dept_name_en?: string | null;
 }
 
 type Variant = "compact" | "full";
@@ -158,6 +172,46 @@ export function PlayerCard({
   const dept = (employee.dept_code ?? "NO DEPT").toUpperCase();
   const code = employee.employee_code ?? employee.id.slice(0, 6).toUpperCase();
   const title = employee.title ?? ARCHETYPE_LABEL[archetype];
+
+  // Ghost detection — resigned employees stay visible but greyed with a halo.
+  const isGhost =
+    employee.is_active === false ||
+    employee.resign_status === "presumed_departed" ||
+    employee.resign_status === "confirmed";
+
+  // Age from DOB
+  const age = employee.date_of_birth
+    ? Math.floor(
+        (Date.now() - new Date(employee.date_of_birth).getTime()) /
+          (1000 * 60 * 60 * 24 * 365.25),
+      )
+    : null;
+
+  // Narrative one-liner — the "story" line that reads like a sentence.
+  // Format: "{Full Name} · {age} · {Title} — {tenure} years at TKC, {education_or_cert_hint}. {Dept}."
+  const narrativeParts: string[] = [];
+  if (employee.full_name_en) narrativeParts.push(employee.full_name_en);
+  else narrativeParts.push(employee.display_name);
+  if (age) narrativeParts.push(`${age}`);
+  if (employee.title_en) narrativeParts.push(employee.title_en);
+  const narrativeHead = narrativeParts.join(" · ");
+
+  const tenureBit = employee.tenure_years && employee.tenure_years > 0
+    ? `${employee.tenure_years} year${employee.tenure_years === 1 ? "" : "s"} at TKC`
+    : "";
+  const eduBit =
+    employee.education_level && employee.education_major
+      ? `${employee.education_level} in ${employee.education_major}`
+      : employee.education_level ?? "";
+  const certBit =
+    employee.certifications && employee.certifications.length > 0
+      ? `holds ${employee.certifications.length} certification${employee.certifications.length === 1 ? "" : "s"}`
+      : "";
+  const tail = [tenureBit, eduBit, certBit].filter(Boolean).join(" · ");
+  const deptBit = employee.dept_name_en ?? employee.dept_code ?? "";
+  const ghostBit = isGhost && employee.resign_date
+    ? `· Departed ${new Date(employee.resign_date).toLocaleDateString("en-GB", { month: "short", year: "numeric" })}`
+    : "";
   
   // ICA Index — the composite "power level" derived purely from the six attributes.
   // Impact    = execution + experience + resilience  (STR×3 + WIS×2 + CON×1) / 6
@@ -213,12 +267,20 @@ export function PlayerCard({
     padding: variant === "full" ? "16px" : "13px",
     minHeight: variant === "full" ? 338 : 212,
     color: "var(--ink-0)",
-    background: `
-      radial-gradient(circle at 100% 0%, ${hexToRgba(glow, 0.22)} 0%, transparent 46%),
-      linear-gradient(180deg, var(--rpg-blue) 0%, var(--rpg-blue-deep) 100%)
-    `,
-    border: "2px solid var(--ink-0)",
-    boxShadow: "inset -4px -4px 0 rgba(0,0,0,0.22), inset 4px 4px 0 rgba(255,255,255,0.08)",
+    background: isGhost
+      ? `
+        radial-gradient(circle at 100% 0%, rgba(243,182,31,0.08) 0%, transparent 46%),
+        linear-gradient(180deg, #2a2730 0%, #1c1a22 100%)
+      `
+      : `
+        radial-gradient(circle at 100% 0%, ${hexToRgba(glow, 0.22)} 0%, transparent 46%),
+        linear-gradient(180deg, var(--rpg-blue) 0%, var(--rpg-blue-deep) 100%)
+      `,
+    border: isGhost ? "2px solid rgba(243,182,31,0.4)" : "2px solid var(--ink-0)",
+    boxShadow: isGhost
+      ? "inset 0 0 0 1px rgba(243,182,31,0.18)"
+      : "inset -4px -4px 0 rgba(0,0,0,0.22), inset 4px 4px 0 rgba(255,255,255,0.08)",
+    filter: isGhost ? "saturate(0.55)" : undefined,
     cursor: onSelect ? "pointer" : "default",
     fontFamily: 'var(--font-mono), "Courier New", monospace',
   };
@@ -252,11 +314,35 @@ export function PlayerCard({
             border: `1px solid ${hexToRgba(glow, 0.65)}`,
           }}
         >
-          <DQ3HeroSprite
-            employeeId={employee.id}
-            archetype={archetype}
-            size={variant === "full" ? 68 : 58}
-          />
+          <div style={{ position: "relative" }}>
+            {/* Halo for ghost rows — drawn above the sprite, in archetype color */}
+            {isGhost && (
+              <svg
+                aria-hidden
+                style={{
+                  position: "absolute",
+                  left: "50%",
+                  top: -6,
+                  transform: "translateX(-50%)",
+                  width: variant === "full" ? 64 : 54,
+                  height: 12,
+                  pointerEvents: "none",
+                  zIndex: 2,
+                }}
+                viewBox="0 0 64 12"
+              >
+                <ellipse cx="32" cy="9" rx="22" ry="2.4" fill="none" stroke="#f3b61f" strokeWidth="1.2" opacity="0.85" />
+                <ellipse cx="32" cy="9" rx="18" ry="1.6" fill="none" stroke="#f3b61f" strokeWidth="0.7" opacity="0.55" />
+              </svg>
+            )}
+            <DQ3HeroSprite
+              employeeId={employee.id}
+              archetype={archetype}
+              gender={employee.gender ?? null}
+              size={variant === "full" ? 68 : 58}
+              ghost={isGhost}
+            />
+          </div>
         </div>
         <div
           style={{
@@ -357,6 +443,32 @@ export function PlayerCard({
           >
             {title}
           </div>
+
+          {/* Narrative line — the "story" sentence about this person.
+              Reads like a real description, not a list of stats. */}
+          {(tail || isGhost) && (
+            <div
+              style={{
+                marginTop: 6,
+                color: isGhost ? "var(--rpg-orange, #FB923C)" : "var(--ink-1)",
+                fontSize: 10,
+                lineHeight: 1.5,
+                fontStyle: "italic",
+                opacity: 0.92,
+                paddingTop: 4,
+                borderTop: "1px solid rgba(245,240,232,0.06)",
+              }}
+            >
+              {tail}
+              {deptBit && (tail ? " · " : "")}
+              {deptBit && <span style={{ color: tone, fontStyle: "normal", fontWeight: 600 }}>{deptBit}</span>}
+              {ghostBit && (
+                <span style={{ marginLeft: 6, color: "var(--rpg-orange)", fontStyle: "normal", fontWeight: 700 }}>
+                  {ghostBit}
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>

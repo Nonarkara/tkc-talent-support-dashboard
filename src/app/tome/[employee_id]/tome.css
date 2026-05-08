@@ -549,3 +549,152 @@
   color: var(--tome-faint);
   margin-top: 0.6cm;
 }
+
+/* ────────────────────────────────────────────────────────────────────
+   Letter of Recommendation styles (added with the May 2026 rebuild)
+──────────────────────────────────────────────────────────────────── */
+
+.tome-letter-page {
+  padding: 2.5cm 2.6cm 2.2cm;
+  font-family: "IBM Plex Serif", Georgia, serif;
+  color: var(--tome-ink);
+  line-height: 1.55;
+}
+
+.tome-letterhead {
+  text-align: center;
+  margin-bottom: 1.2cm;
+}
+
+.tome-letterhead-en {
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 16pt;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--tome-ink);
+}
+
+.tome-letterhead-th {
+  font-family: "IBM Plex Sans Thai", sans-serif;
+  font-size: 11pt;
+  margin-top: 4pt;
+  color: var(--tome-faint);
+  letter-spacing: 0.02em;
+}
+
+.tome-letterhead-rule {
+  width: 100%;
+  height: 1.5px;
+  background: var(--tome-ink);
+  margin-top: 0.6cm;
+}
+
+.tome-letter-date {
+  text-align: right;
+  font-style: italic;
+  color: var(--tome-faint);
+  margin-bottom: 0.8cm;
+  font-size: 10.5pt;
+}
+
+.tome-letter-recipient {
+  font-size: 11pt;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.5cm;
+}
+
+.tome-letter-subject {
+  font-size: 11pt;
+  margin-bottom: 0.8cm;
+  padding-bottom: 0.3cm;
+  border-bottom: 1px solid var(--tome-faint, #888);
+}
+.tome-letter-code {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9.5pt;
+  color: var(--tome-faint);
+  margin-left: 8pt;
+}
+
+.tome-letter-body p {
+  margin: 0 0 0.55cm 0;
+  font-size: 11.5pt;
+  line-height: 1.7;
+  text-align: justify;
+  text-justify: inter-word;
+}
+
+.tome-letter-body strong {
+  font-weight: 600;
+  color: var(--tome-ink);
+}
+
+.tome-letter-body em {
+  font-style: italic;
+  color: var(--tome-ink);
+}
+
+.tome-letter-signature {
+  margin-top: 1.4cm;
+  width: 8cm;
+}
+.tome-letter-sig-line {
+  height: 1px;
+  background: var(--tome-ink);
+  margin: 1.2cm 0 6pt 0;
+}
+.tome-letter-sig-name {
+  font-family: "IBM Plex Sans", sans-serif;
+  font-weight: 700;
+  font-size: 11.5pt;
+  letter-spacing: 0.02em;
+}
+.tome-letter-sig-title {
+  font-size: 10pt;
+  color: var(--tome-faint);
+  margin-top: 2pt;
+  letter-spacing: 0.04em;
+}
+.tome-letter-sig-company {
+  font-family: "IBM Plex Sans Thai", sans-serif;
+  font-size: 9.5pt;
+  color: var(--tome-faint);
+  margin-top: 4pt;
+}
+
+/* Strengths list (page 2) */
+.tome-strengths {
+  list-style: decimal;
+  padding-left: 0.6cm;
+  margin: 0.6cm 0 0 0;
+}
+.tome-strength {
+  margin-bottom: 0.55cm;
+  padding-left: 0.3cm;
+}
+.tome-strength-headline {
+  display: block;
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 12pt;
+  font-weight: 700;
+  margin-bottom: 4pt;
+  color: var(--tome-ink);
+}
+.tome-strength-evidence {
+  font-size: 10.5pt;
+  line-height: 1.6;
+  color: var(--tome-ink);
+  margin: 0;
+}
+
+.tome-cert-list {
+  list-style: square;
+  padding-left: 0.7cm;
+  margin: 0.3cm 0;
+}
+.tome-cert-list li {
+  font-size: 10pt;
+  line-height: 1.6;
+  margin-bottom: 3pt;
+  font-family: "IBM Plex Sans", sans-serif;
+}

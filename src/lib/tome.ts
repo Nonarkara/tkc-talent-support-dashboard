@@ -58,6 +58,17 @@ export interface TomeIdentity {
   archetype: Archetype;
   archetype_label: string;
   banner: string;
+  // May 2026 additions:
+  date_of_birth: string | null;
+  age: number | null;
+  gender: "m" | "f" | null;
+  education_level: string | null;
+  education_school: string | null;
+  education_faculty: string | null;
+  education_major: string | null;
+  section_th: string | null;
+  resign_date: string | null;
+  resign_status: "presumed_departed" | "confirmed" | "none" | null;
 }
 
 export interface TomeAttributes {
@@ -184,10 +195,27 @@ export async function loadTome(employeeId: string): Promise<Tome | null> {
   // Identity (required — null return if not found). `rpg_class` was a
   // late-pivot column that doesn't exist in this DB; we infer the class
   // from getArchetype() instead.
-  const idRows = await query<Omit<IdentityRow, "rpg_class"> & { rpg_class?: string | null }>(
+  const idRows = await query<
+    Omit<IdentityRow, "rpg_class"> & {
+      rpg_class?: string | null;
+      date_of_birth: string | null;
+      gender: "m" | "f" | null;
+      education_level: string | null;
+      education_school: string | null;
+      education_faculty: string | null;
+      education_major: string | null;
+      section_th: string | null;
+      resign_date: string | null;
+      resign_status: "presumed_departed" | "confirmed" | "none" | null;
+    }
+  >(
     `SELECT e.id, e.employee_code, e.full_name_th, e.full_name_en, e.nickname,
             e.email, e.title_en, e.title_th, e.role_level,
             e.tenure_years, e.joined_at::text AS joined_at, e.is_active,
+            e.date_of_birth::text AS date_of_birth,
+            e.gender, e.education_level, e.education_school,
+            e.education_faculty, e.education_major, e.section_th,
+            e.resign_date::text AS resign_date, e.resign_status,
             d.code AS dept_code, d.name_en AS dept_name_en,
             div.code AS div_code, div.name_en AS div_name_en
        FROM employees e
@@ -361,6 +389,14 @@ export async function loadTome(employeeId: string): Promise<Tome | null> {
   const archetypeLabel = ARCHETYPE_LABEL[archetype] ?? archetype;
   const banner = ARCHETYPE_BANNER[archetype] ?? "Of the House";
 
+  // Compute age from DOB
+  const age = id.date_of_birth
+    ? Math.floor(
+        (Date.now() - new Date(id.date_of_birth).getTime()) /
+          (1000 * 60 * 60 * 24 * 365.25),
+      )
+    : null;
+
   return {
     registry_number: tomeRegistryNumber(id),
     generated_at: new Date().toISOString(),
@@ -369,6 +405,7 @@ export async function loadTome(employeeId: string): Promise<Tome | null> {
       archetype,
       archetype_label: archetypeLabel,
       banner,
+      age,
     },
     attributes: attrs,
     skills,

@@ -360,8 +360,8 @@ function staffPal(rng: Rng): StaffPalette {
 
 // ─── Per-class hero builders ────────────────────────────────────────────
 
-function buildWarrior(rng: Rng): HeroConfig {
-  const gender = rng.bool(0.55) ? "M" as const : "F" as const;
+function buildWarrior(rng: Rng, forceGender?: "M" | "F"): HeroConfig {
+  const gender = forceGender ?? (rng.bool(0.55) ? "M" as const : "F" as const);
   const armor = rng.pick(ARMOR_PALS);
   const skin = rng.pick(SKINS);
   const hair = rng.pick(HAIR_COLORS);
@@ -402,8 +402,8 @@ function buildWarrior(rng: Rng): HeroConfig {
   };
 }
 
-function buildSwordsman(rng: Rng): HeroConfig {
-  const gender = rng.bool(0.5) ? "M" as const : "F" as const;
+function buildSwordsman(rng: Rng, forceGender?: "M" | "F"): HeroConfig {
+  const gender = forceGender ?? (rng.bool(0.5) ? "M" as const : "F" as const);
   const armor = rng.pick(ARMOR_PALS);
   const skin = rng.pick(SKINS);
   const hair = rng.pick(HAIR_COLORS);
@@ -447,8 +447,8 @@ function buildSwordsman(rng: Rng): HeroConfig {
   };
 }
 
-function buildMagician(rng: Rng): HeroConfig {
-  const gender = rng.bool(0.5) ? "M" as const : "F" as const;
+function buildMagician(rng: Rng, forceGender?: "M" | "F"): HeroConfig {
+  const gender = forceGender ?? (rng.bool(0.5) ? "M" as const : "F" as const);
   const robe = rng.pick(ROBE_PALS);
   const skin = rng.pick(SKINS);
   const hair = rng.pick(HAIR_COLORS);
@@ -487,8 +487,8 @@ function buildMagician(rng: Rng): HeroConfig {
   };
 }
 
-function buildPriest(rng: Rng): HeroConfig {
-  const gender = rng.bool(0.5) ? "M" as const : "F" as const;
+function buildPriest(rng: Rng, forceGender?: "M" | "F"): HeroConfig {
+  const gender = forceGender ?? (rng.bool(0.5) ? "M" as const : "F" as const);
   const robe = rng.pick(ROBE_PALS.filter((r) => /White|Holy|Cream|Sky|Rose|Grey|Black|Royal/.test(r.name)));
   const skin = rng.pick(SKINS);
   const hair = rng.pick(HAIR_COLORS);
@@ -524,8 +524,8 @@ function buildPriest(rng: Rng): HeroConfig {
   };
 }
 
-function buildKungfu(rng: Rng): HeroConfig {
-  const gender = rng.bool(0.55) ? "M" as const : "F" as const;
+function buildKungfu(rng: Rng, forceGender?: "M" | "F"): HeroConfig {
+  const gender = forceGender ?? (rng.bool(0.55) ? "M" as const : "F" as const);
   const gi = rng.pick(KUNGFU_PALS);
   const skin = rng.pick(SKINS);
   const hair = rng.pick(HAIR_COLORS);
@@ -569,7 +569,7 @@ function buildKungfu(rng: Rng): HeroConfig {
 
 // ─── Public API ─────────────────────────────────────────────────────────
 
-const CLASS_BUILDERS: Record<DQ3Class, (rng: Rng) => HeroConfig> = {
+const CLASS_BUILDERS: Record<DQ3Class, (rng: Rng, forceGender?: "M" | "F") => HeroConfig> = {
   Warrior: buildWarrior,
   Swordsman: buildSwordsman,
   Magician: buildMagician,
@@ -579,13 +579,26 @@ const CLASS_BUILDERS: Record<DQ3Class, (rng: Rng) => HeroConfig> = {
 
 /**
  * Generate a complete HeroConfig for a given employee.
- * Deterministic: same id + archetype always produces same hero.
+ * Deterministic: same id + archetype + gender always produces same hero.
+ *
+ * `gender` accepts "m" / "f" (DB convention) and is mapped to the
+ * sprite system's "M" / "F". Pass null/undefined to let the sprite RNG
+ * pick — keeps backward compatibility with callers that don't have
+ * gender data.
  */
-export function buildHeroForEmployee(employeeId: string, archetype: Archetype): HeroConfig {
+export function buildHeroForEmployee(
+  employeeId: string,
+  archetype: Archetype,
+  gender?: "m" | "f" | "M" | "F" | null,
+): HeroConfig {
   const seed = seedFromId(employeeId);
   const rng = makeRng(seed);
   const klass = dq3ClassFor(archetype);
-  const hero = CLASS_BUILDERS[klass](rng);
+  const force =
+    gender === "m" || gender === "M" ? "M" :
+    gender === "f" || gender === "F" ? "F" :
+    undefined;
+  const hero = CLASS_BUILDERS[klass](rng, force);
 
   // Assign personality
   hero.personality = pickPersonality(rng, klass, hero.gender);

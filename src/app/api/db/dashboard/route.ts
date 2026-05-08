@@ -51,6 +51,18 @@ interface EmployeeRow {
   xp: number | null;
   traits: string[] | null;
   perks: string[] | null;
+  title_prefix: string | null;
+  gender: "m" | "f" | null;
+  gender_override: string | null;
+  date_of_birth: string | null;
+  education_level: string | null;
+  education_school: string | null;
+  education_faculty: string | null;
+  education_major: string | null;
+  section_th: string | null;
+  resign_date: string | null;
+  resign_status: "presumed_departed" | "confirmed" | "none" | null;
+  joined_at: string | null;
 }
 
 interface ProjectRow {
@@ -777,7 +789,7 @@ export async function GET() {
         `
           SELECT
             e.id, e.employee_code, e.nickname, e.full_name_th, e.full_name_en,
-            COALESCE(NULLIF(e.nickname, ''), NULLIF(e.full_name_en, ''), e.full_name_th) AS display_name,
+            COALESCE(NULLIF(e.full_name_en, ''), NULLIF(e.nickname, ''), e.full_name_th) AS display_name,
             e.email, e.role_level, e.title_th, e.title_en, e.level, e.tenure_years,
             COALESCE(NULLIF(e.title_en, ''), NULLIF(e.title_th, ''), e.role_level) AS title,
             e.salary_thb, e.is_active, e.skills,
@@ -790,13 +802,19 @@ export async function GET() {
             ea.stat_lock_reason,
             ea.stat_source,
             ea.stat_criteria,
-            e.xp, e.traits, e.perks
+            e.xp, e.traits, e.perks,
+            e.title_prefix, e.gender, e.gender_override,
+            e.date_of_birth, e.education_level, e.education_school,
+            e.education_faculty, e.education_major, e.section_th,
+            e.resign_date, e.resign_status, e.joined_at
           FROM employees e
           LEFT JOIN departments d ON d.id = e.department_id
           LEFT JOIN divisions div ON div.id = e.division_id
           LEFT JOIN employee_attributes ea ON ea.employee_id = e.id
-          WHERE e.is_active = true
-          ORDER BY e.level DESC, e.tenure_years DESC
+          ORDER BY
+            CASE WHEN e.is_active THEN 0 ELSE 1 END,
+            e.level DESC NULLS LAST,
+            e.tenure_years DESC NULLS LAST
         `,
       ),
       safeQuery<ProjectRow>(

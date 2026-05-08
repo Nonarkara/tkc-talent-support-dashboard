@@ -57,9 +57,20 @@
  *                             every call (heroes, formations, anchors).
  *                             ProjectTrajectoryStrip: financial burn /
  *                             weeks-left / projected / margin + spark.
+ *   v4.5 · Real              May 2026 dossier merged: 320 employees with
+ *                             real names (EN), gender (215m/105f), DOB,
+ *                             education, ส่วน, certifications (77 records),
+ *                             KPIs (62 rows). 28 missing employees become
+ *                             ghost rows: greyed sprite + halo + "Departed
+ *                             Apr 2026" badge. PlayerCard gains a
+ *                             narrative one-liner. Tome rebuilt as a
+ *                             CEO-signed Letter of Recommendation derived
+ *                             entirely from real DB facts. DQ3 sprite
+ *                             takes a real `gender` prop — no more 50/50
+ *                             RNG.
  *
  * Bump both fields together. Codename stays one or two words.
  */
 
-export const BUILD_VERSION = "v4.4";
-export const BUILD_CODENAME = "Talk-to-Fill";
+export const BUILD_VERSION = "v4.5";
+export const BUILD_CODENAME = "Real";

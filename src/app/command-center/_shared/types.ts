@@ -169,6 +169,19 @@ export interface Employee extends EmployeeLike {
   xp?: number | null;
   traits?: string[] | null;
   perks?: string[] | null;
+  // ─── May 2026 dossier fields ─────────────────────────────────────────
+  title_prefix?: string | null;          // นาย / นาง / นางสาว
+  gender?: "m" | "f" | null;
+  gender_override?: string | null;
+  date_of_birth?: string | null;         // ISO YYYY-MM-DD
+  education_level?: string | null;       // ปริญญาตรี / โท / เอก
+  education_school?: string | null;
+  education_faculty?: string | null;
+  education_major?: string | null;
+  section_th?: string | null;
+  resign_date?: string | null;
+  resign_status?: "presumed_departed" | "confirmed" | "none" | null;
+  joined_at?: string | null;
 }
 
 export interface Project {
