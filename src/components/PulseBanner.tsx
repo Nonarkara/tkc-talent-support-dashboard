@@ -33,26 +33,63 @@ interface Pulse {
   hiring_summary: { hot: number; warm: number; covered: number; deep: number };
 }
 
+interface Ticker {
+  price: number;
+  delta_pct: number;
+  ticker: string;
+  exchange: string;
+  live: boolean;
+}
+
+interface Financials {
+  revenue_9m_m: number;
+  net_profit_9m_m: number;
+  eps_thb: number;
+  market_cap_b: number;
+  pe_ratio: number;
+  dividend_thb: number;
+  dividend_yield_pct: number;
+  as_of: string;
+}
+
 export function PulseBanner() {
   const [pulse, setPulse] = useState<Pulse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [ticker, setTicker] = useState<Ticker | null>(null);
+  const [financials, setFinancials] = useState<Financials | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    async function fetchPulse() {
+    async function fetchAll() {
       try {
-        const res = await fetch("/api/pulse");
-        const data = (await res.json()) as Pulse;
+        const [pulseRes, tickerRes, finRes] = await Promise.all([
+          fetch("/api/pulse"),
+          fetch("/api/tkc/ticker"),
+          fetch("/api/tkc/financials"),
+        ]);
+        const pulseData = (await pulseRes.json()) as Pulse;
+        const tickerData = await tickerRes.json();
+        const finData = await finRes.json();
         if (cancelled) return;
-        if (data.ok) setPulse(data);
+        if (pulseData.ok) setPulse(pulseData);
         else setError("Pulse offline");
+        if (tickerData.ok && typeof tickerData.price === "number") {
+          setTicker({
+            price: tickerData.price,
+            delta_pct: tickerData.delta_pct ?? 0,
+            ticker: tickerData.ticker ?? "ORG",
+            exchange: tickerData.exchange ?? "DEMO",
+            live: Boolean(tickerData.live),
+          });
+        }
+        if (typeof finData.revenue_9m_m === "number") setFinancials(finData);
       } catch (e) {
         if (cancelled) return;
         setError(e instanceof Error ? e.message : "Pulse fetch failed");
       }
     }
-    void fetchPulse();
-    const interval = setInterval(() => void fetchPulse(), 5 * 60 * 1000);
+    void fetchAll();
+    const interval = setInterval(() => void fetchAll(), 5 * 60 * 1000);
     return () => {
       cancelled = true;
       clearInterval(interval);
@@ -128,6 +165,40 @@ export function PulseBanner() {
           accent="var(--rpg-orange)"
         />
       </div>
+
+      {/* Row 1.5 — Market vibes (TKC stock + key annual numbers) */}
+      {(ticker || financials) && (
+        <div style={{ marginTop: 14, paddingBottom: 14, borderBottom: "1px solid rgba(245,240,232,0.08)" }}>
+          <SectionLabel>Market signal · {financials?.as_of ?? "latest filing"}</SectionLabel>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))",
+              gap: 10,
+              fontSize: 10,
+            }}
+          >
+            {ticker && (
+              <MarketCell
+                label={`${ticker.ticker}·${ticker.exchange}`}
+                value={`฿${ticker.price.toFixed(2)}${ticker.live ? "" : "*"}`}
+                sub={`${ticker.delta_pct >= 0 ? "▲ +" : "▼ "}${ticker.delta_pct.toFixed(2)}%`}
+                tone={ticker.delta_pct >= 0 ? "var(--flux-up)" : "var(--rpg-red)"}
+              />
+            )}
+            {financials && (
+              <>
+                <MarketCell label="Revenue" value={`฿${financials.revenue_9m_m.toFixed(0)}M`} sub={financials.as_of} tone="var(--text-primary)" />
+                <MarketCell label="Net Profit" value={`฿${financials.net_profit_9m_m.toFixed(0)}M`} tone="var(--text-primary)" />
+                <MarketCell label="EPS" value={`฿${financials.eps_thb}`} tone="var(--text-primary)" />
+                <MarketCell label="P/E" value={`${financials.pe_ratio}x`} tone="var(--text-primary)" />
+                <MarketCell label="Mkt Cap" value={`฿${financials.market_cap_b}B`} tone="var(--text-primary)" />
+                <MarketCell label="Div Yield" value={`${financials.dividend_yield_pct}%`} sub={`฿${financials.dividend_thb}/sh`} tone="var(--rpg-yellow)" />
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Row 2 — Skill family distribution as a stacked bar */}
       <div style={{ marginTop: 14 }}>
@@ -385,6 +456,53 @@ function GaugeCell({
         {count}
       </strong>
       <div style={{ fontSize: 9, color: "var(--ink-1)", marginTop: 2 }}>{blurb}</div>
+    </div>
+  );
+}
+
+function MarketCell({
+  label,
+  value,
+  sub,
+  tone,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+  tone: string;
+}) {
+  return (
+    <div
+      style={{
+        padding: "6px 8px",
+        border: "1px solid rgba(245,240,232,0.08)",
+        background: "rgba(0,0,0,0.18)",
+        display: "flex",
+        flexDirection: "column",
+        gap: 2,
+      }}
+    >
+      <span
+        style={{
+          fontSize: 8,
+          letterSpacing: "0.16em",
+          textTransform: "uppercase",
+          color: "var(--ink-1)",
+        }}
+      >
+        {label}
+      </span>
+      <strong
+        style={{
+          fontSize: 13,
+          fontFamily: "var(--font-mono)",
+          color: tone,
+          lineHeight: 1.1,
+        }}
+      >
+        {value}
+      </strong>
+      {sub && <span style={{ fontSize: 9, color: tone, opacity: 0.8 }}>{sub}</span>}
     </div>
   );
 }
