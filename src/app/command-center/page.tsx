@@ -23,6 +23,7 @@ import { NinjaTab } from "./_tabs/NinjaTab";
 import { MatrixTab } from "./_tabs/MatrixTab";
 import { LobbyTab } from "./_tabs/LobbyTab";
 import { LedgerTab } from "./_tabs/LedgerTab";
+import { InsightsTab } from "./_tabs/InsightsTab";
 import { useDashboard } from "./_shared/useDashboard";
 import type { DashboardPayload, RouteScreen, Screen } from "./_shared/types";
 import { tkcTicker, TKC_ANNUAL } from "@/lib/company-pulse";
@@ -49,6 +50,7 @@ const ROUTES: Array<{ key: RouteScreen; shortcut: string }> = [
   { key: "signals", shortcut: "6" },
   { key: "lobby", shortcut: "7" },
   { key: "ledger", shortcut: "8" },
+  { key: "insights", shortcut: "9" },
 ];
 
 const ROUTE_ACCENT: Record<RouteScreen, string> = {
@@ -60,6 +62,7 @@ const ROUTE_ACCENT: Record<RouteScreen, string> = {
   signals: "var(--rpg-red)",
   lobby: "#d8411f",
   ledger: "#f3b61f",
+  insights: "#9F7BFF",
 };
 
 type RouteMeta = { kicker: string; title: string; deck: string; accent: string };
@@ -933,6 +936,8 @@ function RouteContent({
       return <LobbyTab dash={dash} />;
     case "ledger":
       return <LedgerTab dash={dash} />;
+    case "insights":
+      return <InsightsTab dash={dash} />;
     default:
       return null;
   }
@@ -1134,6 +1139,12 @@ function buildRouteMetrics(
         { label: "Integrations", value: String(stats.integrationCount) },
         { label: "Standards", value: String(stats.standardsCount) },
         { label: "Variance Watch", value: String(stats.varianceWatchCount) },
+      ];
+    case "insights":
+      return [
+        { label: "Heroes", value: String(stats.heroCount) },
+        { label: "Departments", value: String(stats.deptCount) },
+        { label: "Charts", value: "8" },
       ];
     default:
       return [];

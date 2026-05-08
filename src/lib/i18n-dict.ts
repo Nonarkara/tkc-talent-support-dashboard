@@ -101,6 +101,14 @@ export const SCREEN = {
       th: "สถานะการเชื่อมต่อ Google Sheets ทุกการบันทึกไหลผ่านท่อนี้",
     } satisfies Dict,
   },
+  insights: {
+    kicker: { en: "Line A", th: "สาย A" } satisfies Dict,
+    title: { en: "Insights Lab", th: "ห้องวิเคราะห์ข้อมูล" } satisfies Dict,
+    deck: {
+      en: "Eight live analytics from the May 2026 dossier — succession map, cert decay, gender ladder, school pedigree, birthday clock, archetype mix, attribute curves, ghost calendar.",
+      th: "วิเคราะห์ข้อมูลพนักงาน 320 คนจากเอกสารชุด พฤษภาคม 2569 — แผนผังอายุ-อายุงาน ปฏิทินใบรับรองหมดอายุ บันไดความหลากหลายทางเพศ สถานศึกษา ปฏิทินวันเกิด การกระจาย archetype กราฟ attribute และเดือนที่คนลาออก",
+    } satisfies Dict,
+  },
 };
 
 /** Lobby labels. */

@@ -21,7 +21,8 @@ export type RouteScreen =
   | "roster"
   | "signals"
   | "lobby"
-  | "ledger";
+  | "ledger"
+  | "insights";
 
 export type Screen = "home" | RouteScreen;
 
