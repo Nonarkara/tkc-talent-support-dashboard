@@ -24,6 +24,7 @@
 import { apiError, apiJson, logApiError, parseJsonBody } from "@/lib/api";
 import { checkInApproveSchema } from "@/lib/api-schemas";
 import { isDbConfigured, query } from "@/lib/db";
+import { firstName } from "@/lib/redact-name";
 import { appendEvent } from "@/lib/sheets-sync";
 import { appendAttrHistory, mirrorPlayer } from "@/lib/sheets-mirror";
 import { ARCHETYPE_LABEL, getArchetype } from "@/lib/token-economy";
@@ -99,6 +100,8 @@ export async function POST(request: Request) {
       [check_in.employee_id],
     );
     if (!emp) return apiError("Employee not found", 404);
+    // PDPA: AttrHistory + Sheets mirror echo the given name only.
+    emp.display_name = firstName(emp.display_name);
 
     const [beforeAttrs] = await query<AttrRow>(
       `SELECT str, int, wis, cha, dex, con

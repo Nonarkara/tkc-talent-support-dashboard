@@ -25,6 +25,7 @@
 
 import { apiError, apiJson, logApiError, parseJsonBody } from "@/lib/api";
 import { isDbConfigured, query } from "@/lib/db";
+import { firstName } from "@/lib/redact-name";
 import {
   appendGameAdjustment,
   appendAttrHistory,
@@ -142,6 +143,8 @@ export async function POST(request: Request) {
       );
       if (beforeRows.length === 0) return apiError("Employee not found", 404);
       const before = beforeRows[0];
+      // PDPA: AttrHistory snapshot stores given name only.
+      before.display_name = firstName(before.display_name);
 
       // Apply
       await query(

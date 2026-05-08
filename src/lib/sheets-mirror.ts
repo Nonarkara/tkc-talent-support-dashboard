@@ -10,6 +10,7 @@
  */
 
 import { isDbConfigured, query } from "./db";
+import { firstName } from "./redact-name";
 import {
   calculateFilledPct,
   calculateSuggestedTeamSize,
@@ -95,7 +96,8 @@ export async function mirrorPlayer(employeeId: string): Promise<void> {
 
     await upsertRow("Players", {
       id: r.id,
-      name: r.nickname || r.full_name_en || r.full_name_th || "—",
+      // PDPA: Sheets shadow only sees the given name.
+      name: firstName(r.nickname) || firstName(r.full_name_en) || firstName(r.full_name_th) || "—",
       dept: r.dept_code ?? "—",
       role: r.role_level,
       class: ARCHETYPE_LABEL[archetype],
@@ -675,7 +677,8 @@ export async function mirrorTeamAssignments(): Promise<void> {
         project_code: row.project_code,
         project_name: row.project_name,
         player_id: row.employee_id,
-        player_name: row.player_name,
+        // PDPA: Teams sheet records given name only.
+        player_name: firstName(row.player_name),
         player_class: ARCHETYPE_LABEL[archetype],
         slot_dimension: row.slot_dimension,
         allocation_pct: Math.round(Number(row.fte ?? 0) * 100),

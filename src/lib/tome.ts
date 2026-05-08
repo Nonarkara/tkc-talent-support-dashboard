@@ -22,6 +22,7 @@
  */
 
 import { isDbConfigured, query } from "./db";
+import { firstName } from "./redact-name";
 import { ARCHETYPE_LABEL, getArchetype, type Archetype } from "./token-economy";
 // Per-archetype banner phrase. Inlined after the v9.0 delete pass
 // removed src/lib/lore.ts. Only the Tome cover uses this.
@@ -226,7 +227,16 @@ export async function loadTome(employeeId: string): Promise<Tome | null> {
     [employeeId],
   );
   if (idRows.length === 0) return null;
-  const id = { ...idRows[0], rpg_class: idRows[0].rpg_class ?? null };
+  // PDPA: strip family names before they leave the data layer.
+  // Letterhead, body paragraphs, service record — all see first-name only.
+  const _raw = idRows[0];
+  const id = {
+    ..._raw,
+    rpg_class: _raw.rpg_class ?? null,
+    nickname: _raw.nickname ? firstName(_raw.nickname) : _raw.nickname,
+    full_name_en: _raw.full_name_en ? firstName(_raw.full_name_en) : _raw.full_name_en,
+    full_name_th: _raw.full_name_th ? firstName(_raw.full_name_th) : _raw.full_name_th,
+  };
 
   // Attributes (best-effort)
   const attrRows = await query<{
@@ -280,7 +290,9 @@ export async function loadTome(employeeId: string): Promise<Tome | null> {
     [employeeId],
   );
   const chronicles: TomeChronicle[] = chronicleRows.map((r) => ({
-    id: r.id, cycle: r.cycle, manager_id: r.manager_id, manager_name: r.manager_name,
+    id: r.id, cycle: r.cycle, manager_id: r.manager_id,
+    // PDPA: managers appear by first name only across the chronicle thread.
+    manager_name: r.manager_name ? firstName(r.manager_name) : r.manager_name,
     narrative: r.narrative, status: r.status,
     created_at: r.created_at, approved_at: r.approved_at,
     approved_deltas: r.approved,
@@ -323,7 +335,11 @@ export async function loadTome(employeeId: string): Promise<Tome | null> {
        ORDER BY sa.created_at`,
     [employeeId],
   );
-  const recognitions: TomeRecognition[] = recogRows;
+  // PDPA: recognition owners surface as first name only.
+  const recognitions: TomeRecognition[] = recogRows.map((r) => ({
+    ...r,
+    owner_name: r.owner_name ? firstName(r.owner_name) : r.owner_name,
+  }));
 
   // Ascensions — vocation_changes
   const ascRows = await query<{

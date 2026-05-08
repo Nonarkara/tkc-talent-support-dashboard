@@ -1,5 +1,6 @@
 import { apiError, apiJson, logApiError } from "@/lib/api";
 import { isDbConfigured, query } from "@/lib/db";
+import { firstName } from "@/lib/redact-name";
 import { mirrorAttendance } from "@/lib/sheets-mirror";
 import { sheetsEnabled } from "@/lib/sheets-sync";
 
@@ -40,6 +41,8 @@ export async function POST(request: Request) {
     );
     const employee = rows[0];
     if (!employee) return apiError("Employee not found", 404);
+    // PDPA: punch echoes the given name only (response, mirror, downstream).
+    employee.employee_name = firstName(employee.employee_name) || employee.employee_code;
 
     const ts = new Date().toISOString();
 

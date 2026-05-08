@@ -32,6 +32,7 @@
 
 import { apiError, apiJson, logApiError, parseJsonBody } from "@/lib/api";
 import { isDbConfigured, query } from "@/lib/db";
+import { firstName } from "@/lib/redact-name";
 import {
   continueEmployeeInterview,
   continueProjectInterview,
@@ -140,6 +141,8 @@ export async function POST(request: Request) {
         [body.target_id],
       );
       if (ctx.length === 0) return apiError("Employee not found", 404);
+      // PDPA: AI sees the given name only.
+      ctx[0].display_name = firstName(ctx[0].display_name);
       aiResult = await continueEmployeeInterview(ctx[0], transcript);
     } else {
       const ctx = await query<ProjectContextRow>(

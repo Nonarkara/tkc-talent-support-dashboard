@@ -16,6 +16,7 @@ import { apiError, apiJson, logApiError, parseJsonBody } from "@/lib/api";
 import { checkInDraftSchema } from "@/lib/api-schemas";
 import { isDbConfigured, query } from "@/lib/db";
 import { extractAttributeDeltas } from "@/lib/llm-extract";
+import { firstName } from "@/lib/redact-name";
 
 interface EmployeeLookup {
   id: string;
@@ -46,6 +47,8 @@ export async function POST(request: Request) {
       [employee_id],
     );
     if (!emp) return apiError("Employee not found", 404);
+    // PDPA: chronicle author and downstream LLM see the given name only.
+    emp.display_name = firstName(emp.display_name);
 
     // 2. Insert the draft row. Keep the original narrative verbatim for audit.
     const [inserted] = await query<{ id: string }>(

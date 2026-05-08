@@ -47,8 +47,12 @@ export default async function TomePage({ params }: PageProps) {
   const a = tome.attributes;
 
   // ─── Letter content derived from real data ───────────────────────────
-  const fullName = id.full_name_en ?? id.full_name_th;
-  const firstName = (id.full_name_en ?? id.nickname ?? id.full_name_th).split(" ")[0];
+  // PDPA: family names never appear on the letter. The loader has already
+  // redacted id.full_name_en / id.full_name_th to first-name-only — these
+  // aliases stay for readability in the JSX below.
+  const givenName = id.full_name_en ?? id.nickname ?? id.full_name_th ?? "—";
+  const fullName = givenName;
+  const firstName = givenName;
   const pronoun = id.gender === "f" ? "she" : "he";
   const possessive = id.gender === "f" ? "her" : "his";
   const subjectPronoun = id.gender === "f" ? "She" : "He";
@@ -150,7 +154,7 @@ export default async function TomePage({ params }: PageProps) {
 
           <p>
             It is my pleasure to recommend <strong>{fullName}</strong>
-            {id.nickname ? <> (also known as &ldquo;{id.nickname}&rdquo;)</> : null},
+            {id.nickname && id.nickname !== fullName ? <> (also known as &ldquo;{id.nickname}&rdquo;)</> : null},
             who has served as <strong>{titleEn}</strong> in our <strong>{deptName}</strong> {id.div_name_en ? <>({id.div_name_en})</> : null} since {joined}
             {tenureYears > 0 ? <>, completing {tenureYears} year{tenureYears === 1 ? "" : "s"} of dedicated service</> : null}
             {departedNice ? <>, until {pronoun === "she" ? "her" : "his"} departure in {departedNice}</> : null}.
@@ -244,8 +248,9 @@ export default async function TomePage({ params }: PageProps) {
         <table className="tome-table">
           <tbody>
             <tr><th>Employee Code</th><td><code>{id.employee_code ?? "—"}</code></td></tr>
-            <tr><th>Full Name (English)</th><td>{id.full_name_en ?? "—"}</td></tr>
-            <tr><th>Full Name (Thai)</th><td>{id.full_name_th}</td></tr>
+            {/* PDPA: family names redacted; only the given name is printed. */}
+            <tr><th>Given Name (English)</th><td>{id.full_name_en ?? "—"}</td></tr>
+            <tr><th>Given Name (Thai)</th><td>{id.full_name_th ?? "—"}</td></tr>
             <tr><th>Date of Birth</th><td>{id.date_of_birth ?? "—"} {id.age ? <em>({id.age} years old)</em> : null}</td></tr>
             <tr><th>Title</th><td>{id.title_en ?? id.title_th ?? "—"}</td></tr>
             <tr><th>Role Level</th><td>{id.role_level}</td></tr>

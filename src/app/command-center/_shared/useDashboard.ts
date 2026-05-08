@@ -14,6 +14,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { createCommandCharacters } from "@/lib/command-center-data";
+import { firstName } from "@/lib/redact-name";
 import {
   TKC_REAL_DEPARTMENTS,
   TKC_REAL_PROJECTS,
@@ -239,19 +240,27 @@ function needsSeededFallback(dash: Record<string, unknown>) {
 }
 
 function normalizeEmployee(raw: Partial<Employee>): Employee {
+  // PDPA: redact family names at the data boundary so every downstream
+  // component sees first-name-only without each one having to remember.
+  const givenName =
+    firstName(raw.display_name) ||
+    firstName(raw.nickname) ||
+    firstName(raw.full_name_en) ||
+    firstName(raw.full_name_th) ||
+    raw.employee_code ||
+    "Unknown Hero";
   return {
     id: raw.id ?? "unknown-hero",
-    display_name:
-      raw.display_name ??
-      raw.nickname ??
-      raw.full_name_en ??
-      raw.full_name_th ??
-      raw.employee_code ??
-      "Unknown Hero",
     title: raw.title ?? raw.title_en ?? null,
     role_level: raw.role_level ?? "staff",
     dept_code: raw.dept_code ?? null,
     ...raw,
+    // PDPA — these MUST land after the spread so they win over the raw
+    // payload. Every name field that ships to the client is first-name only.
+    display_name: givenName,
+    nickname: raw.nickname ? firstName(raw.nickname) : raw.nickname,
+    full_name_en: raw.full_name_en ? firstName(raw.full_name_en) : raw.full_name_en,
+    full_name_th: raw.full_name_th ? firstName(raw.full_name_th) : raw.full_name_th,
   };
 }
 

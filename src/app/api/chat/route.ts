@@ -20,6 +20,18 @@ import { apiJson, logApiError, parseJsonBody } from "@/lib/api";
 import { chatPayloadSchema } from "@/lib/api-schemas";
 import { isDbConfigured, query } from "@/lib/db";
 import { SYSTEM_PROMPT, TKC_KNOWLEDGE_BASE } from "@/lib/knowledge-base";
+import { firstName } from "@/lib/redact-name";
+
+// PDPA: applied to every comma-joined name list from STRING_AGG before
+// the AI ever sees it. "Sayam Tiewtranon, Piya Jirapong" → "Sayam, Piya".
+function redactNameList(csv: string | null | undefined): string {
+  if (!csv) return "";
+  return csv
+    .split(",")
+    .map((n) => firstName(n))
+    .filter(Boolean)
+    .join(", ");
+}
 
 const GEMINI_API_KEY =
   process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY || "";
@@ -129,6 +141,12 @@ async function buildLiveContext(): Promise<string> {
         LIMIT 15
       `).catch(() => [] as CheckInRow[]),
     ]);
+
+    // PDPA — redact family names BEFORE the AI prompt is built. The DB
+    // rows leave through normalizeRows; nothing downstream needs to know.
+    for (const h of heroes) h.display_name = firstName(h.display_name);
+    for (const c of recentCheckIns) c.display_name = firstName(c.display_name);
+    for (const p of projects) p.assigned_names = redactNameList(p.assigned_names);
 
     // ── Format roster summary ──────────────────────────────────────────
     const overloaded = heroes.filter((h) => Number(h.total_fte) > 1.05);
