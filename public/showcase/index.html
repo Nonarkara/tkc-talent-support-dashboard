@@ -749,6 +749,110 @@ main {
   margin-bottom: 12px;
 }
 
+/* ── CANON panel · psychological + design canon the system is built on ── */
+.canon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 14px;
+}
+.canon-card {
+  background: rgba(0,0,0,0.18);
+  border: 1px solid var(--border-subtle);
+  border-left: 3px solid var(--card-accent, var(--accent-gold));
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.canon-card.flagship {
+  background: linear-gradient(180deg, rgba(212,168,67,0.06), rgba(0,0,0,0.20));
+  border-color: var(--accent-gold);
+  border-left-width: 4px;
+  grid-column: 1 / -1;
+}
+.canon-school {
+  font-family: var(--font-pixel);
+  font-size: 7px;
+  letter-spacing: 0.18em;
+  color: var(--card-accent, var(--accent-gold));
+  text-transform: uppercase;
+}
+.canon-thinker {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
+.canon-theory {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 0.01em;
+  line-height: 1.25;
+  margin-top: -2px;
+}
+.canon-card.flagship .canon-theory { font-size: 21px; }
+.canon-idea {
+  font-size: 12.5px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+.canon-idea strong { color: var(--text-primary); font-weight: 600; }
+.canon-idea em { color: var(--text-primary); font-style: italic; }
+.canon-sources {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 1.6;
+  color: var(--text-muted);
+  border-top: 1px dashed var(--border-subtle);
+  padding-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.canon-sources-label {
+  font-family: var(--font-pixel);
+  font-size: 6.5px;
+  letter-spacing: 0.22em;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+.canon-sources cite { font-style: normal; }
+.canon-application {
+  background: rgba(0,0,0,0.25);
+  border-left: 2px solid var(--card-accent, var(--accent-gold));
+  padding: 8px 12px;
+  font-size: 11px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+.canon-application strong {
+  font-family: var(--font-pixel);
+  font-size: 6.5px;
+  letter-spacing: 0.22em;
+  color: var(--card-accent, var(--accent-gold));
+  display: block;
+  margin-bottom: 4px;
+  font-weight: normal;
+}
+.canon-intro {
+  background: rgba(0,0,0,0.18);
+  border: 1px solid var(--border-subtle);
+  padding: 14px 16px;
+  margin: 4px 0 18px;
+}
+.canon-intro p { font-size: 12px; line-height: 1.7; color: var(--text-secondary); }
+.canon-intro strong { color: var(--text-primary); font-weight: 600; }
+.canon-disclaimer {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-top: 18px;
+  padding: 10px 14px;
+  border-top: 1px dashed var(--border-subtle);
+}
+
 /* ── Footer ── */
 .footer {
   flex: 0 0 auto; padding: 10px 16px;
@@ -955,9 +1059,17 @@ main {
           <span class="tab-sub">บันทึกภาคสนาม</span>
         </span>
       </button>
-      <button class="tab-btn" data-tab="next">
+      <button class="tab-btn" data-tab="canon">
         <span class="tab-cursor">▶</span>
         <span class="tab-shortcut">7</span>
+        <span class="tab-label-stack">
+          <span class="tab-label">CANON</span>
+          <span class="tab-sub">ทฤษฎีที่ใช้สร้าง</span>
+        </span>
+      </button>
+      <button class="tab-btn" data-tab="next">
+        <span class="tab-cursor">▶</span>
+        <span class="tab-shortcut">8</span>
         <span class="tab-label-stack">
           <span class="tab-label">NEXT</span>
           <span class="tab-sub">ขั้นถัดไป</span>
@@ -1172,6 +1284,31 @@ main {
         </div>
       </div>
 
+      <!-- CANON -->
+      <div class="panel" data-panel="canon">
+        <div class="mw">
+          <div class="mw-title">CANON · ทฤษฎีและงานวิจัยที่ระบบนี้สร้างขึ้นจาก</div>
+
+          <div class="canon-intro">
+            <p>
+              ระบบ TKC Digital Twin ไม่ใช่งานเล่น ๆ — ทุกการตัดสินใจในการออกแบบ
+              ตั้งแต่การมีค่า HP/MP/XP, การจัดทีมแบบ Moneyball, การเลือก archetype
+              ของพนักงาน, ไปจนถึงการออกแบบ chronicle ทั้งหมดล้วนมาจาก
+              <strong>คลังความรู้ด้านจิตวิทยา พฤติกรรมศาสตร์ และการออกแบบที่ผ่านการวิจัยมาเป็นสิบปี</strong>
+              ด้านล่างคือสรุปแหล่งที่มา · พร้อมหนังสือต้นฉบับและจุดที่นำมาใช้จริงในระบบ
+            </p>
+          </div>
+
+          <div class="canon-grid" id="canon-grid"></div>
+
+          <div class="canon-disclaimer">
+            หมายเหตุ: รายการข้างต้นไม่ได้ครอบคลุมทุกอ้างอิง — เลือกเฉพาะตัวที่มีอิทธิพลตรงต่อการออกแบบ
+            (ICA bars, vocations, chronicle ritual, Moneyball formation, ฯลฯ) ทุก citation
+            เช็คจากต้นทาง ไม่ใช่จากการสรุปต่อ
+          </div>
+        </div>
+      </div>
+
       <!-- NEXT -->
       <div class="panel" data-panel="next">
         <div class="mw">
@@ -1191,7 +1328,7 @@ main {
 
   <!-- Footer -->
   <div class="footer">
-    <span class="footer-hint">▲▼ keys: 1–7 to switch panels · 5 = Timeline · 6 = Field</span>
+    <span class="footer-hint">▲▼ keys: 1–8 to switch panels · 6 = Field · 7 = Canon · 8 = Next</span>
     <div class="btn-row">
       <a class="btn-paper" href="whitepaper.html" target="_blank" rel="noopener" title="งวดที่ 1 deliverable">📖 งวด 1 · WHITEPAPER</a>
       <a class="btn-pdf"   href="print.html"      target="_blank" rel="noopener" title="งวดที่ 1 acceptance">📄 งวด 1 · ใบตรวจรับงาน</a>
@@ -2081,6 +2218,217 @@ if (fieldGridHost) {
   });
 }
 
+// ── CANON · the theories the system is built on ──
+// Every entry: real thinker, real book, real year, real ISBN where useful.
+// "Application" is the concrete TKC mechanism the theory drives.
+const CANON = [
+  {
+    accent: '#5B89B5',
+    school: 'POSITIVE PSYCHOLOGY · 1975 · 1990',
+    thinker: 'Mihaly Csikszentmihalyi (1934 — 2021), University of Chicago',
+    theory: 'Flow',
+    idea: 'Optimal experience appears in a narrow channel between boredom and anxiety — when the difficulty of the task and the skill of the doer are matched. Outside the channel, attention scatters; inside it, time disappears.',
+    sources: [
+      'Csikszentmihalyi, M. (1990). <cite>Flow: The Psychology of Optimal Experience</cite>. Harper &amp; Row. ISBN 978-0-06-016253-5.',
+      'Csikszentmihalyi, M. (1975). <cite>Beyond Boredom and Anxiety</cite>. Jossey-Bass.',
+      'Nakamura, J., &amp; Csikszentmihalyi, M. (2002). "The Concept of Flow." In Snyder &amp; Lopez (eds.), <cite>Handbook of Positive Psychology</cite>, Oxford University Press.',
+    ],
+    application: 'ICA bars (Intrinsic / Capacity / Activation) on every PlayerCard track the gap between project demand and personal capacity. The Formation Engine rewards a chemistry score around 78–88% — the channel — and flags both overload (anxiety) and underuse (boredom) as risk signals.',
+  },
+  {
+    accent: '#D4A843',
+    school: 'SERVICE DESIGN · 1992 — present',
+    thinker: 'The Ritz-Carlton Hotel Company · Horst Schulze, founding President',
+    theory: 'The Gold Standards & Empowerment Credo',
+    idea: 'Every employee is empowered to spend up to <strong>$2,000 per guest</strong> to resolve a problem without asking permission. The credo — <em>"Ladies and gentlemen serving ladies and gentlemen"</em> — redefines service as peer dignity rather than hierarchy.',
+    sources: [
+      'Michelli, J. A. (2008). <cite>The New Gold Standard: 5 Leadership Principles for Creating a Legendary Customer Experience Courtesy of the Ritz-Carlton Hotel Company</cite>. McGraw-Hill. ISBN 978-0-07-154833-3.',
+      'Sucher, S. J., &amp; McManus, S. E. (2001). <cite>The Ritz-Carlton Hotel Company</cite>. Harvard Business School Case 601-163.',
+      'The Ritz-Carlton Leadership Center (2007 — present). The Gold Standards (Credo, Motto, Three Steps of Service, Service Values, the 6th Diamond).',
+    ],
+    application: 'The dashboard frames every employee as an agent with attribute scores, not a row in a spreadsheet. Vocation classes (Hero / Wizard / Pilgrim / Sage) borrow the Ritz logic of dignity-by-design — every person on the floor has a class card before any KPI conversation begins.',
+  },
+  {
+    accent: '#5B8C4A',
+    school: 'WORK PSYCHOLOGY · 1968 · 1985 · 2009',
+    thinker: 'Frederick Herzberg · Edward Deci &amp; Richard Ryan · Daniel Pink',
+    theory: 'Motivation — Hygienes vs. Drivers · Self-Determination Theory · Autonomy, Mastery, Purpose',
+    idea: 'Pay and conditions can only stop dissatisfaction (hygienes); real motivation comes from <strong>autonomy</strong> over the work, <strong>mastery</strong> through skill growth, and <strong>purpose</strong> beyond the task itself. Reward and punishment work for routine work — and corrode creative work.',
+    sources: [
+      'Herzberg, F. (1968, reprinted 2003). "One More Time: How Do You Motivate Employees?" <cite>Harvard Business Review</cite>, January–February 1968. HBR Classic.',
+      'Deci, E. L., &amp; Ryan, R. M. (1985). <cite>Intrinsic Motivation and Self-Determination in Human Behavior</cite>. Plenum Press.',
+      'Pink, D. H. (2009). <cite>Drive: The Surprising Truth About What Motivates Us</cite>. Riverhead Books. ISBN 978-1-59448-884-9.',
+    ],
+    application: 'The system never asks managers to grade. It asks them to write a <em>chronicle</em> — a paragraph about what their report did this cycle. Stat changes are derivative of narrative, not the other way around. That is autonomy + mastery + purpose, encoded.',
+  },
+  {
+    accent: '#8B6FB5',
+    school: 'GAMIFICATION · 2011 · 2015',
+    thinker: 'Jane McGonigal · Yu-kai Chou',
+    theory: 'Games for Real Work',
+    idea: 'The structures that make games compelling — clear goals, immediate feedback, visible progress, voluntary obstacles, social proof — are not childish, they are the most reliably engineered form of motivation humans have. Yu-kai Chou\'s <em>Octalysis</em> framework formalises eight core drives behind every successful game.',
+    sources: [
+      'McGonigal, J. (2011). <cite>Reality Is Broken: Why Games Make Us Better and How They Can Change the World</cite>. Penguin Press. ISBN 978-1-59420-285-8.',
+      'Chou, Y. (2015). <cite>Actionable Gamification: Beyond Points, Badges, and Leaderboards</cite>. Octalysis Group / Createspace. ISBN 978-1-5193-7245-6.',
+      'Werbach, K., &amp; Hunter, D. (2012). <cite>For the Win: How Game Thinking Can Revolutionize Your Business</cite>. Wharton Digital Press.',
+    ],
+    application: 'The game-shell is not decoration. HP/MP/XP, vocations, quests, archetype banners, the Tome — all read directly from the eight Octalysis drives (epic meaning, accomplishment, ownership, social influence, scarcity, unpredictability, avoidance, empowerment-of-creativity).',
+  },
+  {
+    accent: '#5B89B5',
+    school: 'BEHAVIORAL ECONOMICS · 2008 · 2021',
+    thinker: 'Richard Thaler (Nobel 2017) &amp; Cass Sunstein',
+    theory: 'Nudge — Choice Architecture',
+    idea: 'Small changes in how a choice is <strong>presented</strong> produce large changes in what people choose, without removing any option. The job of design is therefore not to motivate but to architect — set the default, order the menu, frame the comparison.',
+    sources: [
+      'Thaler, R. H., &amp; Sunstein, C. R. (2008). <cite>Nudge: Improving Decisions About Health, Wealth, and Happiness</cite>. Yale University Press. ISBN 978-0-300-12223-7.',
+      'Thaler, R. H., &amp; Sunstein, C. R. (2021). <cite>Nudge: The Final Edition</cite>. Penguin Books. ISBN 978-0-14-313700-4.',
+      'Behavioural Insights Team (2014). <cite>EAST: Four Simple Ways to Apply Behavioural Insights</cite>. Cabinet Office, UK Government.',
+    ],
+    application: 'Every form-default in the dashboard is a nudge. The chronicle prompt opens with a sentence stem rather than a blank box. The "Compose with AI" button sits beside, not below, the human-write field. The Tome\'s default print orientation is a recommendation letter, not a CV.',
+  },
+  {
+    accent: '#C44D3F',
+    school: 'BEHAVIORAL ECONOMICS · 1979 · 2011 · 2015',
+    thinker: 'Daniel Kahneman (Nobel 2002), Amos Tversky, Richard Thaler',
+    theory: 'Prospect Theory · System 1 / System 2',
+    idea: 'Humans are not rational maximisers. Losses sting roughly twice as much as equivalent gains; the fast intuitive mind (System 1) drives most decisions while the slow deliberate mind (System 2) writes the justification afterwards.',
+    sources: [
+      'Kahneman, D., &amp; Tversky, A. (1979). "Prospect Theory: An Analysis of Decision under Risk." <cite>Econometrica</cite>, 47(2), 263–291.',
+      'Kahneman, D. (2011). <cite>Thinking, Fast and Slow</cite>. Farrar, Straus and Giroux. ISBN 978-0-374-27563-1.',
+      'Thaler, R. H. (2015). <cite>Misbehaving: The Making of Behavioral Economics</cite>. W. W. Norton. ISBN 978-0-393-08094-0.',
+    ],
+    application: 'Risk Signals leans on loss aversion — naming who is "at risk" of leaving is more motivating to a manager than naming who is "performing well." The game UI keeps reasoning in System 1 (sprites, colours, instant deltas) and reserves System 2 for the chronicle.',
+  },
+  {
+    accent: '#D4A843',
+    school: 'PERSUASION SCIENCE · 1984 · 2016',
+    thinker: 'Robert Cialdini, Arizona State University',
+    theory: 'Influence — the Seven Principles',
+    idea: 'Compliance is reliably driven by seven levers: <strong>Reciprocity, Commitment &amp; Consistency, Social Proof, Authority, Liking, Scarcity</strong>, and (added 2016) <strong>Unity</strong>. The principles are descriptive — anyone who builds a system that asks people to act will trigger them, intentionally or not.',
+    sources: [
+      'Cialdini, R. B. (1984, latest edition 2021). <cite>Influence: The Psychology of Persuasion, New &amp; Expanded</cite>. Harper Business. ISBN 978-0-06-313728-8.',
+      'Cialdini, R. B. (2016). <cite>Pre-Suasion: A Revolutionary Way to Influence and Persuade</cite>. Simon &amp; Schuster. ISBN 978-1-5011-0980-8.',
+      'Goldstein, N. J., Martin, S. J., &amp; Cialdini, R. B. (2017). <cite>Yes! 60 Secrets from the Science of Persuasion</cite>. Profile Books.',
+    ],
+    application: 'The chronicle ritual lives on Commitment &amp; Consistency — once the manager writes a paragraph, they internalise the judgement. Tenure milestones (Animal-Crossing-style birthday cards) trigger Reciprocity. The CEO Letter of Recommendation invokes Authority cleanly, without coercion.',
+  },
+  {
+    accent: '#5B8C4A',
+    school: 'DESIGN PROCESS · 2009 · 2013',
+    thinker: 'Tim Brown, David &amp; Tom Kelley · IDEO &amp; the Stanford d.school',
+    theory: 'Design Thinking — Empathize, Define, Ideate, Prototype, Test',
+    idea: 'Innovation is reliably produced by a <strong>human-centred</strong> loop: spend time with the user, define the real problem (not the symptom), generate many candidate solutions, build the cheapest prototype that can be tested, run it past the user, repeat. The loop is more important than any single output.',
+    sources: [
+      'Brown, T. (2009). <cite>Change by Design: How Design Thinking Transforms Organizations and Inspires Innovation</cite>. Harper Business. ISBN 978-0-06-176608-4.',
+      'Kelley, T., &amp; Kelley, D. (2013). <cite>Creative Confidence: Unleashing the Creative Potential Within Us All</cite>. Crown Business. ISBN 978-0-385-34936-9.',
+      'Stanford d.school (2010). <cite>An Introduction to Design Thinking — Process Guide</cite>. Hasso Plattner Institute of Design.',
+    ],
+    application: 'The whole TKC engagement is one design-thinking loop. Empathize = 19 People Innovate interviews + ethnographic field tab. Define = "Excel-cant-see-the-whole-org" pain point. Ideate = 8 Command Center screens. Prototype = the live dashboard you are reading. Test = Management Review every 3 weeks.',
+  },
+  {
+    accent: '#5B89B5',
+    school: 'POSITIVE PSYCHOLOGY · 2002 · 2011',
+    thinker: 'Martin Seligman, University of Pennsylvania',
+    theory: 'PERMA &amp; Authentic Happiness',
+    idea: 'Well-being is not a single dimension — it has five: <strong>P</strong>ositive emotion, <strong>E</strong>ngagement, <strong>R</strong>elationships, <strong>M</strong>eaning, <strong>A</strong>ccomplishment. A flourishing organisation needs a recognisable surface for each, or it becomes brittle.',
+    sources: [
+      'Seligman, M. E. P. (2002). <cite>Authentic Happiness: Using the New Positive Psychology to Realize Your Potential for Lasting Fulfillment</cite>. Free Press. ISBN 978-0-7432-2297-6.',
+      'Seligman, M. E. P. (2011). <cite>Flourish: A Visionary New Understanding of Happiness and Well-being</cite>. Free Press. ISBN 978-1-4391-9075-3.',
+      'Peterson, C., &amp; Seligman, M. E. P. (2004). <cite>Character Strengths and Virtues: A Handbook and Classification</cite>. Oxford University Press. ISBN 978-0-19-516701-6.',
+    ],
+    application: 'The six attributes (STR / INT / WIS / CHA / DEX / CON) are PERMA in disguise — Engagement and Accomplishment in stat form, Relationships in the chemistry score, Meaning in the chronicle, Positive emotion in the recognition feed.',
+  },
+  {
+    accent: '#8B6FB5',
+    school: 'DEPTH PSYCHOLOGY · 1934 · 2001',
+    thinker: 'Carl Gustav Jung (1875 — 1961) · Margaret Mark &amp; Carol Pearson (modern application)',
+    theory: 'Archetypes &amp; the Collective Unconscious',
+    idea: 'Across every culture, the human imagination converges on a small set of <strong>recurring characters</strong> — the Hero, the Sage, the Magician, the Caregiver, the Innocent, the Outlaw, the Ruler, the Jester, the Lover, the Explorer, the Creator, the Everyman. Brands and identities that align with one archetype are immediately legible.',
+    sources: [
+      'Jung, C. G. (1959, English transl.). <cite>The Archetypes and the Collective Unconscious</cite>, Collected Works Vol. 9 Part 1. Princeton University Press / Bollingen Series XX.',
+      'Mark, M., &amp; Pearson, C. S. (2001). <cite>The Hero and the Outlaw: Building Extraordinary Brands Through the Power of Archetypes</cite>. McGraw-Hill. ISBN 978-0-07-136415-5.',
+      'Pearson, C. S. (1991). <cite>Awakening the Heroes Within: Twelve Archetypes to Help Us Find Ourselves and Transform Our World</cite>. HarperCollins. ISBN 978-0-06-250678-2.',
+    ],
+    application: 'Vocations in the dashboard map onto Jungian archetypes: Hero (Warrior), Wizard (Magician), Pilgrim (Seeker / Explorer), Sage, Caregiver, Ruler. Each employee gets a banner sentence ("Of the House of …") that reads as identity, not job description.',
+  },
+  {
+    accent: '#C44D3F',
+    school: 'STRATEGY · 1997 · 2003 · 2016',
+    thinker: 'Clayton Christensen (1952 — 2020), Harvard Business School',
+    theory: 'Disruptive Innovation &amp; Jobs-to-be-Done',
+    idea: 'Great firms fail not by doing things badly but by serving their best customers too well — leaving the bottom of the market open for cheaper, simpler alternatives that <strong>improve faster</strong> than the incumbent expects. The right unit of analysis is not the customer but the <em>job</em> they are hiring a product to do.',
+    sources: [
+      'Christensen, C. M. (1997). <cite>The Innovator\'s Dilemma: When New Technologies Cause Great Firms to Fail</cite>. Harvard Business School Press. ISBN 978-0-87584-585-2.',
+      'Christensen, C. M., &amp; Raynor, M. E. (2003). <cite>The Innovator\'s Solution</cite>. Harvard Business School Press. ISBN 978-1-57851-852-4.',
+      'Christensen, C. M., Hall, T., Dillon, K., &amp; Duncan, D. S. (2016). <cite>Competing Against Luck: The Story of Innovation and Customer Choice</cite>. HarperBusiness. ISBN 978-0-06-243561-7.',
+    ],
+    application: 'The dashboard itself is a disruptive read on HR software — the incumbent (giant SaaS suites) over-serves enterprises with feature bloat. TKC Digital Twin is built on the cheapest stack (Postgres + Sheets + Next.js) and improves on the dimensions HR actually hires the tool for: see-the-whole-room, see-the-individual, write-it-down.',
+  },
+  {
+    accent: '#5B89B5',
+    school: 'PRODUCT METHODOLOGY · 2016',
+    thinker: 'Jake Knapp · with John Zeratsky &amp; Braden Kowitz · Google Ventures',
+    theory: 'The Design Sprint',
+    idea: 'A five-day cycle replaces months of meeting: <strong>Map</strong> the problem, <strong>Sketch</strong> alone, <strong>Decide</strong> on one bet, <strong>Prototype</strong> the surface only, <strong>Test</strong> with five real users. Output is a decision, not a deliverable.',
+    sources: [
+      'Knapp, J., Zeratsky, J., &amp; Kowitz, B. (2016). <cite>Sprint: How to Solve Big Problems and Test New Ideas in Just Five Days</cite>. Simon &amp; Schuster. ISBN 978-1-5011-2174-6.',
+      'Knapp, J. (2018). <cite>Make Time: How to Focus on What Matters Every Day</cite>. Currency.',
+      'Google Ventures Design Sprint resources, gv.com/sprint (2014 — present).',
+    ],
+    application: 'The 5-installment Gantt on the TIMELINE tab is a sprint of sprints — each milestone is a 3- to 8-week sprint with a defined prototype handoff, a Management Review test, and a single decision output. No installment is allowed to exceed its window without renaming the deliverable.',
+  },
+  {
+    accent: '#D4A843',
+    school: 'THE PHILOSOPHY OF NON · 2013 — present',
+    thinker: 'นน อัครประเสริฐกุล · architect, Harvard alum, ethnographer of Bangkok',
+    theory: 'Nonism — A Six-Mantra Operating System',
+    flagship: true,
+    idea: `<strong>Rousseauian Stoic Existentialist with a Buddhist substrate.</strong>
+      Nonism is not an academic school but a working philosophy refined across 1,300 days of public writing
+      at <em>nonharvard.wordpress.com</em>. The six mantras that govern every design decision in this dashboard are:
+      <ol style="margin: 10px 0 0 18px; line-height: 1.7; color: var(--text-secondary);">
+        <li><strong>Life is precious. Live to the end. The fun is in the flow.</strong> — never break flow without cause; hold preciousness silently, never declare it.</li>
+        <li><strong>Help the user find their Ikigai. Listen first; then speak with reasons.</strong> — mentorship, not service. The chain pain → life → flow → fun → reason-to-be-born must hold whole.</li>
+        <li><strong>Positive contribution, not performative positivity.</strong> — the middle path: clear, warm, grounded. Reason from architecture, anthropology, history, psychology — multi-discipline tracks reality, single-discipline rarely does.</li>
+        <li><strong>A friend → mentor → confidant. Concise, precise, perfect in EN / TH / ZH.</strong> — trust through memory; never forget what was said.</li>
+        <li><strong>Everything happens for a reason. Suspend the catastrophe verdict. Help others first.</strong> — the wheel of consequence has not arrived yet; do not deliver the verdict before the data.</li>
+        <li><strong>All religions welcome. Reality may be a simulation. Work with the symbols anyway.</strong> — engage every frame inside its own logic; rank none.</li>
+      </ol>`,
+    sources: [
+      'อัครประเสริฐกุล, น. (2013 — present). <cite>nonharvard.wordpress.com</cite> — 123 long-form posts on philosophy, urbanism, anthropology, design.',
+      'อัครประเสริฐกุล, น. (2025). <cite>เกาะติดบ้านพ่อ: บันทึกอนาคตจังหวัดภูเก็ตในรอบ 7 ปี</cite>.',
+      'Foundational reading list (selected): Rousseau, <cite>The Social Contract</cite> (1762); Marcus Aurelius, <cite>Meditations</cite>; Camus, <cite>The Myth of Sisyphus</cite> (1942); Buddhadasa, <cite>Handbook for Mankind</cite>; Robert Wright, <cite>Why Buddhism Is True</cite> (2017); Iain McGilchrist, <cite>The Master and His Emissary</cite> (2009).',
+    ],
+    application: 'Every screen in this dashboard is built from the six mantras. The chronicle is Mantra 4 (memory, trust). Risk Signals refuses to deliver verdicts — Mantra 5. The vocation system honours every employee\'s frame — Mantra 6. The whole product treats the worker\'s ikigai as the brief, not their KPI — Mantra 2.',
+  },
+];
+
+const canonHost = document.getElementById('canon-grid');
+if (canonHost) {
+  CANON.forEach((c) => {
+    const card = document.createElement('div');
+    card.className = 'canon-card' + (c.flagship ? ' flagship' : '');
+    card.style.setProperty('--card-accent', c.accent);
+    const sourcesHtml = c.sources.map((s) => `<div>· ${s}</div>`).join('');
+    card.innerHTML = `
+      <div class="canon-school">${c.school}</div>
+      <div class="canon-thinker">${c.thinker}</div>
+      <div class="canon-theory">${c.theory}</div>
+      <div class="canon-idea">${c.idea}</div>
+      <div class="canon-sources">
+        <div class="canon-sources-label">SOURCES · ต้นฉบับ</div>
+        ${sourcesHtml}
+      </div>
+      <div class="canon-application">
+        <strong>WE USE IT FOR</strong>
+        ${c.application}
+      </div>
+    `;
+    canonHost.appendChild(card);
+  });
+}
+
 // ── Tab switching ──
 const tabs = document.querySelectorAll('.tab-btn');
 const panels = document.querySelectorAll('.panel');
@@ -2091,7 +2439,7 @@ function setTab(key) {
 tabs.forEach(t => t.addEventListener('click', () => setTab(t.dataset.tab)));
 
 // ── Keyboard shortcuts ──
-const KEY_MAP = { '1': 'scope', '2': 'screens', '3': 'sheets', '4': 'vibes', '5': 'timeline', '6': 'field', '7': 'next' };
+const KEY_MAP = { '1': 'scope', '2': 'screens', '3': 'sheets', '4': 'vibes', '5': 'timeline', '6': 'field', '7': 'canon', '8': 'next' };
 document.addEventListener('keydown', (e) => {
   const tab = KEY_MAP[e.key];
   if (tab) setTab(tab);
