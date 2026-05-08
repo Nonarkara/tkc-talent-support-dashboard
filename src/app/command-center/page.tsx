@@ -319,8 +319,13 @@ export default function CommandCenterPage() {
 
   const activeProjects = dash.projects.filter((project) => project.status !== "done").length;
   const chemistryScore = Math.round(aggregateChemistry(dash.teams));
-  const atRiskCount = dash.employees.filter((employee) => riskSignalFor(employee) !== "ok").length;
-  const anchorCount = dash.employees.filter((employee) => riskSignalFor(employee) === "anchor").length;
+  // Both counts only over the active roster — /api/db/dashboard returns
+  // ghosts too (so the lobby/tome can read them), but the chrome metrics
+  // and the PulseBanner agree to count active people only. Without this
+  // filter, the header pill said 48 anchors while the banner said 43.
+  const activeEmployees = dash.employees.filter((e) => e.is_active !== false);
+  const atRiskCount = activeEmployees.filter((employee) => riskSignalFor(employee) !== "ok").length;
+  const anchorCount = activeEmployees.filter((employee) => riskSignalFor(employee) === "anchor").length;
   const openSupportActions = dash.support_actions.filter(
     (action) => action.status === "open" || action.status === "in_progress",
   ).length;
@@ -383,7 +388,7 @@ export default function CommandCenterPage() {
         ? "Live"
         : "Demo";
 
-  const grade = orgGrade(chemistryScore, dash.employees.length, atRiskCount);
+  const grade = orgGrade(chemistryScore, activeEmployees.length, atRiskCount);
   const daysLeft = sprintDaysLeft();
 
   const ticker = useMemo(() => {

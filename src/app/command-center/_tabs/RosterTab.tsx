@@ -516,6 +516,17 @@ export function InspectModal({ emp, onClose }: { emp: Employee; onClose: () => v
     renderToCanvas(canvas, hero);
   }, [hero]);
 
+  // ESC closes the dossier — keyboards beat cursors for this kind of
+  // peek-then-dismiss pattern. The "Click outside to close" copy alone
+  // is invisible to keyboard-only users and unintuitive on touch.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
   const stats = hero.stats ?? PERSONALITY_STATS[hero.personality ?? "Everyman"] ?? { STR: 100, AGL: 100, VIT: 100, INT: 100, LUCK: 100 };
   const weapon = weaponLabel(hero);
   const shieldName = hero.shield ? `${hero.shield.kind.charAt(0).toUpperCase() + hero.shield.kind.slice(1)} Shield` : "—";
@@ -523,6 +534,9 @@ export function InspectModal({ emp, onClose }: { emp: Employee; onClose: () => v
   return (
     <div
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Hero dossier — ${emp.display_name}`}
       style={{
         position: "fixed",
         inset: 0,
@@ -544,8 +558,42 @@ export function InspectModal({ emp, onClose }: { emp: Employee; onClose: () => v
           gap: 28,
           alignItems: "flex-start",
           maxWidth: 560,
+          position: "relative",
         }}
       >
+        {/* Explicit close — discoverability beats charm. The ✕ is the
+            universal dismiss affordance; keyboard users have ESC. */}
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close dossier"
+          title="Close (Esc)"
+          style={{
+            position: "absolute",
+            top: 8,
+            right: 8,
+            width: 28,
+            height: 28,
+            background: "transparent",
+            border: "1px solid rgba(248,244,227,0.25)",
+            color: "#f8f4e3",
+            fontSize: 14,
+            lineHeight: "26px",
+            textAlign: "center",
+            cursor: "pointer",
+            padding: 0,
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "rgba(248,244,227,0.08)";
+            e.currentTarget.style.borderColor = "rgba(248,244,227,0.6)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "transparent";
+            e.currentTarget.style.borderColor = "rgba(248,244,227,0.25)";
+          }}
+        >
+          ✕
+        </button>
         <canvas
           ref={bigCanvasRef}
           width={16}
@@ -585,7 +633,7 @@ export function InspectModal({ emp, onClose }: { emp: Employee; onClose: () => v
             <InspectRow label="LUCK" value={`${stats.LUCK}%`} />
           </div>
           <div style={{ fontSize: 10, color: "#8a8aa8", marginTop: 16 }}>
-            Click outside to close.
+            Press ESC, click ✕, or click outside to close.
           </div>
         </div>
       </div>

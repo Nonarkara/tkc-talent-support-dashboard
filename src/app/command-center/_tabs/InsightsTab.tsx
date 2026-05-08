@@ -27,6 +27,7 @@
 
 import { useMemo } from "react";
 import { MenuWindow } from "@/components/MenuWindow";
+import { isAnchor } from "@/lib/company-pulse";
 import type { DashboardPayload, Employee } from "../_shared/types";
 
 // ─── Palette (matches the rest of the cockpit chrome) ───────────────────
@@ -237,9 +238,18 @@ function SuccessionMap({ employees }: { employees: Employee[] }) {
         const age = computeAge(e.date_of_birth);
         const tenure = e.tenure_years ?? 0;
         if (age == null || tenure < 0) return null;
-        return { age, tenure, name: e.display_name ?? "—", dept: e.dept_code ?? "—" };
+        return {
+          age,
+          tenure,
+          name: e.display_name ?? "—",
+          dept: e.dept_code ?? "—",
+          // Use the canonical isAnchor predicate so the dot colour and the
+          // banner / roster header all agree. Pre-fix the chart counted by
+          // age-band which gave 89 while everything else gave 43.
+          anchor: isAnchor(e),
+        };
       })
-      .filter((p): p is { age: number; tenure: number; name: string; dept: string } => p != null);
+      .filter((p): p is { age: number; tenure: number; name: string; dept: string; anchor: boolean } => p != null);
   }, [employees]);
 
   const W = 420, H = 240, PAD = 28;
@@ -249,23 +259,22 @@ function SuccessionMap({ employees }: { employees: Employee[] }) {
   const yScale = (a: number) =>
     H - PAD - ((Math.max(a, yMin) - yMin) / (yMax - yMin)) * (H - PAD * 2);
 
-  // Anchor zone: tenure ≥10 AND age 35-55 — the irreplaceable middle
-  // Retirement zone: age ≥55 — succession-critical
-  const anchorCount = points.filter((p) => p.tenure >= 10 && p.age >= 35 && p.age <= 55).length;
+  // Counts that match the rest of the dashboard.
+  const anchorCount = points.filter((p) => p.anchor).length;
   const retireCount = points.filter((p) => p.age >= 55).length;
 
   return (
     <ChartCard
       num={1}
       title="Succession Map · Age × Tenure"
-      caption={`Each dot is one active employee. The gold band is the anchor zone (10+ years and 35–55) — irreplaceable institutional memory. The red band is the retirement zone (55+) — successors needed. ${anchorCount} anchors and ${retireCount} approaching retirement, today.`}
+      caption={`Each dot is one active employee. Gold dots are anchors (≥10y AND CON or CHA ≥14) — institutional memory + relational glue. The red band is the retirement zone (55+) — successors needed. ${anchorCount} anchors and ${retireCount} approaching retirement, today.`}
       accent={C.gold}
     >
       <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto", display: "block" }}>
         {/* Retirement zone */}
         <rect x={PAD} y={yScale(65)} width={W - PAD * 2} height={yScale(55) - yScale(65)} fill={C.red} opacity="0.10" />
-        {/* Anchor zone */}
-        <rect x={xScale(10)} y={yScale(55)} width={W - PAD - xScale(10)} height={yScale(35) - yScale(55)} fill={C.gold} opacity="0.10" />
+        {/* Tenure-veteran band (10+ years) — visual context, not the anchor count */}
+        <rect x={xScale(10)} y={PAD} width={W - PAD - xScale(10)} height={H - PAD * 2} fill={C.gold} opacity="0.05" />
         {/* Axes */}
         <line x1={PAD} y1={H - PAD} x2={W - PAD} y2={H - PAD} stroke={C.rule} strokeWidth="0.6" />
         <line x1={PAD} y1={PAD} x2={PAD} y2={H - PAD} stroke={C.rule} strokeWidth="0.6" />
@@ -287,21 +296,20 @@ function SuccessionMap({ employees }: { employees: Employee[] }) {
             </text>
           </g>
         ))}
-        {/* Dots */}
+        {/* Dots — gold = anchor (canonical), red = retirement zone, blue = everyone else */}
         {points.map((p, i) => {
-          const inAnchor = p.tenure >= 10 && p.age >= 35 && p.age <= 55;
           const inRetire = p.age >= 55;
-          const fill = inRetire ? C.red : inAnchor ? C.gold : C.blue;
+          const fill = p.anchor ? C.gold : inRetire ? C.red : C.blue;
           return (
             <circle
               key={`${p.name}-${i}`}
               cx={xScale(p.tenure)}
               cy={yScale(p.age)}
-              r="2.4"
+              r={p.anchor ? 2.8 : 2.4}
               fill={fill}
               opacity="0.78"
             >
-              <title>{`${p.name} · age ${p.age} · ${p.tenure}y at TKC · ${p.dept}`}</title>
+              <title>{`${p.name} · age ${p.age} · ${p.tenure}y at TKC · ${p.dept}${p.anchor ? " · ⚓ ANCHOR" : ""}`}</title>
             </circle>
           );
         })}

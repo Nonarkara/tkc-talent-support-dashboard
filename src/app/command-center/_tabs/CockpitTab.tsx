@@ -68,8 +68,18 @@ export function CockpitTab({ dash }: { dash: DashboardPayload }) {
     <div
       className="cc-tab-frame"
       style={{
-        gridTemplateRows: "auto 1fr auto",
+        // The cockpit doesn't fit the "one landscape viewport" pattern that
+        // cc-tab-frame (height: 100%, overflow: hidden) was designed for —
+        // it has too much content to live in a single screen-height. Let it
+        // grow to natural content height and let .cc-route-stage's
+        // overflow: auto provide the page-level scroll. Without this,
+        // Row 2 (Pillars + KPIs/Quests/Trajectory) gets crushed to ~13px
+        // because Row 3 (World Bulletin + Predictions) ate the budget.
+        height: "auto",
+        gridTemplateRows: "auto auto auto",
+        gridAutoRows: "max-content",
         gap: 12,
+        overflow: "visible",
       }}
     >
       {/* Row 1 — four metric tiles */}
