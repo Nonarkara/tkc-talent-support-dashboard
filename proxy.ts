@@ -15,7 +15,7 @@ export async function proxy(request: NextRequest) {
   if (!isPublicPath(pathname)) {
     const password = process.env.DASHBOARD_PASSWORD;
     if (password) {
-      const cookie = request.cookies.get("tkc_access");
+      const cookie = request.cookies.get("tkc_session");
       if (cookie?.value !== password) {
         const loginUrl = request.nextUrl.clone();
         loginUrl.pathname = "/login";

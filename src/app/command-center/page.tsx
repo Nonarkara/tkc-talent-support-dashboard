@@ -469,6 +469,18 @@ export default function CommandCenterPage() {
             >
               <span className="cc-status-label">{statusText}</span>
             </button>
+            <button
+              type="button"
+              className="cc-nav-button"
+              onClick={async () => {
+                await fetch("/api/auth/logout", { method: "POST" });
+                window.location.href = "/login";
+              }}
+              title="Sign out — clears your access cookie immediately"
+              style={{ borderColor: "var(--rpg-red, #d45e4e)", color: "var(--rpg-red, #d45e4e)" }}
+            >
+              {translate(loc, { en: "Sign Out", th: "ออก" })}
+            </button>
           </div>
         </div>
       </header>
