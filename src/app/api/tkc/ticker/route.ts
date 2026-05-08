@@ -16,12 +16,11 @@
  * The code never hardcodes a ticker symbol — public repo stays generic.
  */
 
-export const revalidate = 300; // 5-minute ISR cache
+// Disable ISR caching — env vars must be read at request time so the
+// secrets-set workflow doesn't require a code change to take effect.
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 const TICKER_TIMEOUT_MS = 2500;
-
-const TICKER_FETCH_URL = process.env.TICKER_FETCH_URL ?? "";
-const TICKER_LABEL = process.env.TICKER_LABEL ?? "ORG";
-const TICKER_EXCHANGE = process.env.TICKER_EXCHANGE ?? "DEMO";
 
 const HEADERS = {
   "User-Agent":
@@ -53,7 +52,7 @@ function seededRandom(seed: number): number {
   return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
 }
 
-function syntheticTicker() {
+function syntheticTicker(label: string, exchange: string) {
   const now = new Date();
   const daySeed =
     now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate();
@@ -72,8 +71,8 @@ function syntheticTicker() {
   return Response.json({
     ok: true,
     live: false,
-    ticker: TICKER_LABEL,
-    exchange: TICKER_EXCHANGE,
+    ticker: label,
+    exchange,
     price,
     delta_pct,
     prev_close: prevClose,
@@ -83,9 +82,15 @@ function syntheticTicker() {
 }
 
 export async function GET() {
+  // Read env at request time, not at module load — so `fly secrets set`
+  // takes effect immediately without a code change.
+  const TICKER_FETCH_URL = process.env.TICKER_FETCH_URL ?? "";
+  const TICKER_LABEL = process.env.TICKER_LABEL ?? "ORG";
+  const TICKER_EXCHANGE = process.env.TICKER_EXCHANGE ?? "DEMO";
+
   // No live source configured → fall back to synthetic
   if (!TICKER_FETCH_URL) {
-    return syntheticTicker();
+    return syntheticTicker(TICKER_LABEL, TICKER_EXCHANGE);
   }
 
   try {
