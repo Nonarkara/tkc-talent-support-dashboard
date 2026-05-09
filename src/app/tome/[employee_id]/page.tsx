@@ -25,8 +25,21 @@
 
 import { notFound } from "next/navigation";
 import { loadTome, type Tome } from "@/lib/tome";
+import { SKILL_LABEL } from "@/lib/skills-vocab";
 import { PrintButton } from "./PrintButton";
 import "./tome.css";
+
+// PDPA + readability: the database stores skills as snake_case keys
+// (finance_paperwork, delivery_ops, …) but the recommendation letter
+// must read like prose, not like a database schema. SKILL_LABEL turns
+// them human; unknown keys fall through to a Title-Cased version.
+function humanSkill(key: string): string {
+  const known = (SKILL_LABEL as Record<string, string>)[key];
+  if (known) return known;
+  return key
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
 
 type PageProps = {
   params: Promise<{ employee_id: string }>;
@@ -289,7 +302,9 @@ export default async function TomePage({ params }: PageProps) {
           <>
             <h3 className="tome-section-h3">Skill Areas</h3>
             <div className="tome-tag-row">
-              {tome.skills.map((s) => <span key={s} className="tome-tag">{s}</span>)}
+              {tome.skills.map((s) => (
+                <span key={s} className="tome-tag">{humanSkill(s)}</span>
+              ))}
             </div>
           </>
         )}

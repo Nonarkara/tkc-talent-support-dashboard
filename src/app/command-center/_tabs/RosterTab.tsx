@@ -16,6 +16,7 @@ import { ProfileWizard } from "@/components/ProfileWizard";
 import { DQ3HeroSprite } from "@/components/DQ3HeroSprite";
 import { MenuWindow } from "@/components/MenuWindow";
 import {
+  ARCHETYPE_BLURB,
   ARCHETYPE_LABEL,
   getArchetype,
   type Archetype,
@@ -179,6 +180,7 @@ export function RosterTab({ dash }: { dash: DashboardPayload }) {
                     key={a}
                     active={archetypeFilter === a}
                     onClick={() => setArchetypeFilter(archetypeFilter === a ? null : a)}
+                    title={`${ARCHETYPE_LABEL[a]} — ${ARCHETYPE_BLURB[a]}`}
                   >
                     {ARCHETYPE_LABEL[a]}
                   </Chip>
@@ -317,14 +319,18 @@ function Chip({
   active,
   onClick,
   children,
+  title,
 }: {
   active: boolean;
   onClick: () => void;
   children: React.ReactNode;
+  /** Optional hover hint — used to show the vocation glossary on archetype chips. */
+  title?: string;
 }) {
   return (
     <button
       onClick={onClick}
+      title={title}
       style={{
         padding: "3px 10px",
         fontSize: 10,
@@ -333,7 +339,7 @@ function Chip({
         background: active ? "var(--rpg-yellow)" : "transparent",
         color: active ? "var(--ink-4)" : "var(--ink-1)",
         border: `1px solid ${active ? "var(--rpg-yellow)" : "var(--ink-2)"}`,
-        cursor: "pointer",
+        cursor: title ? "help" : "pointer",
         fontFamily: "inherit",
       }}
     >

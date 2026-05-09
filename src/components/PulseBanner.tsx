@@ -146,11 +146,20 @@ export function PulseBanner() {
         }}
       >
         <BigStat label="Active" value={pulse.active_total} accent="var(--text-primary)" />
+        {/* If nobody has punched in today, the "0" is misleading next to a
+            lobby that shows 348 sprites. Treat zero as an empty state — the
+            pill becomes "—" with a "no check-ins yet" caption. The Lobby
+            sprite floor is decorative; the Pulse banner only counts real
+            attendance_log rows. */}
         <BigStat
           label="In office (12h)"
-          value={pulse.in_office_today}
-          sub={`${pctActive}% of roster`}
-          accent="var(--flux-up)"
+          value={pulse.in_office_today > 0 ? pulse.in_office_today : "—"}
+          sub={
+            pulse.in_office_today > 0
+              ? `${pctActive}% of roster`
+              : "No check-ins yet today"
+          }
+          accent={pulse.in_office_today > 0 ? "var(--flux-up)" : "var(--ink-1)"}
         />
         <BigStat
           label="Anchors"

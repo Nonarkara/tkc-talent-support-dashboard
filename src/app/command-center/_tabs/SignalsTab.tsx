@@ -16,6 +16,7 @@ import { MenuWindow } from "@/components/MenuWindow";
 import { ClassGlyph } from "@/components/ClassGlyph";
 import { isAnchor } from "@/lib/company-pulse";
 import {
+  ARCHETYPE_BLURB,
   ARCHETYPE_LABEL,
   getArchetype,
   type Archetype,
@@ -289,11 +290,13 @@ export function SignalsTab({ dash }: { dash: DashboardPayload }) {
                   <div style={{ display: "flex", flexDirection: "column" }}>
                     <span>{emp.display_name}</span>
                     <span
+                      title={`${ARCHETYPE_LABEL[a]} — ${ARCHETYPE_BLURB[a]}`}
                       style={{
                         color: "var(--ink-1)",
                         fontSize: 9,
                         letterSpacing: "0.08em",
                         textTransform: "uppercase",
+                        cursor: "help",
                       }}
                     >
                       {ARCHETYPE_LABEL[a]} · {emp.dept_code ?? "—"}
@@ -373,12 +376,14 @@ function SignalRow({
         {emp.dept_code ?? "—"}
       </span>
       <span
+        title={`${ARCHETYPE_LABEL[a]} — ${ARCHETYPE_BLURB[a]}`}
         style={{
           color: "var(--ink-1)",
           fontSize: 10,
           textAlign: "right",
           textTransform: "uppercase",
           letterSpacing: "0.08em",
+          cursor: "help",
         }}
       >
         {ARCHETYPE_LABEL[a]}
