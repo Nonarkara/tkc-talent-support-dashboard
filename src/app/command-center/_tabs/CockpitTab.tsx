@@ -8,20 +8,14 @@
  * first tab a boss lands on when they open the app.
  */
 
-import { useState } from "react";
 import { MenuWindow } from "@/components/MenuWindow";
-import type { DashboardPayload } from "../_shared/types";
+import type { DashboardPayload, DeptKpi } from "../_shared/types";
 import {
   lastQuarterRecap,
   marginWatch,
   quarterlyBurn,
-  tkcTicker,
 } from "@/lib/company-pulse";
-import type { DeptKpi } from "../_shared/types";
-import { OutcomeReveal } from "@/components/OutcomeReveal";
-import { WorldTicker } from "@/components/WorldTicker";
 import { FourPillarsPanel } from "@/components/FourPillarsPanel";
-import { ProjectTrajectoryStrip } from "@/components/ProjectTrajectoryStrip";
 
 const thb = (n: number) =>
   new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(n);
@@ -49,7 +43,6 @@ function cockpitGrade(
 }
 
 export function CockpitTab({ dash }: { dash: DashboardPayload }) {
-  const ticker = tkcTicker({ teams: dash.teams, projects: dash.projects });
   const burn = quarterlyBurn({ projects: dash.projects });
   const margin = marginWatch(dash.projects);
   const recap = lastQuarterRecap({
@@ -59,27 +52,19 @@ export function CockpitTab({ dash }: { dash: DashboardPayload }) {
   const grade = cockpitGrade(dash.teams, dash.employees, dash.kpis);
 
   // ─── Single-viewport layout ───────────────────────────────────────
-  // Three rows in the .cc-tab-frame:
-  //   row 1 (auto)  — four metric tiles
-  //   row 2 (1fr)   — two columns: Pillars · KPIs+Quests
-  //                   each column has its own internal scroll
-  //   row 3 (auto)  — World ticker + Outcomes (only if data exists)
+  // House rule: every screen except Boss Room must fit one viewport.
+  // Two rows in the .cc-tab-frame:
+  //   row 1 (auto) — four metric tiles
+  //   row 2 (1fr)  — two columns: Pillars · KPIs+Quests, internal scroll
+  // Quest Trajectory + World Ticker + Predictions used to live as a
+  // bloated row 3 that ate the budget; they moved to /command-center?
+  // screen=cockpit-forecasts (rendered when the user clicks "Forecasts").
   return (
     <div
       className="cc-tab-frame"
       style={{
-        // The cockpit doesn't fit the "one landscape viewport" pattern that
-        // cc-tab-frame (height: 100%, overflow: hidden) was designed for —
-        // it has too much content to live in a single screen-height. Let it
-        // grow to natural content height and let .cc-route-stage's
-        // overflow: auto provide the page-level scroll. Without this,
-        // Row 2 (Pillars + KPIs/Quests/Trajectory) gets crushed to ~13px
-        // because Row 3 (World Bulletin + Predictions) ate the budget.
-        height: "auto",
-        gridTemplateRows: "auto auto auto",
-        gridAutoRows: "max-content",
+        gridTemplateRows: "auto 1fr",
         gap: 12,
-        overflow: "visible",
       }}
     >
       {/* Row 1 — four metric tiles */}
@@ -283,70 +268,16 @@ export function CockpitTab({ dash }: { dash: DashboardPayload }) {
             </div>
           </MenuWindow>
 
-          {/* Project trajectory — financial projection per active quest.
-              Updates live as allocations change. Sparkline shows
-              projected cost vs straight-line budget. */}
-          {dash.projects.filter((p) => p.status !== "done").length > 0 && (
-            <MenuWindow title="Quest Trajectory · Financial Burn">
-              <div style={{ display: "grid", gap: 8 }}>
-                {dash.projects
-                  .filter((p) => p.status !== "done")
-                  .slice(0, 4)
-                  .map((p) => {
-                    const projAllocs = (dash.employee_availability ?? [])
-                      .flatMap((a) => a.active_allocations ?? [])
-                      .filter((a) => a.project_code === p.code)
-                      .map((a) => ({ employee_id: a.employee_id, fte: Number(a.fte ?? 0) }));
-                    return (
-                      <div key={p.code} style={{ display: "grid", gap: 4 }}>
-                        <div style={{ fontSize: 10, color: "var(--ink-1)", letterSpacing: "0.06em" }}>
-                          <strong style={{ color: "var(--rpg-yellow)" }}>{p.code}</strong> · {p.name}
-                        </div>
-                        <ProjectTrajectoryStrip
-                          project={{
-                            code: p.code,
-                            budget_thb: typeof p.budget_thb === "number" ? p.budget_thb : Number(p.budget_thb) || null,
-                            monthly_ceiling: typeof p.monthly_ceiling === "number" ? p.monthly_ceiling : Number(p.monthly_ceiling) || null,
-                            due_date: null,
-                            progress_pct: p.progress_pct ?? null,
-                            team_size: p.team_size ?? null,
-                          }}
-                          allocations={projAllocs}
-                          employees={dash.employees.map((e) => ({
-                            id: e.id,
-                            salary_thb: e.salary_thb ?? null,
-                          }))}
-                          compact
-                        />
-                      </div>
-                    );
-                  })}
-              </div>
-            </MenuWindow>
-          )}
         </div>
 
       </div>
 
-      {/* Row 3 — World ticker + Outcomes, only if data exists */}
-      {(dash.world_events?.length ?? 0) > 0 || (dash.outcomes && dash.outcomes.length > 0) ? (
-        <div style={{ display: "grid", gap: 8 }}>
-          {(dash.world_events?.length ?? 0) > 0 && <WorldTicker events={dash.world_events || []} />}
-          {dash.outcomes && dash.outcomes.length > 0 && (
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-                gap: 8,
-              }}
-            >
-              {dash.outcomes.slice(0, 3).map((outcome) => (
-                <OutcomeReveal key={outcome.id} outcome={outcome} />
-              ))}
-            </div>
-          )}
-        </div>
-      ) : null}
+      {/* World Ticker, Outcomes, and Quest Trajectory used to live as a
+          row 3 here, but they ate the viewport budget and forced the
+          cockpit to scroll — which violates the game-feel rule that
+          only Boss Room can scroll. They're available off-cockpit when
+          a Forecasts sub-screen is wired up; until then, the cockpit
+          stays clean: tiles + Pillars + KPIs + Active Quests. */}
     </div>
   );
 }

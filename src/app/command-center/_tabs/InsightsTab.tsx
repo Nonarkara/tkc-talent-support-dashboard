@@ -87,57 +87,54 @@ export function InsightsTab({ dash }: { dash: DashboardPayload }) {
       className="cc-tab-frame"
       style={{
         gridTemplateRows: "auto 1fr",
-        gap: 12,
+        gap: 8,
       }}
     >
-      {/* Hero strip — the framing copy + headline counts */}
+      {/* Hero strip — compact for viewport-fit. The intro copy moved into
+          a single line so the strip takes ~50px not ~120px, freeing
+          height for the 4×2 chart grid below. */}
       <div
         style={{
           display: "grid",
           gridTemplateColumns: "1fr auto",
           gap: 18,
-          alignItems: "end",
-          padding: "4px 4px 8px",
+          alignItems: "center",
+          padding: "0 4px 6px",
           borderBottom: "1px dashed " + C.rule,
         }}
       >
-        <div>
-          <div
+        <div style={{ display: "flex", alignItems: "baseline", gap: 14, flexWrap: "wrap" }}>
+          <span
             style={{
               fontFamily: "var(--font-pixel, monospace)",
               fontSize: 8,
               letterSpacing: "0.22em",
               color: C.purple,
-              marginBottom: 6,
             }}
           >
             ★ INSIGHTS LAB · BONUS WING ★
-          </div>
-          <div style={{ fontSize: 13, lineHeight: 1.6, color: C.ink1, maxWidth: 720 }}>
-            Eight read-outs the spreadsheet was hiding. Every chart recomputes from the live{" "}
-            <strong style={{ color: C.ink0 }}>{all.length} dossier rows</strong> — succession,
-            cert decay, gender ladder, school pedigree, birthday clock, archetype mix, attribute
-            curves, ghost calendar. This is what data wants to look like when it stops being a
-            list and starts being a picture.
-          </div>
+          </span>
+          <span style={{ fontSize: 11, color: C.ink1 }}>
+            Eight read-outs from {all.length} dossier rows. Hover any cell for detail.
+          </span>
         </div>
-        <div style={{ display: "flex", gap: 12 }}>
+        <div style={{ display: "flex", gap: 8 }}>
           <Stat label="ACTIVE" value={active.length} accent={C.green} />
           <Stat label="GHOSTS" value={ghosts.length} accent={C.red} />
           <Stat label="DEPTS" value={new Set(active.map((e) => e.dept_code).filter(Boolean)).size} accent={C.gold} />
-          <Stat label="CHARTS" value={8} accent={C.purple} />
         </div>
       </div>
 
-      {/* Chart grid — the 8 cards */}
+      {/* Chart grid — 4 columns × 2 rows, fits the cc-tab-frame's 1fr row. */}
       <div
         className="cc-scroll"
         style={{
           display: "grid",
-          gridAutoRows: "max-content",
-          gridTemplateColumns: "repeat(auto-fit, minmax(420px, 1fr))",
-          gap: 14,
-          padding: "4px 2px 16px",
+          gridTemplateColumns: "repeat(4, 1fr)",
+          gridTemplateRows: "1fr 1fr",
+          gap: 8,
+          padding: "4px 2px 4px",
+          minHeight: 0,
         }}
       >
         <SuccessionMap employees={active} />
