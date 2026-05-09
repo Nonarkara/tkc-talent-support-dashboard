@@ -299,11 +299,29 @@ export function NinjaTab({ dash }: Props) {
         }
         return true;
       })
-      // Text search
-      .filter(({ emp }) => {
+      // Text search — broader haystack so the right-pane search can find by
+      // attribute, archetype, role, skill, or department in addition to name.
+      // E.g. typing "pilgrim" filters to Pilgrim-archetype heroes; "manager"
+      // to managers; "delivery" to anyone with the delivery_ops skill.
+      .filter(({ emp, skills }) => {
         if (!query) return true;
-        const hay = [emp.nickname, emp.full_name_en, emp.full_name_th, emp.dept_code, emp.display_name]
-          .filter(Boolean).join(" ").toLowerCase();
+        const archetype = getArchetype(emp);
+        const skillLabels = skills.map((s) => SKILL_LABEL[s as Skill] ?? s);
+        const hay = [
+          emp.nickname,
+          emp.full_name_en,
+          emp.full_name_th,
+          emp.display_name,
+          emp.dept_code,
+          emp.dept_name_en,
+          emp.role_level,
+          ARCHETYPE_LABEL[archetype],
+          ...skillLabels,
+          ...skills,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
         return hay.includes(query);
       })
       // Sort: unassigned first → partially assigned → already here → at-capacity last
@@ -528,7 +546,94 @@ export function NinjaTab({ dash }: Props) {
         memberCount={membersByTeam[activeTeam].length}
       />
 
+      {/* Workshop strip — compressed to a thin row so the two-pane gets the
+          budget. Opens the Standards Workshop drawer on click; the economy
+          + integration readouts inline as three pills.
+          Pre-fix this panel ate ~280px of viewport height and starved the
+          single-team-focus layout. */}
       <div style={{ order: 3 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          padding: "8px 12px",
+          background: "rgba(0,0,0,0.18)",
+          border: "1px solid var(--border-subtle)",
+          flexWrap: "wrap",
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => setWorkshopOpen(true)}
+          style={{
+            border: "none",
+            background: "var(--rpg-yellow)",
+            color: "var(--ink-4)",
+            cursor: "pointer",
+            fontFamily: "inherit",
+            fontSize: 10,
+            fontWeight: 800,
+            padding: "7px 11px",
+            textTransform: "uppercase",
+            letterSpacing: "0.08em",
+            whiteSpace: "nowrap",
+          }}
+        >
+          ⚙ Standards Workshop
+        </button>
+        <span
+          style={{
+            color: activeMission.tone,
+            fontSize: 10,
+            fontWeight: 800,
+            textTransform: "uppercase",
+            letterSpacing: "0.06em",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {activeMission.callSign}
+        </span>
+        <span style={{ color: "var(--ink-1)", fontSize: 11, fontFamily: "var(--font-mono)" }}>
+          FTE {partyEconomics[activeTeam].plannedFte.toFixed(1)}
+          {" · "}
+          ฿{partyEconomics[activeTeam].plannedCostThb.toLocaleString()}
+          {" · "}
+          <span
+            style={{
+              color: partyEconomics[activeTeam].overloaded > 0 ? "var(--rpg-red)" : "var(--flux-up)",
+            }}
+          >
+            {partyEconomics[activeTeam].overloaded} overload{partyEconomics[activeTeam].overloaded === 1 ? "" : "s"}
+          </span>
+        </span>
+        <span style={{ display: "flex", gap: 8, marginLeft: "auto", flexWrap: "wrap" }}>
+          {dash.integration_status.map((item) => (
+            <span
+              key={item.key}
+              title={item.label + " — " + item.status}
+              style={{
+                fontSize: 9,
+                color:
+                  item.status === "connected"
+                    ? "var(--flux-up)"
+                    : item.status === "ready_for_import"
+                      ? "var(--rpg-yellow)"
+                      : "var(--ink-1)",
+                textTransform: "uppercase",
+                letterSpacing: "0.06em",
+                fontFamily: "var(--font-mono)",
+              }}
+            >
+              ● {item.label}
+            </span>
+          ))}
+        </span>
+      </div>
+
+      {/* Original verbose Workshop Controls preserved below as no-op for code
+          archaeology; visually replaced by the strip above. */}
+      {false && (
       <MenuWindow title="Workshop Controls">
         <div
           style={{
@@ -630,6 +735,7 @@ export function NinjaTab({ dash }: Props) {
           </div>
         </div>
       </MenuWindow>
+      )}
       </div>
 
       <div
@@ -646,26 +752,78 @@ export function NinjaTab({ dash }: Props) {
         }}
       >
         <div className="cc-scroll" style={{ paddingRight: 4 }}>
-        <MenuWindow title="Ninja Parties">
+        <MenuWindow title="Ninja Party">
           <div style={{ display: "grid", gap: 12 }}>
-            <div style={{ color: "var(--ink-1)", fontSize: 12, lineHeight: 1.55 }}>
-              {configLocked[activeTeam]
-                ? "Click or drag heroes from the roster. Heroes can span two missions (directors: up to five). FTE split shows on each card."
-                : "Configure each mission first, then recruit warriors."}
-            </div>
+            {/* Team chips — pick ONE squad at a time, the rest collapse.
+                Per the human-playtest feedback: showing three party cards
+                side-by-side made the page unusable. You only ever recruit
+                for one squad at a time, so only one squad gets the
+                spotlight; the others sit as quick-switch chips above. */}
             <div
               style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))",
-                gap: 12,
+                display: "flex",
+                gap: 6,
+                flexWrap: "wrap",
+                paddingBottom: 4,
+                borderBottom: "1px solid var(--rpg-blue-deep)",
               }}
             >
-              {MISSIONS.map((mission) => (
+              {MISSIONS.map((m) => {
+                const isActive = m.key === activeTeam;
+                const memberCount = membersByTeam[m.key].length;
+                return (
+                  <button
+                    key={m.key}
+                    type="button"
+                    onClick={() => setActiveTeam(m.key)}
+                    style={{
+                      flex: "0 1 auto",
+                      padding: "6px 12px",
+                      background: isActive ? m.tone : "transparent",
+                      color: isActive ? "var(--ink-4)" : "var(--ink-0)",
+                      border: `1px solid ${m.tone}`,
+                      cursor: "pointer",
+                      fontFamily: "inherit",
+                      fontSize: 11,
+                      fontWeight: isActive ? 800 : 500,
+                      letterSpacing: "0.06em",
+                      textTransform: "uppercase",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 8,
+                      transition: "background 80ms",
+                    }}
+                  >
+                    <span>{m.callSign}</span>
+                    <span
+                      style={{
+                        fontSize: 9,
+                        opacity: 0.85,
+                        background: isActive ? "rgba(0,0,0,0.18)" : `${m.tone}22`,
+                        padding: "1px 6px",
+                      }}
+                    >
+                      {memberCount}/{MAX_PARTY}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+            <div style={{ color: "var(--ink-1)", fontSize: 12, lineHeight: 1.55 }}>
+              {configLocked[activeTeam]
+                ? "Drag heroes from the candidate panel into this party, or click ＋ on a candidate row. Heroes can span two missions (directors: up to five)."
+                : "Configure this mission first, then recruit warriors. Switch parties with the chips above."}
+            </div>
+            {/* Single focused mission card — only the active team is rendered. */}
+            {(() => {
+              const mission = missionByKey.get(activeTeam);
+              if (!mission) return null;
+              return (
                 <MissionPartyCard
                   key={mission.key}
                   mission={mission}
                   title={missionTitles[mission.key]}
-                  active={mission.key === activeTeam}
+                  active={true}
                   slots={partyAllocations[mission.key]}
                   members={membersByTeam[mission.key]}
                   report={reportsByTeam[mission.key]}
@@ -691,8 +849,8 @@ export function NinjaTab({ dash }: Props) {
                   onRemove={(empId) => removeFromTeam(mission.key, empId)}
                   onSave={() => void handleSaveTeam(mission.key)}
                 />
-              ))}
-            </div>
+              );
+            })()}
           </div>
         </MenuWindow>
         </div>

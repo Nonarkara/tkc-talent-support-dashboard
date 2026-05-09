@@ -104,7 +104,7 @@ export function CandidateList({
           type="text"
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          placeholder="Search by name, nickname, or dept…"
+          placeholder="Search: name, dept, role, archetype, skill…"
           style={{
             background: "var(--ink-4)",
             border: "1px solid var(--ink-2)",
