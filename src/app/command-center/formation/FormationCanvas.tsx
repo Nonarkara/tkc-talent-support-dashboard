@@ -202,45 +202,32 @@ function serializeAssignments(list: Assignment[]) {
 }
 
 function parseAssignments(insights: string[], employees: Employee[]): Assignment[] {
-  // 1. Look for explicit ASSIGN_PREFIX string (Source of Truth: project_allocations)
   const raw = insights.find((item) => item.startsWith(ASSIGN_PREFIX));
-  
-  if (raw) {
-    return raw
-      .slice(ASSIGN_PREFIX.length)
-      .split("|")
-      .filter(Boolean)
-      .flatMap((entry) => {
-        const parts = entry.split("@");
-        const employee_id = parts[0];
-        const dimension = parts[1];
-        const party_order = parts[2] ? parseInt(parts[2], 10) : 2;
+  if (!raw) return [];
 
-        if (!employee_id || !dimension) return [];
-        if (!SLOT_DIMENSIONS.includes(dimension as SlotDimension)) return [];
-        const employee = employees.find((candidate) => candidate.id === employee_id);
-        if (!employee) return [];
-        return [
-          {
-            employee_id,
-            archetype: getArchetype(employee),
-            dimension: dimension as SlotDimension,
-            party_order: (party_order === 1 || party_order === 2 || party_order === 3 ? party_order : 2) as PartyOrder,
-          },
-        ];
-      });
-  }
+  return raw
+    .slice(ASSIGN_PREFIX.length)
+    .split("|")
+    .filter(Boolean)
+    .flatMap((entry) => {
+      const parts = entry.split("@");
+      const employee_id = parts[0];
+      const dimension = parts[1];
+      const party_order = parts[2] ? parseInt(parts[2], 10) : 2;
 
-  // 2. Fallback to v2 JSON (Snapshot recovery)
-  const v2Item = insights.find((s) => s.trim().startsWith('{"v":2'));
-  if (v2Item) {
-    try {
-      const obj = JSON.parse(v2Item);
-      if (obj.formation) return parseAssignments([obj.formation], employees);
-    } catch {}
-  }
-
-  return [];
+      if (!employee_id || !dimension) return [];
+      if (!SLOT_DIMENSIONS.includes(dimension as SlotDimension)) return [];
+      const employee = employees.find((candidate) => candidate.id === employee_id);
+      if (!employee) return [];
+      return [
+        {
+          employee_id,
+          archetype: getArchetype(employee),
+          dimension: dimension as SlotDimension,
+          party_order: (party_order === 1 || party_order === 2 || party_order === 3 ? party_order : 2) as PartyOrder,
+        },
+      ];
+    });
 }
 
 function serializeLog(log: ProjectLog) {
@@ -248,14 +235,6 @@ function serializeLog(log: ProjectLog) {
 }
 
 function parseLogs(insights: string[]): ProjectLog[] {
-  const v2Item = insights.find((s) => s.trim().startsWith('{"v":2'));
-  if (v2Item) {
-    try {
-      const obj = JSON.parse(v2Item);
-      if (Array.isArray(obj.logs)) return obj.logs;
-    } catch {}
-  }
-
   return insights
     .filter((item) => item.startsWith(LOG_PREFIX))
     .map((item) => item.slice(LOG_PREFIX.length))
@@ -276,14 +255,6 @@ function parseLogs(insights: string[]): ProjectLog[] {
 }
 
 function parseStartedAt(insights: string[]): string | null {
-  const v2Item = insights.find((s) => s.trim().startsWith('{"v":2'));
-  if (v2Item) {
-    try {
-      const obj = JSON.parse(v2Item);
-      if (obj.started_at) return obj.started_at;
-    } catch {}
-  }
-
   const raw = insights.find((item) => item.startsWith(START_PREFIX));
   return raw ? raw.slice(START_PREFIX.length) : null;
 }
@@ -2518,7 +2489,7 @@ function AssignedHeroCard({
   onCycleOrder: (event: React.MouseEvent) => void;
 }) {
   const party_order: PartyOrder = (assignment.party_order ?? 2) as PartyOrder;
-  const order_label = party_order === 1 ? "F" : party_order === 3 ? "B" : "M";
+  const order_label = party_order === 1 ? "FRONT" : party_order === 3 ? "BACK" : "MID";
   const order_tone =
     party_order === 1
       ? "var(--accent-red)"
@@ -2527,10 +2498,10 @@ function AssignedHeroCard({
         : "var(--ink-1)";
   const order_title =
     party_order === 1
-      ? "Front row — takes hits. Click to cycle."
+      ? "Front row — takes hits. Click to cycle to MID."
       : party_order === 3
-        ? "Back row — protected. Click to cycle."
-        : "Mid row — default. Click to cycle.";
+        ? "Back row — protected. Click to cycle to FRONT."
+        : "Mid row — default. Click to cycle to BACK.";
   const fit = capabilityFitForDimension(employee, assignment.dimension, competencyStandards).score;
   const tone = ARCHETYPE_COLOR[assignment.archetype];
 
@@ -2602,6 +2573,7 @@ function AssignedHeroCard({
             type="button"
             onClick={onCycleOrder}
             title={order_title}
+            aria-label={`Party row: ${order_label}. Click to cycle.`}
             style={{
               border: `1px solid ${order_tone}`,
               background: "transparent",

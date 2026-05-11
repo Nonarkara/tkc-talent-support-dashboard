@@ -131,7 +131,7 @@ function freshnessTone(freshness: EmployeeLike["evidence_freshness"]) {
       return "var(--rpg-orange)";
     case "unknown":
     default:
-      return "var(--ink-1)";
+      return "#5a4d3a";
   }
 }
 
@@ -266,21 +266,14 @@ export function PlayerCard({
     gap: 12,
     padding: variant === "full" ? "16px" : "13px",
     minHeight: variant === "full" ? 338 : 212,
-    color: "var(--ink-0)",
+    color: "#1a1209",
     background: isGhost
-      ? `
-        radial-gradient(circle at 100% 0%, rgba(243,182,31,0.08) 0%, transparent 46%),
-        linear-gradient(180deg, #2a2730 0%, #1c1a22 100%)
-      `
-      : `
-        radial-gradient(circle at 100% 0%, ${hexToRgba(glow, 0.22)} 0%, transparent 46%),
-        linear-gradient(180deg, var(--rpg-blue) 0%, var(--rpg-blue-deep) 100%)
-      `,
-    border: isGhost ? "2px solid rgba(243,182,31,0.4)" : "2px solid var(--ink-0)",
-    boxShadow: isGhost
-      ? "inset 0 0 0 1px rgba(243,182,31,0.18)"
-      : "inset -4px -4px 0 rgba(0,0,0,0.22), inset 4px 4px 0 rgba(255,255,255,0.08)",
-    filter: isGhost ? "saturate(0.55)" : undefined,
+      ? "linear-gradient(180deg, #e8e4dc 0%, #ddd9d1 100%)"
+      : "#f5f0e8",
+    borderTop: `3px solid ${isGhost ? "#b8b0a0" : tone}`,
+    border: isGhost ? "1px solid #b8b0a0" : "1px solid #3d2e1e",
+    boxShadow: "0 2px 0 rgba(0,0,0,0.15)",
+    filter: isGhost ? "saturate(0.4) opacity(0.85)" : undefined,
     cursor: onSelect ? "pointer" : "default",
     fontFamily: 'var(--font-mono), "Courier New", monospace',
   };
@@ -310,8 +303,8 @@ export function PlayerCard({
             display: "grid",
             placeItems: "center",
             minHeight: variant === "full" ? 82 : 70,
-            background: "rgba(0,0,0,0.18)",
-            border: `1px solid ${hexToRgba(glow, 0.65)}`,
+            background: "rgba(0,0,0,0.04)",
+            border: `1px solid ${hexToRgba(tone, 0.35)}`,
           }}
         >
           <div style={{ position: "relative" }}>
@@ -363,7 +356,7 @@ export function PlayerCard({
           style={{
             display: "grid",
             gap: 3,
-            color: "var(--ink-1)",
+            color: "#5a4d3a",
             fontSize: 10,
             lineHeight: 1.25,
           }}
@@ -387,7 +380,7 @@ export function PlayerCard({
           >
             <div
               style={{
-                color: "var(--ink-0)",
+                color: "#1a1209",
                 fontSize: variant === "full" ? 18 : 15,
                 fontWeight: 800,
                 lineHeight: 1.05,
@@ -401,14 +394,13 @@ export function PlayerCard({
             <div
               className="pixel"
               style={{
-                background: "rgba(0,0,0,0.3)",
+                background: "rgba(0,0,0,0.08)",
                 padding: "2px 6px",
                 border: "1px solid var(--rpg-yellow)",
                 color: "var(--rpg-yellow)",
                 fontSize: 10,
                 fontWeight: 800,
                 flexShrink: 0,
-                boxShadow: "1px 1px 0 #000"
               }}
             >
               LV {level}
@@ -419,9 +411,9 @@ export function PlayerCard({
           <div style={{ 
             height: 3, 
             width: "100%", 
-            background: "rgba(0,0,0,0.4)", 
+            background: "rgba(0,0,0,0.12)", 
             marginTop: 4,
-            border: "1px solid rgba(255,255,255,0.05)"
+            border: "1px solid rgba(26,18,9,0.08)"
           }}>
             <div style={{ 
               height: "100%", 
@@ -434,7 +426,7 @@ export function PlayerCard({
           <div
             style={{
               marginTop: 4,
-              color: "var(--ink-1)",
+              color: "#5a4d3a",
               fontSize: 11,
               overflow: "hidden",
               textOverflow: "ellipsis",
@@ -450,13 +442,13 @@ export function PlayerCard({
             <div
               style={{
                 marginTop: 6,
-                color: isGhost ? "var(--rpg-orange, #FB923C)" : "var(--ink-1)",
+                color: isGhost ? "var(--rpg-orange, #FB923C)" : "#5a4d3a",
                 fontSize: 10,
                 lineHeight: 1.5,
                 fontStyle: "italic",
                 opacity: 0.92,
                 paddingTop: 4,
-                borderTop: "1px solid rgba(245,240,232,0.06)",
+                borderTop: "1px solid rgba(26,18,9,0.06)",
               }}
             >
               {tail}
@@ -480,7 +472,7 @@ export function PlayerCard({
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-            border: "1px solid rgba(245,240,232,0.28)",
+            border: "1px solid rgba(26,18,9,0.28)",
             background: "rgba(0,0,0,0.12)",
           }}
         >
@@ -492,13 +484,13 @@ export function PlayerCard({
                 gridTemplateColumns: "1fr auto",
                 gap: 4,
                 padding: "5px 6px",
-                borderRight: "1px solid rgba(245,240,232,0.18)",
-                borderBottom: "1px solid rgba(245,240,232,0.18)",
-                color: "var(--ink-0)",
+                borderRight: "1px solid rgba(26,18,9,0.18)",
+                borderBottom: "1px solid rgba(26,18,9,0.18)",
+                color: "#1a1209",
                 fontSize: 10,
               }}
             >
-              <span style={{ color: "var(--ink-1)" }}>{stat.label}</span>
+              <span style={{ color: "#5a4d3a" }}>{stat.label}</span>
               <strong style={{ color: tone }}>{statValue(employee[stat.key])}</strong>
             </div>
           ))}
@@ -513,7 +505,7 @@ export function PlayerCard({
             alignItems: "center",
             gap: 8,
             padding: "5px 0",
-            borderTop: "1px solid rgba(245,240,232,0.08)",
+            borderTop: "1px solid rgba(26,18,9,0.08)",
           }}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 2, flex: 1 }}>
@@ -522,7 +514,7 @@ export function PlayerCard({
             <IcaBar label="A" value={icaAdvance}  color="var(--rpg-purple)" />
           </div>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", minWidth: 38 }}>
-            <span style={{ fontSize: 7, color: "var(--ink-1)", letterSpacing: "0.14em", textTransform: "uppercase" }}>ICA</span>
+            <span style={{ fontSize: 7, color: "#5a4d3a", letterSpacing: "0.14em", textTransform: "uppercase" }}>ICA</span>
             <strong style={{ fontSize: 18, fontFamily: "var(--font-mono)", color: tone, lineHeight: 1 }}>
               {icaOverall}
             </strong>
@@ -534,7 +526,7 @@ export function PlayerCard({
             display: "grid",
             gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
             gap: 6,
-            color: "var(--ink-1)",
+            color: "#5a4d3a",
             fontSize: 10,
           }}
         >
@@ -544,7 +536,7 @@ export function PlayerCard({
             value={`${availabilityFte.toFixed(1)}`}
             tone={availabilityFte > 1.05 ? "var(--rpg-red)" : availabilityFte >= 0.95 ? "var(--rpg-orange)" : "var(--flux-up)"}
           />
-          <MiniReadout label="FREE" value={nextFree} tone="var(--ink-0)" />
+          <MiniReadout label="FREE" value={nextFree} tone="#1a1209" />
           <MiniReadout
             label="FRESH"
             value={freshnessLabel(freshness)}
@@ -554,7 +546,7 @@ export function PlayerCard({
             <MiniReadout
               label="YRS"
               value={employee.tenure_years == null ? "--" : employee.tenure_years}
-              tone="var(--ink-0)"
+              tone="#1a1209"
             />
           ) : null}
         </div>
@@ -575,8 +567,8 @@ export function PlayerCard({
               <span
                 key={skill}
                 style={{
-                  border: "1px solid rgba(245,240,232,0.28)",
-                  color: "var(--ink-1)",
+                  border: "1px solid rgba(26,18,9,0.28)",
+                  color: "#5a4d3a",
                   fontSize: 9,
                   padding: "2px 5px",
                   textTransform: "uppercase",
@@ -592,7 +584,7 @@ export function PlayerCard({
           <div style={{ display: "grid", gap: 6 }}>
             <div
               style={{
-                color: "var(--ink-1)",
+                color: "#5a4d3a",
                 fontSize: 9,
                 letterSpacing: "0.1em",
                 textTransform: "uppercase",
@@ -634,20 +626,20 @@ function StatBar({
         style={{
           display: "flex",
           justifyContent: "space-between",
-          color: "var(--ink-1)",
+          color: "#5a4d3a",
           fontSize: 10,
           textTransform: "uppercase",
         }}
       >
         <span>{label}</span>
-        <span style={{ color: "var(--ink-0)" }}>{value == null ? "??" : value}</span>
+        <span style={{ color: "#1a1209" }}>{value == null ? "??" : value}</span>
       </div>
       <div
         style={{
           position: "relative",
           height: 5,
-          background: "rgba(0,0,0,0.32)",
-          border: "1px solid rgba(245,240,232,0.18)",
+          background: "rgba(0,0,0,0.12)",
+          border: "1px solid rgba(26,18,9,0.15)",
           overflow: "hidden",
         }}
         aria-label={`${label} ${pct}%`}
@@ -677,12 +669,12 @@ function MiniReadout({
   return (
     <div
       style={{
-        border: "1px solid rgba(245,240,232,0.22)",
+        border: "1px solid rgba(26,18,9,0.22)",
         padding: "4px 5px",
         background: "rgba(0,0,0,0.12)",
       }}
     >
-      <div style={{ color: "var(--ink-1)", fontSize: 9 }}>{label}</div>
+      <div style={{ color: "#5a4d3a", fontSize: 9 }}>{label}</div>
       <div style={{ color: tone, fontSize: 13, fontWeight: 800, lineHeight: 1.1 }}>
         {value}
       </div>
@@ -698,7 +690,7 @@ function IcaBar({ label, value, color }: { label: string; value: number; color: 
       <span style={{ fontSize: 7, color, letterSpacing: "0.12em", minWidth: 8, fontWeight: 700 }}>
         {label}
       </span>
-      <div style={{ flex: 1, height: 3, background: "rgba(245,240,232,0.08)", position: "relative" }}>
+      <div style={{ flex: 1, height: 3, background: "rgba(26,18,9,0.08)", position: "relative" }}>
         <div
           style={{
             position: "absolute",

@@ -13,6 +13,25 @@ interface EmployeeRow {
   employee_name: string;
 }
 
+export async function GET() {
+  if (!isDbConfigured()) return apiJson({ on_floor: [] }, { status: 503 });
+  try {
+    const rows = await query<{ employee_id: string; action: string }>(
+      `SELECT DISTINCT ON (employee_id) employee_id, action
+       FROM attendance_log
+       WHERE punched_at >= CURRENT_DATE
+       ORDER BY employee_id, punched_at DESC`,
+    );
+    const onFloor = rows
+      .filter((r) => r.action === "in")
+      .map((r) => r.employee_id);
+    return apiJson({ on_floor: onFloor });
+  } catch (error) {
+    logApiError("api/lobby/punch GET error", error);
+    return apiJson({ on_floor: [], error: "Failed to load attendance" }, { status: 500 });
+  }
+}
+
 export async function POST(request: Request) {
   if (!isDbConfigured()) return apiError("Database not configured", 503);
 

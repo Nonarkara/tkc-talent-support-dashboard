@@ -334,11 +334,11 @@ function buildAgent(
 // ─── Draw ───────────────────────────────────────────────────────────────
 
 function draw(ctx: CanvasRenderingContext2D, agents: Agent[], w: number, h: number, showGraph: boolean) {
-  // Paper background with a faint grid — subway station floor.
-  ctx.fillStyle = "#f5f1e8";
+  // Dark wood tabletop — the tavern floor, not a subway station.
+  ctx.fillStyle = "#1a1209";
   ctx.fillRect(0, 0, w, h);
 
-  // Social Graph (Obsidian Style)
+  // Social Graph (tavern candlelight)
   if (showGraph) {
     ctx.lineWidth = 0.5;
     for (let i = 0; i < agents.length; i++) {
@@ -350,8 +350,8 @@ function draw(ctx: CanvasRenderingContext2D, agents: Agent[], w: number, h: numb
           ctx.beginPath();
           ctx.moveTo(a.x, a.y);
           ctx.lineTo(b.x, b.y);
-          const opacity = Math.min(0.6, aff * 0.15);
-          ctx.strokeStyle = `rgba(12,12,12,${opacity})`;
+          const opacity = Math.min(0.5, aff * 0.12);
+          ctx.strokeStyle = `rgba(245,240,232,${opacity})`;
           ctx.lineWidth = aff * 0.5;
           ctx.stroke();
         }
@@ -359,7 +359,8 @@ function draw(ctx: CanvasRenderingContext2D, agents: Agent[], w: number, h: numb
     }
   }
 
-  ctx.strokeStyle = "rgba(12,12,12,0.06)";
+  // Faint grid — wood grain lines
+  ctx.strokeStyle = "rgba(245,240,232,0.04)";
   ctx.lineWidth = 1;
   for (let x = 0; x <= w; x += 48) {
     ctx.beginPath();
@@ -381,20 +382,16 @@ function draw(ctx: CanvasRenderingContext2D, agents: Agent[], w: number, h: numb
   for (const a of agents) {
     const isMoving = Math.abs(a.vx) + Math.abs(a.vy) > 0.05;
 
-    // Shadow
-    ctx.fillStyle = "rgba(12,12,12,0.12)";
+    // Shadow — deeper on dark wood
+    ctx.fillStyle = "rgba(0,0,0,0.45)";
     ctx.beginPath();
     ctx.ellipse(a.x, a.y + 14, 10, 4, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // "Mingle" physics: bobbing while moving (rounded to int so sprite
-    // pixel grid stays aligned to canvas pixel grid).
+    // "Mingle" physics: bobbing while moving
     const bob = isMoving ? Math.round(Math.sin(now * 0.01) * 2) : 0;
 
-    // Sprite — 16×16 native, drawn at scale 2 = 32×32. Centred on the
-    // agent's foot position with the head above (matches the previous
-    // 16×24 body + 12×12 head footprint roughly). Integer positioning
-    // for crisp pixels.
+    // Sprite
     const sprite = getSpriteCanvas(a.spriteClass, a.primaryColor);
     if (sprite) {
       const sx = Math.round(a.x - 16);
@@ -402,25 +399,22 @@ function draw(ctx: CanvasRenderingContext2D, agents: Agent[], w: number, h: numb
       ctx.drawImage(sprite, sx, sy, 32, 32);
     }
 
-    // Project indicator (small square on chest, drawn over the sprite).
+    // Project indicator (small lit square on chest).
     if (a.projectCode) {
-      ctx.fillStyle = "#f5f1e8";
+      ctx.fillStyle = "#1a1209";
       ctx.fillRect(a.x - 3, a.y - 6 + bob, 6, 6);
-      ctx.strokeStyle = "rgba(12,12,12,0.85)";
+      ctx.strokeStyle = "rgba(245,240,232,0.85)";
       ctx.lineWidth = 1;
       ctx.strokeRect(a.x - 3, a.y - 6 + bob, 6, 6);
     }
 
-    // Label (uppercase subway-style)
-    ctx.fillStyle = "rgba(12,12,12,0.7)";
+    // Label (cream, uppercase)
+    ctx.fillStyle = "rgba(245,240,232,0.75)";
     ctx.font = "bold 9px ui-monospace, SFMono-Regular, monospace";
     ctx.textAlign = "center";
     ctx.fillText(a.label.toUpperCase().slice(0, 10), a.x, a.y + 28);
 
-    // Chat bubble — only visible for the first BUBBLE_VISIBLE_MS of a
-    // chat. After that the chat continues but the bubble vanishes, so
-    // the lobby never gets buried in overlapping speech bubbles when
-    // many heroes mingle at once.
+    // Chat bubble
     const bubbleVisible =
       a.chatPartner != null &&
       a.dialogue != null &&
@@ -429,7 +423,6 @@ function draw(ctx: CanvasRenderingContext2D, agents: Agent[], w: number, h: numb
       const partner = agents.find(p => p.id === a.chatPartner);
       const isTeamChat = partner && partner.projectCode === a.projectCode && a.projectCode !== null;
 
-      // Draw bubble
       const text = a.dialogue;
       ctx.font = "8px ui-monospace, SFMono-Regular, monospace";
       const textWidth = ctx.measureText(text).width;
@@ -438,16 +431,16 @@ function draw(ctx: CanvasRenderingContext2D, agents: Agent[], w: number, h: numb
       const bx = a.x - bubbleW / 2;
       const by = a.y - 48 + bob;
 
-      ctx.fillStyle = "rgba(0,0,0,0.85)";
+      ctx.fillStyle = "rgba(10,10,10,0.92)";
       ctx.fillRect(bx, by, bubbleW, bubbleH);
-      ctx.strokeStyle = isTeamChat ? "#7db865" : "var(--rpg-yellow)";
+      ctx.strokeStyle = isTeamChat ? "#7db865" : "#E8C547";
       ctx.lineWidth = 1;
       ctx.strokeRect(bx, by, bubbleW, bubbleH);
 
-      ctx.fillStyle = "#fff";
+      ctx.fillStyle = "#f5f0e8";
       ctx.textAlign = "center";
       ctx.fillText(text, a.x, by + 10);
-      
+
       // Bubble tail
       ctx.beginPath();
       ctx.moveTo(a.x - 4, by + bubbleH);
@@ -466,16 +459,28 @@ export function LobbyTab({ dash }: { dash: DashboardPayload }) {
   const agentsRef = useRef<Agent[]>([]);
   const rafRef = useRef<number | null>(null);
 
-  const [onFloor, setOnFloor] = useState<Set<string>>(() => {
-    // Seed with every active employee for the demo — production will
-    // read from attendance_log today's rows.
-    return new Set(dash.employees.map((e) => e.id));
-  });
+  const [onFloor, setOnFloor] = useState<Set<string>>(new Set());
   const [query, setQuery] = useState("");
   const [punchError, setPunchError] = useState<string | null>(null);
   const [showGraph, setShowGraph] = useState(false);
 
   const employees = dash.employees;
+
+  // ── On-mount: load who is actually on the floor today ─────────────────
+  useEffect(() => {
+    void (async () => {
+      try {
+        const res = await fetch("/api/lobby/punch");
+        const data = (await res.json()) as { on_floor?: string[] };
+        if (Array.isArray(data.on_floor)) {
+          setOnFloor(new Set(data.on_floor));
+        }
+      } catch {
+        // If attendance is unreachable, start empty — don't fabricate a full floor.
+        setOnFloor(new Set());
+      }
+    })();
+  }, []);
 
   // Build / maintain the agents array whenever the floor set changes.
   useEffect(() => {
@@ -590,52 +595,52 @@ export function LobbyTab({ dash }: { dash: DashboardPayload }) {
         gap: 0,
         height: "calc(100vh - 220px)",
         minHeight: 500,
-        background: "#f5f1e8",
-        color: "#0c0c0c",
-        border: "1px solid #0c0c0c",
+        background: "#1a1209",
+        color: "#f5f0e8",
+        border: "1px solid #3d2e1e",
       }}
     >
-      <div className="lobby-map-pane" style={{ position: "relative", borderRight: "1px solid #0c0c0c" }}>
+      <div className="lobby-map-pane" style={{ position: "relative", borderRight: "1px solid #3d2e1e" }}>
         <canvas
           ref={canvasRef}
           style={{ width: "100%", height: "100%", display: "block" }}
         />
-        {/* Subway-style floor tag */}
+        {/* Tavern floor tag */}
         <div
           style={{
             position: "absolute",
             top: 16,
             left: 16,
-            background: "#0c0c0c",
-            color: "#f5f1e8",
+            background: "#231a0f",
+            color: "#f5f0e8",
             padding: "6px 12px",
             fontFamily: "var(--font-mono)",
             fontSize: 11,
             fontWeight: 800,
             letterSpacing: "0.12em",
+            border: "1px solid #3d2e1e",
           }}
         >
           {translate(loc, { en: "LOBBY", th: "ล็อบบี้" })} · {floorCount}/{totalCount}{" "}
           {translate(loc, LOBBY.on_floor).toUpperCase()}
         </div>
 
-        {/* Graph Toggle (v3.7) */}
+        {/* Graph Toggle */}
         <button
           onClick={() => setShowGraph(!showGraph)}
           style={{
             position: "absolute",
             top: 16,
             right: 16,
-            background: showGraph ? "var(--rpg-yellow)" : "#0c0c0c",
-            color: showGraph ? "#0c0c0c" : "#f5f1e8",
-            border: "none",
+            background: showGraph ? "#D4A843" : "#231a0f",
+            color: showGraph ? "#1a1209" : "#f5f0e8",
+            border: "1px solid #3d2e1e",
             padding: "6px 12px",
             fontFamily: "var(--font-mono)",
             fontSize: 10,
             fontWeight: 800,
             cursor: "pointer",
             letterSpacing: "0.12em",
-            boxShadow: "0 2px 0 rgba(0,0,0,0.2)"
           }}
         >
           {showGraph ? "HIDE SOCIAL GRAPH" : "SHOW SOCIAL GRAPH"}
@@ -653,20 +658,20 @@ export function LobbyTab({ dash }: { dash: DashboardPayload }) {
             fontSize: 10,
             fontWeight: 700,
             letterSpacing: "0.06em",
-            color: "#0c0c0c",
+            color: "#f5f0e8",
           }}
         >
           {(Object.entries(ACCENT) as Array<[Agent["archetype"], string]>).map(([k, c]) => (
             <div key={k} style={{ display: "flex", alignItems: "center", gap: 4 }}>
-              <span style={{ width: 10, height: 10, background: c, border: "1px solid #0c0c0c" }} />
+              <span style={{ width: 10, height: 10, background: c, border: "1px solid #f5f0e8" }} />
               <span>{k.toUpperCase()}</span>
             </div>
           ))}
         </div>
       </div>
 
-      <aside style={{ display: "flex", flexDirection: "column", minHeight: 0 }}>
-        <div style={{ padding: "12px 14px", borderBottom: "1px solid #0c0c0c" }}>
+      <aside style={{ display: "flex", flexDirection: "column", minHeight: 0, background: "#1a1209" }}>
+        <div style={{ padding: "12px 14px", borderBottom: "1px solid #3d2e1e" }}>
           <div
             style={{
               fontFamily: "var(--font-mono)",
@@ -674,6 +679,7 @@ export function LobbyTab({ dash }: { dash: DashboardPayload }) {
               fontWeight: 800,
               letterSpacing: "0.1em",
               marginBottom: 8,
+              color: "#f5f0e8",
             }}
           >
             {translate(loc, LOBBY.aside_title).toUpperCase()}
@@ -686,9 +692,9 @@ export function LobbyTab({ dash }: { dash: DashboardPayload }) {
             style={{
               width: "100%",
               padding: "8px 10px",
-              border: "1px solid #0c0c0c",
-              background: "transparent",
-              color: "#0c0c0c",
+              border: "1px solid #3d2e1e",
+              background: "#231a0f",
+              color: "#f5f0e8",
               fontFamily: "var(--font-mono)",
               fontSize: 12,
               outline: "none",
@@ -709,7 +715,7 @@ export function LobbyTab({ dash }: { dash: DashboardPayload }) {
                   alignItems: "center",
                   gap: 8,
                   padding: "8px 12px",
-                  borderBottom: "1px solid rgba(12,12,12,0.12)",
+                  borderBottom: "1px solid rgba(245,240,232,0.08)",
                 }}
               >
                 <div style={{ minWidth: 0 }}>
@@ -722,7 +728,7 @@ export function LobbyTab({ dash }: { dash: DashboardPayload }) {
                       overflow: "hidden",
                       textOverflow: "ellipsis",
                       whiteSpace: "nowrap",
-                      color: "#0c0c0c",
+                      color: "#f5f0e8",
                     }}
                   >
                     {name.toUpperCase()}
@@ -730,7 +736,7 @@ export function LobbyTab({ dash }: { dash: DashboardPayload }) {
                   <div
                     style={{
                       fontSize: 10,
-                      color: "#6d6d6d",
+                      color: "#8a7f6b",
                       fontFamily: "var(--font-mono)",
                       letterSpacing: "0.04em",
                     }}
@@ -747,9 +753,9 @@ export function LobbyTab({ dash }: { dash: DashboardPayload }) {
                     fontSize: 10,
                     fontWeight: 800,
                     letterSpacing: "0.08em",
-                    border: "1px solid #0c0c0c",
-                    background: isOn ? "#0c0c0c" : "transparent",
-                    color: isOn ? "#f5f1e8" : "#0c0c0c",
+                    border: `1px solid ${isOn ? "#f5f0e8" : "#3d2e1e"}`,
+                    background: isOn ? "#f5f0e8" : "transparent",
+                    color: isOn ? "#1a1209" : "#f5f0e8",
                     cursor: "pointer",
                   }}
                 >
@@ -767,9 +773,9 @@ export function LobbyTab({ dash }: { dash: DashboardPayload }) {
                 padding: "8px 12px",
                 fontFamily: "var(--font-mono)",
                 fontSize: 10,
-                color: "#9b1c1c",
-                background: "rgba(196,58,46,0.12)",
-                borderTop: "1px solid rgba(196,58,46,0.2)",
+                color: "#f5f0e8",
+                background: "rgba(196,58,46,0.18)",
+                borderTop: "1px solid rgba(196,58,46,0.35)",
               }}
             >
               {punchError}
@@ -782,7 +788,7 @@ export function LobbyTab({ dash }: { dash: DashboardPayload }) {
                 textAlign: "center",
                 fontFamily: "var(--font-mono)",
                 fontSize: 11,
-                color: "#6d6d6d",
+                color: "#8a7f6b",
               }}
             >
               {translate(loc, { en: "No match.", th: "ไม่พบผลลัพธ์" })}

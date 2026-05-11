@@ -16,6 +16,7 @@ import {
   quarterlyBurn,
 } from "@/lib/company-pulse";
 import { FourPillarsPanel } from "@/components/FourPillarsPanel";
+import { PortfolioStrip } from "@/components/PortfolioStrip";
 
 const thb = (n: number) =>
   new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(n);
@@ -63,10 +64,14 @@ export function CockpitTab({ dash }: { dash: DashboardPayload }) {
     <div
       className="cc-tab-frame"
       style={{
-        gridTemplateRows: "auto 1fr",
+        gridTemplateRows: "auto auto 1fr",
         gap: 12,
       }}
     >
+      {/* Row 0 — PMO Portfolio strip. The watcher's headline view; ticks
+          when formations commit. Read-only by design. */}
+      <PortfolioStrip dash={dash} />
+
       {/* Row 1 — four metric tiles */}
       <div style={{ display: "grid", gap: 8 }}>
         <div

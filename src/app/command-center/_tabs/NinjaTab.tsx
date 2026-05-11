@@ -26,6 +26,7 @@ import {
   SKILL_COLOR,
   SKILL_LABEL,
   SKILLS,
+  isSkill,
   parseSkills,
   type Skill,
 } from "@/lib/skills-vocab";
@@ -110,6 +111,25 @@ function initSkillNeeds(required: Skill[]): Record<Skill, number> {
   ) as Record<Skill, number>;
 }
 
+/** Reconstruct the required-skill list from a quest's persisted role_slots.
+ *  Each slot stores `priority_dims` — the first entry is the primary skill,
+ *  the rest are the full required set. We collect every valid skill token. */
+function skillsFromRoleSlots(roleSlots: unknown): Skill[] {
+  if (!Array.isArray(roleSlots)) return [];
+  const out = new Set<Skill>();
+  for (const slot of roleSlots) {
+    if (slot && typeof slot === "object") {
+      const dims = (slot as { priority_dims?: string[] }).priority_dims;
+      if (Array.isArray(dims)) {
+        for (const d of dims) {
+          if (isSkill(d)) out.add(d);
+        }
+      }
+    }
+  }
+  return Array.from(out);
+}
+
 const EMPTY_ALLOCATIONS: PartyAllocations = { alpha: [], beta: [], gamma: [] };
 
 export function NinjaTab({ dash }: Props) {
@@ -148,35 +168,81 @@ export function NinjaTab({ dash }: Props) {
   // Reset skill filter when switching teams
   useEffect(() => { setSkillFilter(new Set()); }, [activeTeam]);
 
-  // ── On-mount: load quest IDs + saved titles ────────────────────────────
+  // ── On-mount: load saved squads from the cartridge ─────────────────────
+  // DQ3 rule: when you power on, your party is exactly where you saved it.
+  // We fetch the quest row (title + role_slots) AND the quest_members rows
+  // (who is in which slot) and hydrate React state from the DB truth.
 
   useEffect(() => {
     void (async () => {
       try {
         const res = await fetch("/api/db/quests?cycle=2026-Q2");
         const data = (await res.json()) as {
-          quests?: Array<{ id: string; code: string; title: string }>;
+          quests?: Array<{
+            id: string;
+            code: string;
+            title: string;
+            role_slots: unknown;
+          }>;
         };
         const codeMap: Record<string, TeamKey> = {
           NINJA_ALPHA: "alpha", NINJA_BETA: "beta", NINJA_GAMMA: "gamma",
         };
-        setQuestIds((prev) => {
-          const next = { ...prev };
-          for (const q of data.quests ?? []) {
-            const key = codeMap[q.code];
-            if (key) next[key] = q.id;
+
+        const nextQuestIds: Record<TeamKey, string | null> = {
+          alpha: null, beta: null, gamma: null,
+        };
+        const nextTitles: Record<TeamKey, string> = {
+          alpha: "Siam City Signal Atlas",
+          beta: "Hero Loom Talent Engine",
+          gamma: "Civic Shield Response Grid",
+        };
+        const nextParty: PartyAllocations = { alpha: [], beta: [], gamma: [] };
+        const nextNeeds: Record<TeamKey, Record<Skill, number>> = {
+          alpha: initSkillNeeds(MISSIONS[0].defaultRequired),
+          beta: initSkillNeeds(MISSIONS[1].defaultRequired),
+          gamma: initSkillNeeds(MISSIONS[2].defaultRequired),
+        };
+        const nextLocked: Record<TeamKey, boolean> = {
+          alpha: false, beta: false, gamma: false,
+        };
+
+        for (const q of data.quests ?? []) {
+          const key = codeMap[q.code];
+          if (!key) continue;
+
+          nextQuestIds[key] = q.id;
+          nextTitles[key] = q.title;
+          nextLocked[key] = true; // Any DB quest was locked before save
+
+          // Restore skill needs from the quest's role_slots
+          const required = skillsFromRoleSlots(q.role_slots);
+          if (required.length > 0) {
+            nextNeeds[key] = initSkillNeeds(required);
           }
-          return next;
-        });
-        setMissionTitles((prev) => {
-          const next = { ...prev };
-          for (const q of data.quests ?? []) {
-            const key = codeMap[q.code];
-            if (key) next[key] = q.title;
-          }
-          return next;
-        });
-      } catch { /* silent */ }
+
+          // Restore party members
+          const mRes = await fetch(`/api/db/quest-members?quest_id=${q.id}`);
+          const mData = (await mRes.json()) as {
+            members?: Array<{ employee_id: string; slot_key: string }>;
+          };
+          const sorted = (mData.members ?? []).sort((a, b) => {
+            const aIdx = parseInt(a.slot_key.replace("ninja_", ""), 10);
+            const bIdx = parseInt(b.slot_key.replace("ninja_", ""), 10);
+            return aIdx - bIdx;
+          });
+          nextParty[key] = sorted.map((m) => ({
+            empId: m.employee_id,
+            fte: 1.0, // FTE lives in allocations; default to full until we fetch it
+          }));
+        }
+
+        setQuestIds(nextQuestIds);
+        setMissionTitles(nextTitles);
+        setPartyAllocations(nextParty);
+        setSkillNeeds(nextNeeds);
+        setConfigLocked(nextLocked);
+      } catch { /* silent — cartridge slot empty, start fresh */ }
     })();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
