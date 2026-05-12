@@ -1103,6 +1103,69 @@ export function FormationCanvas({ dash }: { dash: DashboardPayload }) {
 
   async function handleCommit(projectCode: string) {
     await persistProject(projectCode, "Formation committed to the board ledger.");
+
+    // ─── GAME LOOP: LOCK IN ──────────────────────────────
+    // After saving the board state, also commit the team to the
+    // real-time game loop so the project becomes "active".
+    const project = projectByCode.get(projectCode);
+    if (project?.id) {
+      const list = assignments[projectCode] ?? [];
+      const coach = chooseCoach(list, dash.employees);
+      const staffIds = list
+        .map((a) => a.employee_id)
+        .filter((id) => id !== coach?.id);
+      const team = staffIds.map((id) => {
+        const a = list.find((x) => x.employee_id === id);
+        return {
+          employee_id: id,
+          fte: 1.0,
+          slot_key: a?.dimension ?? null,
+          assignment_label: a?.dimension ?? "",
+        };
+      });
+      if (coach) {
+        team.unshift({
+          employee_id: coach.id,
+          fte: 1.0,
+          slot_key: null,
+          assignment_label: "director",
+        });
+      }
+
+      const slots = slotsByProject.get(projectCode) ?? deriveSlots(project);
+      const fit = list.length > 0 ? teamFit(list, slots) : emptyReport();
+      const chemistry = chemistryForAssignments(list, dash.employees);
+      const chemBonus = formationBonus(list);
+      const overall = readinessScore({ fit, chemistry: Math.min(100, chemistry + chemBonus), morale: 50 });
+
+      try {
+        const res = await fetch("/api/game/lock-in", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            project_id: project.id,
+            director_id: coach?.id ?? dash.employees[0]?.id ?? "",
+            team,
+            predicted_scores: {
+              fit_pct: Math.round(fit.overall_pct),
+              chemistry_score: Math.round(chemistry),
+              overall_score: Math.round(overall),
+            },
+            estimated_points: Math.round(overall),
+            budget_status: "optimal",
+          }),
+        });
+        if (res.ok) {
+          setProjectNotice(projectCode, "ok", "Team locked in. Project is now ACTIVE.");
+          void dash.refresh();
+        } else {
+          const err = await res.json().catch(() => ({}));
+          setProjectNotice(projectCode, "warn", err.error ?? "Lock-in failed.");
+        }
+      } catch {
+        setProjectNotice(projectCode, "warn", "Lock-in network error.");
+      }
+    }
   }
 
   async function handleStart(projectCode: string) {

@@ -459,7 +459,9 @@ export function LobbyTab({ dash }: { dash: DashboardPayload }) {
   const agentsRef = useRef<Agent[]>([]);
   const rafRef = useRef<number | null>(null);
 
-  const [onFloor, setOnFloor] = useState<Set<string>>(new Set());
+  const [onFloor, setOnFloor] = useState<Set<string>>(
+    () => new Set(dash.employees.map((employee) => employee.id)),
+  );
   const [query, setQuery] = useState("");
   const [punchError, setPunchError] = useState<string | null>(null);
   const [showGraph, setShowGraph] = useState(false);
@@ -471,13 +473,15 @@ export function LobbyTab({ dash }: { dash: DashboardPayload }) {
     void (async () => {
       try {
         const res = await fetch("/api/lobby/punch");
+        if (!res.ok) {
+          throw new Error(`attendance fetch failed: ${res.status}`);
+        }
         const data = (await res.json()) as { on_floor?: string[] };
         if (Array.isArray(data.on_floor)) {
           setOnFloor(new Set(data.on_floor));
         }
       } catch {
-        // If attendance is unreachable, start empty — don't fabricate a full floor.
-        setOnFloor(new Set());
+        // Keep the fallback roster visible when attendance is unavailable.
       }
     })();
   }, []);

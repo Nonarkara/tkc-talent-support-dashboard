@@ -63,7 +63,7 @@ function pct(num: number, denom: number): number {
 export function PortfolioStrip({ dash }: { dash: DashboardPayload }) {
   const rollup = useMemo(() => {
     const projects = dash.projects ?? [];
-    const employees = dash.employees ?? [];
+    const teams = dash.teams ?? [];
 
     const total_projects = projects.length;
     const active_projects = projects.filter(
@@ -84,15 +84,25 @@ export function PortfolioStrip({ dash }: { dash: DashboardPayload }) {
       0,
     );
 
+    const committedProjectIds = new Set(
+      teams
+        .map((team) => team.project_id)
+        .filter((value): value is string => Boolean(value)),
+    );
+
+    // Coverage must follow Formation commits. Those writes land in
+    // `project_allocations`, and the dashboard projects that back into
+    // `dash.teams`, not employee availability.
     let required_slots = 0;
     for (const p of projects) {
+      if (!committedProjectIds.has(p.id)) continue;
       required_slots += sumSlots((p as ProjectLike & { project_slots?: SlotMap }).project_slots);
     }
 
-    let filled_slots = 0;
-    for (const e of employees) {
-      filled_slots += (e.active_project_codes ?? []).length;
-    }
+    const filled_slots = teams.reduce(
+      (sum, team) => sum + (team.player_ids?.length ?? 0),
+      0,
+    );
 
     type StatusBucket = "on_track" | "watch" | "at_risk" | "closed" | "not_started";
     const buckets: Record<StatusBucket, number> = {
@@ -122,7 +132,7 @@ export function PortfolioStrip({ dash }: { dash: DashboardPayload }) {
       filled_slots,
       buckets,
     };
-  }, [dash.projects, dash.employees]);
+  }, [dash.projects, dash.teams]);
 
   const value_pct = pct(rollup.total_value, ANNUAL_TARGET_THB);
   const coverage_pct = pct(rollup.filled_slots, rollup.required_slots);

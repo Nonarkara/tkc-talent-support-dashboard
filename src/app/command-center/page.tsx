@@ -16,6 +16,7 @@ import type { CSSProperties } from "react";
 import { startTransition, useEffect, useMemo, useState } from "react";
 import { MenuWindow } from "@/components/MenuWindow";
 import { CockpitTab } from "./_tabs/CockpitTab";
+import { FixtureTab } from "./_tabs/FixtureTab";
 import { FormationTab } from "./_tabs/FormationTab";
 import { RosterTab } from "./_tabs/RosterTab";
 import { SignalsTab } from "./_tabs/SignalsTab";
@@ -51,10 +52,12 @@ const ROUTES: Array<{ key: RouteScreen; shortcut: string }> = [
   { key: "lobby", shortcut: "7" },
   { key: "ledger", shortcut: "8" },
   { key: "insights", shortcut: "9" },
+  { key: "fixture", shortcut: "0" },
 ];
 
 const ROUTE_ACCENT: Record<RouteScreen, string> = {
   cockpit: "var(--rpg-blue)",
+  fixture: "var(--rpg-green)",
   formation: "var(--rpg-orange)",
   ninja: "var(--rpg-purple)",
   matrix: "#4A9BA8",
@@ -637,7 +640,7 @@ export default function CommandCenterPage() {
           <span><kbd>Esc</kbd> {translate(loc, NAV.back)}</span>
           <span><kbd>H</kbd> {translate(loc, NAV.home)}</span>
           <span><kbd>M</kbd> {translate(loc, NAV.menu)}</span>
-          <span><kbd>1</kbd>–<kbd>8</kbd> {translate(loc, { en: "Route", th: "เส้นทาง" })}</span>
+          <span><kbd>1</kbd>–<kbd>9</kbd><kbd>0</kbd> {translate(loc, { en: "Route", th: "เส้นทาง" })}</span>
         </div>
       </main>
     </div>
@@ -927,6 +930,8 @@ function RouteContent({
   switch (route) {
     case "cockpit":
       return <CockpitTab dash={dash} />;
+    case "fixture":
+      return <FixtureTab dash={dash} />;
     case "formation":
       return <FormationTab dash={dash} />;
     case "ninja":

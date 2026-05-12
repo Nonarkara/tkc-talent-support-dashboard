@@ -15,6 +15,7 @@ import type { SentimentRuleModifiers, SentimentSignal } from "@/lib/sentiment-en
 
 export type RouteScreen =
   | "cockpit"
+  | "fixture"
   | "formation"
   | "ninja"
   | "matrix"

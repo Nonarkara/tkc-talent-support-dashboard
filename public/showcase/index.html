@@ -853,6 +853,99 @@ main {
   border-top: 1px dashed var(--border-subtle);
 }
 
+/* ── CHANGELOG panel · version history ────────────────────────────── */
+.changelog-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.changelog-row {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  gap: 14px;
+  padding: 12px 14px;
+  border-left: 3px solid var(--log-accent, var(--accent-gold));
+  background: rgba(0,0,0,0.12);
+  transition: background 100ms ease-out;
+}
+.changelog-row:hover {
+  background: rgba(0,0,0,0.22);
+}
+.changelog-row.major {
+  background: rgba(0,0,0,0.22);
+  border-left-width: 4px;
+}
+.changelog-row.major:hover {
+  background: rgba(0,0,0,0.30);
+}
+.changelog-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-family: var(--font-mono);
+}
+.changelog-version {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--log-accent, var(--accent-gold));
+  letter-spacing: 0.02em;
+}
+.changelog-date {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.changelog-codename {
+  font-family: var(--font-pixel);
+  font-size: 7px;
+  letter-spacing: 0.18em;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+.changelog-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.changelog-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+.changelog-desc {
+  font-size: 12px;
+  line-height: 1.65;
+  color: var(--text-secondary);
+}
+.changelog-desc strong { color: var(--text-primary); font-weight: 600; }
+.changelog-desc em { color: var(--text-primary); font-style: italic; }
+.changelog-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 2px;
+}
+.changelog-tag {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  padding: 3px 8px;
+  background: rgba(0,0,0,0.25);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+.changelog-divider {
+  font-family: var(--font-pixel);
+  font-size: 8px;
+  letter-spacing: 0.25em;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 18px 0 8px;
+  opacity: 0.6;
+}
+
 /* ── Footer ── */
 .footer {
   flex: 0 0 auto; padding: 10px 16px;
@@ -966,10 +1059,10 @@ main {
   <div class="title-stack">
     <div class="title-sprite-big">★</div>
     <div class="title-pixel-name">TKC DIGITAL TWIN</div>
-    <div class="title-mission">★ MISSION COMPLETE ★</div>
+    <div class="title-mission">◉ SYSTEM ONLINE ◉</div>
     <div class="title-meta">
-      รายงานสรุปผลการพัฒนา ระบบสนับสนุนทรัพยากรมนุษย์ TKC
-      <span class="title-meta-byline">by นน อัครประเสริฐกุล · 6 พฤษภาคม 2569</span>
+      ระบบสนับสนุนทรัพยากรมนุษย์ TKC · บันทึกการพัฒนาแบบเรียลไทม์
+      <span class="title-meta-byline">by นน อัครประเสริฐกุล · เริ่ม 6 พฤษภาคม 2569 · อัปเดตล่าสุด 12 พฤษภาคม 2569</span>
     </div>
   </div>
   <div class="title-press">▶ PRESS ANY KEY TO START ◀</div>
@@ -1000,9 +1093,9 @@ main {
   <div class="hero">
     <div class="hero-sprite">★</div>
     <div class="hero-text">
-      <div class="hero-kicker">★ MISSION COMPLETE ★ &nbsp;·&nbsp; +6,000 EXP</div>
-      <h1 class="hero-title">รายงานสรุปผลการพัฒนา ระบบสนับสนุนทรัพยากรมนุษย์ TKC</h1>
-      <p class="hero-byline">by นน อัครประเสริฐกุล · ส่งมอบ 6 พฤษภาคม 2569</p>
+      <div class="hero-kicker">◉ SYSTEM ONLINE ◉ &nbsp;·&nbsp; BUILD v4.6 · PULSE</div>
+      <h1 class="hero-title">ระบบสนับสนุนทรัพยากรมนุษย์ TKC · บันทึกการพัฒนา</h1>
+      <p class="hero-byline">by นน อัครประเสริฐกุล · อัปเดตล่าสุด 12 พฤษภาคม 2569</p>
     </div>
   </div>
 
@@ -1067,9 +1160,17 @@ main {
           <span class="tab-sub">ทฤษฎีที่ใช้สร้าง</span>
         </span>
       </button>
-      <button class="tab-btn" data-tab="next">
+      <button class="tab-btn" data-tab="changelog">
         <span class="tab-cursor">▶</span>
         <span class="tab-shortcut">8</span>
+        <span class="tab-label-stack">
+          <span class="tab-label">CHANGELOG</span>
+          <span class="tab-sub">บันทึกเวอร์ชัน</span>
+        </span>
+      </button>
+      <button class="tab-btn" data-tab="next">
+        <span class="tab-cursor">▶</span>
+        <span class="tab-shortcut">9</span>
         <span class="tab-label-stack">
           <span class="tab-label">NEXT</span>
           <span class="tab-sub">ขั้นถัดไป</span>
@@ -1309,6 +1410,20 @@ main {
         </div>
       </div>
 
+      <!-- CHANGELOG -->
+      <div class="panel" data-panel="changelog">
+        <div class="mw">
+          <div class="mw-title">CHANGELOG · บันทึกการพัฒนาแบบเรียลไทม์</div>
+          <div class="changelog-intro canon-intro" style="margin-bottom: 14px;">
+            <p>
+              ทุก commit คือ checkpoint · ทุกเวอร์ชันคือเครื่องมือใหม่ที่ใช้ได้จริง
+              · ไม่มี "งวดสุดท้าย" เพราะระบบที่ดีคือระบบที่ <strong>ไม่หยุดพัฒนา</strong>
+            </p>
+          </div>
+          <div class="changelog-grid" id="changelog-grid"></div>
+        </div>
+      </div>
+
       <!-- NEXT -->
       <div class="panel" data-panel="next">
         <div class="mw">
@@ -1328,7 +1443,7 @@ main {
 
   <!-- Footer -->
   <div class="footer">
-    <span class="footer-hint">▲▼ keys: 1–8 to switch panels · 6 = Field · 7 = Canon · 8 = Next</span>
+    <span class="footer-hint">▲▼ keys: 1–9 to switch panels · 8 = Changelog · 9 = Next</span>
     <div class="btn-row">
       <a class="btn-paper" href="whitepaper.html" target="_blank" rel="noopener" title="งวดที่ 1 deliverable">📖 งวด 1 · WHITEPAPER</a>
       <a class="btn-pdf"   href="print.html"      target="_blank" rel="noopener" title="งวดที่ 1 acceptance">📄 งวด 1 · ใบตรวจรับงาน</a>
@@ -2429,6 +2544,105 @@ if (canonHost) {
   });
 }
 
+// ── Changelog ──
+const CHANGELOG = [
+  {
+    version: "v4.6", codename: "PULSE", date: "พ.ค. 2569", accent: "#C44D3F", major: true,
+    title: "Org Pulse + Hiring Gauge · จับชีพจรองค์กร",
+    desc: "<strong>/api/pulse</strong> รวม active heroes, in-office check-ins, skill family stack, department head-counts, anchor count, ghost count แล้ว render เป็น banner แรกที่เห็นหลัง login · <strong>/api/hiring</strong> อ่าน 33 ประกาศรับสมัครจริงของ TKC แล้วคำนวณ need-gauge ต่อตำแหน่ง (HOT/WARM/COVERED/DEEP) โดย token-matching กับ title + skill ของพนักงานปัจจุบัน",
+    tags: ["api", "pulse", "hiring", "real-data"]
+  },
+  {
+    version: "v4.5", codename: "REAL", date: "พ.ค. 2569", accent: "#D4A843", major: true,
+    title: "Real Dossier · ข้อมูลพนักงานจริง 320 คน",
+    desc: "Merge ข้อมูลพนักงาน TKC จริง: ชื่อ (EN), gender (215m/105f), DOB, education, ส่วน, certifications 77 records, KPIs 62 rows · 28 คนที่หายไปกลายเป็น <strong>ghost rows</strong>: greyed sprite + halo + \"Departed Apr 2026\" badge · PlayerCard ได้ narrative one-liner · Tome  rebuilt เป็น CEO-signed Letter of Recommendation ที่สร้างจาก facts ใน DB ทั้งหมด",
+    tags: ["real-data", "ghosts", "tome", "pdpa-safe"]
+  },
+  {
+    version: "v4.4", codename: "TALK-TO-FILL", date: "พ.ค. 2569", accent: "#8B6FB5", major: true,
+    title: "Conversational Stat Builder + ICA Index · คุยแล้วสร้างสถิติ",
+    desc: "เปิด hero card → \"Compose with AI\" → ตอบ 3–4 คำถาม → AI เสนอ DQ3 profile เต็มรูปแบบ → review, nudge, approve → เขียน Postgres + Sheets + AI live context พร้อมกัน · <strong>ICA Index</strong> (I/C/A bars + score) บนการ์ดทุกใบ — react live ต่อ stat changes · AI chatbot อ่าน DB จริงทุกครั้งที่คุย (heroes, formations, anchors)",
+    tags: ["ai", "ica", "conversation", "live-context"]
+  },
+  {
+    version: "v4.3", codename: "ALIVE", date: "พ.ค. 2569", accent: "#4A9BA8", major: true,
+    title: "Org Grade + Sprint Countdown + Editable Attributes · ระบบเป็นเนื้อเป็นตัว",
+    desc: "<strong>Org Grade</strong> (S/A/B/C/D/F) บนหน้าแรก — คำนวณจาก chemistry × KPI · <strong>Sprint countdown</strong> นับถอยหลังเป็นวันสู่ cycle end · Editable hero attributes บน Roster · MatrixGrid scenario rebuild (Codex) · Ticker แสดง ORG ไม่ใช่ SET (synthetic price)",
+    tags: ["org-grade", "sprint", "editable", "matrix"]
+  },
+  {
+    version: "v4.2", codename: "FLUID LEGEND", date: "พ.ค. 2569", accent: "#5B89B5", major: true,
+    title: "SNES Sprites + Social Graph + URL Routing · ขยับจาก Famicom เป็น SNES",
+    desc: "Sprite 16-bit 64×64 ระดับ SNES มี shading + vocation gear · Obsidian-style Social Graph ใน Lobby · URL-based routing สำหรับทุก tab · Optimized path-based SVG rendering",
+    tags: ["sprites", "social-graph", "routing", "svg"]
+  },
+  {
+    version: "v3.3", codename: "FRONT ROW", date: "มี.ค.–เม.ย. 2569", accent: "#D4A843",
+    title: "DQ3 Party Order · แถวหน้า/กลาง/หลังมีผลต่อ chemistry",
+    desc: "ทุก allocation มี row (1=front/2=mid/3=back) · Captain หน้า + scout หลัง = +5 chemistry →  feeds readiness · <code>project_allocations</code> ได้ column <code>party_order</code> · Formation Sheets mirror encode <code>empid@dim@order</code> และ emit front_count / mid_count / back_count",
+    tags: ["party-order", "chemistry", "formation", "postgres"]
+  },
+  {
+    version: "v3.2", codename: "ALLTRADES", date: "มี.ค.–เม.ย. 2569", accent: "#8B6FB5",
+    title: "Alltrades Abbey · บันทึกการเปลี่ยนอาชีพ",
+    desc: "<code>vocation_changes</code> table บันทึกทุก reskilling event · POST /api/alltrades append + mirror ไป Sheets tab VocationChanges · UI บน Roster card ตามมาในภายหลัง",
+    tags: ["vocation", "alltrades", "ledger", "sheets-mirror"]
+  },
+  {
+    version: "v3.1", codename: "PARTY SPLIT", date: "มี.ค.–เม.ย. 2569", accent: "#5B89B5",
+    title: "EXP Split · คนหนาแน่นตำแหน่ง = ประสิทธิภาพลด",
+    desc: "DQ3 EXP-split: slot ที่มีคนเกิน dilute readiness · <code>party_split_pct</code> ป้อน formula ด้วย weight 0.05 (เอาจาก coverage) · Hoarding slot มี cost เห็นได้ชัด ไม่ใช่เงียบ ๆ",
+    tags: ["balance", "party-split", "readiness", "moneyball"]
+  },
+  {
+    version: "v3.0", codename: "CASSETTE", date: "ก.พ.–มี.ค. 2569", accent: "#C44D3F", major: true,
+    title: "DQ3 Famicom Rebuild · ระบบใหม่บนคอนโซลปี 1990",
+    desc: "Rebuild ทั้งหมดบน archetype DQ3 (Hero/Soldier/Wizard/Pilgrim/Merchant) · Sprite 32×32 gender-aware มี 6-slot palette variation · Formation + Resources tabs · Readiness formula: coverage·0.45 + quality·0.25 + chemistry·0.15 + morale·0.15 · Dark wood tabletop aesthetic — ไม่มี border-radius, ไม่มี gradient บน chrome",
+    tags: ["rebuild", "dq3", "archetypes", "sprites", "tabletop"]
+  },
+  {
+    version: "v2.0", codename: "COMMAND CENTER", date: "ม.ค.–ก.พ. 2569", accent: "#4A9BA8", major: true,
+    title: "Next.js + Postgres Dashboard · เกมเริ่มมีหน้าจอ",
+    desc: "Next.js + Postgres dashboard หุ้มรอบ Sheets · Fire-and-forget mirroring ทำให้ Sheet ยังเป็น authoritative สำหรับมนุษย์ ส่วน Postgres เป็น source of truth สำหรับแอป · 28 ตาราง · 348 พนักงาน",
+    tags: ["nextjs", "postgres", "dashboard", "mirror"]
+  },
+  {
+    version: "v1.0", codename: "SHEETS", date: "ต.ค. 2568 – ม.ค. 2569", accent: "#D4A843", major: true,
+    title: "Google Sheets · จุดเริ่มต้นของทุกอย่าง",
+    desc: "Google Sheets ล้วน ๆ · HR tracking ด้วยมือ · 20 แท็บ · สูตร Excel ซ้อนสูตร · คนยังต้องกรอกเองทุกช่อง · แต่ data structure ที่นี่คือรากฐานของทุกตารางใน Postgres วันนี้",
+    tags: ["sheets", "manual", "foundation", "origin"]
+  },
+];
+
+const changelogHost = document.getElementById('changelog-grid');
+if (changelogHost) {
+  CHANGELOG.forEach((log, i) => {
+    if (i > 0 && log.major && CHANGELOG[i-1].major) {
+      const div = document.createElement('div');
+      div.className = 'changelog-divider';
+      div.textContent = '· · ·';
+      changelogHost.appendChild(div);
+    }
+    const row = document.createElement('div');
+    row.className = 'changelog-row' + (log.major ? ' major' : '');
+    row.style.setProperty('--log-accent', log.accent);
+    const tagsHtml = log.tags.map(t => `<span class="changelog-tag">${t}</span>`).join('');
+    row.innerHTML = `
+      <div class="changelog-meta">
+        <div class="changelog-version">${log.version}</div>
+        <div class="changelog-date">${log.date}</div>
+        <div class="changelog-codename">${log.codename}</div>
+      </div>
+      <div class="changelog-body">
+        <div class="changelog-title">${log.title}</div>
+        <div class="changelog-desc">${log.desc}</div>
+        <div class="changelog-tags">${tagsHtml}</div>
+      </div>
+    `;
+    changelogHost.appendChild(row);
+  });
+}
+
 // ── Tab switching ──
 const tabs = document.querySelectorAll('.tab-btn');
 const panels = document.querySelectorAll('.panel');
@@ -2439,7 +2653,7 @@ function setTab(key) {
 tabs.forEach(t => t.addEventListener('click', () => setTab(t.dataset.tab)));
 
 // ── Keyboard shortcuts ──
-const KEY_MAP = { '1': 'scope', '2': 'screens', '3': 'sheets', '4': 'vibes', '5': 'timeline', '6': 'field', '7': 'canon', '8': 'next' };
+const KEY_MAP = { '1': 'scope', '2': 'screens', '3': 'sheets', '4': 'vibes', '5': 'timeline', '6': 'field', '7': 'canon', '8': 'changelog', '9': 'next' };
 document.addEventListener('keydown', (e) => {
   const tab = KEY_MAP[e.key];
   if (tab) setTab(tab);

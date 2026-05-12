@@ -45,6 +45,14 @@ export const SCREEN = {
       th: "จังหวะการเงิน ปริมาณงานสนับสนุน และสถานะภารกิจที่ดำเนินอยู่ในมุมมองเดียว",
     } satisfies Dict,
   },
+  fixture: {
+    kicker: { en: "Line X", th: "สาย X" } satisfies Dict,
+    title: { en: "Fixture List", th: "ตารางการแข่งขัน" } satisfies Dict,
+    deck: {
+      en: "Open fixtures, active matches, pending reviews, and resolved outcomes. The season never stops.",
+      th: "โครงการที่รอจัดทีม ที่กำลังดำเนินอยู่ ที่รอรายงานผล และที่เสร็จสิ้นแล้ว ฤดูกาลไม่มีวันหยุด",
+    } satisfies Dict,
+  },
   formation: {
     kicker: { en: "Line F", th: "สาย F" } satisfies Dict,
     title: { en: "Formation Board", th: "กระดานจัดทีม" } satisfies Dict,
