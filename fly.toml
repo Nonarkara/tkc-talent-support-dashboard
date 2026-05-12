@@ -7,6 +7,7 @@ app = 'tkc-digital-twin'
 primary_region = 'sin'
 
 [build]
+  dockerfile = "Dockerfile"
 
 [http_service]
   internal_port = 3000
