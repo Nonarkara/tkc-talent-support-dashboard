@@ -469,6 +469,9 @@ export function LobbyTab({ dash }: { dash: DashboardPayload }) {
   const employees = dash.employees;
 
   // ── On-mount: load who is actually on the floor today ─────────────────
+  // The lobby canvas always shows all active employees as a living
+  // company visualization. The attendance panel on the right reflects
+  // actual check-ins for HR tracking, but the floor itself never empties.
   useEffect(() => {
     void (async () => {
       try {
@@ -477,11 +480,15 @@ export function LobbyTab({ dash }: { dash: DashboardPayload }) {
           throw new Error(`attendance fetch failed: ${res.status}`);
         }
         const data = (await res.json()) as { on_floor?: string[] };
-        if (Array.isArray(data.on_floor)) {
+        // Only update from API if there are actual check-ins recorded.
+        // An empty array from the API just means "no one punched yet" —
+        // not "clear the floor". The canvas shows the company, not the
+        // attendance ledger.
+        if (Array.isArray(data.on_floor) && data.on_floor.length > 0) {
           setOnFloor(new Set(data.on_floor));
         }
       } catch {
-        // Keep the fallback roster visible when attendance is unavailable.
+        // Keep the full roster visible when attendance is unreachable.
       }
     })();
   }, []);
