@@ -23,7 +23,8 @@ export type RouteScreen =
   | "signals"
   | "lobby"
   | "ledger"
-  | "insights";
+  | "insights"
+  | "health";
 
 export type Screen = "home" | RouteScreen;
 

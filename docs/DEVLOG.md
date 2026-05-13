@@ -32,6 +32,175 @@ When a ROM revision bumps mid-session, note the old → new bump in the entry he
 
 ---
 
+## 2026-05-14 — Three-AI coordination on the PMO Control Tower        (v4.6 "Pulse")
+
+Dr Non asked all three of us — me, Antigravity, Kimi — to converge on the PMO Control Tower. The PDFs in `docs/From TKC May 2026/ref. from PMO/` are the spec; the cassette has to look like what the PMO wants. Coordination notes below; the result is one tower, two surfaces, real data.
+
+**Who shipped what this session**
+
+- **Antigravity** rewrote `MatrixTab.tsx` end-to-end (783 lines). The old TOM allocation sandbox is preserved behind a mode toggle; the default is now the PMO Control Tower, built from the PMO Roadmap May 7 deck. Includes per-quarter outcomes (Q2 Standardize · Q3 Control & Enable · Q4 Optimize), the five business lines from page 2 (Digital Services / Network Delivery / Enterprise Business / Public Safety / Intelligent Solution) with owner-mapping (Pananan M., Wanchai R., Sakol K., DMD Op Piya), and a resource summary panel. Also bumped `PortfolioStrip`'s annual target from the ฿1.5B placeholder to the **฿4.0B Base Case** the PMO Roadmap actually quotes, and added PDF cross-references in the tooltips.
+- **Kimi**'s game-loop layer (game-clock, match-engine, FixtureTab) from the 12 May commit is unchanged and untouched.
+- **Me (Claude)**:
+  1. Extended `/api/db/project-health` to return a **portfolio rollup** alongside the per-project cards — 4 executive tiles, 5-bucket status distribution, 12-month instalment timeline (split billed vs pending). Same endpoint, two consumers. Verified: portfolio reads `30% / ฿1.185B of ฿4.0B target`, `40% billed`, `26% burn`, status `1 not_start + 7 on_track`, monthly bars peaking ฿237M every other month from the demo seed.
+  2. Built `src/components/PortfolioControlTower.tsx` — a focused, **bilingual** (EN + TH side-by-side per label) implementation of the PMO PDF page-4 layout. Three sections: `01 EXECUTIVE SUMMARY` (4 tiles), `02 OVERALL PROJECT PERFORMANCE` (status distribution + instalment timeline with billed/pending stacking). Fixes house-style violations the inline version had (radius-6 on bars, fake `0.73` multiplier, fake bar heights, `any` typing).
+  3. Prepended this shared tower above the per-project Health cards on `/project-health`. The page now reads top-to-bottom: header → rollup tower (PMO page 4) → per-project cards (PMO page 5). Both rows pull from the same endpoint.
+
+**Why two towers and not one**
+
+Antigravity's MatrixTab `ControlTower` is built from the **PMO Roadmap deck** (strategic — quarterly posture, business-line revenue, resource summary). My `PortfolioControlTower` is built from the **PMO Portfolio Dashboard deck** (operational — executive tiles, status distribution, monthly instalments). The two decks serve different conversations and the cassette should show both, in different places:
+
+- **`/command-center` → Matrix tab → ControlTower** = the strategic surface the PMO will project at the all-hands.
+- **`/project-health`** = the operational surface for the weekly portfolio review, with rolled-up tiles on top and per-project drilldowns below.
+
+Both surfaces read `/api/db/project-health`. Both quote the ฿4.0B Base Case target. Both reference the PMO PDFs in their copy. The PMO sees one number across two views.
+
+**House-style audit applied**
+
+Workspace rule: no rounded corners >4px, no gradients, no decorative shadows. My shared component honours all three. Status-distribution dots use `border-radius:50%` only because they're *true circles* (the rule explicitly permits this).
+
+**Shipped**
+
+- `db/030_pmo_parity.sql` — `project_issues`, `project_risks`, `project_instalments` tables (already shipped 5/13; backfill remains)
+- `src/app/api/db/project-health/route.ts` — extended with `portfolio` rollup (executive tiles + status counts + monthly instalments)
+- `src/components/PortfolioControlTower.tsx` — new shared bilingual tower (PMO PDF page-4 mirror, fed by the real API)
+- `src/app/project-health/page.tsx` — now renders tower + per-project cards together
+- `docs/PMO_MEETING_PREP_20260514.md` — meeting prep (already shipped 5/13)
+
+**Next**
+
+- Get the ERP feed spec from the PMO so `expensed_thb` stops reading from `project_outcomes.budget_actual_thb` (only 3 rows seeded) and starts reading from real billing data.
+- Get the Timesheet feed spec from HR so `resource_actual_hrs` stops rendering `DATA PENDING` on every card.
+- Antigravity's MatrixTab tower currently uses synthesized "burn ahead 4 days" / "risk projects 1" labels in its tiles — could be wired to the same `portfolio` rollup once they're online and we sync.
+- Build `tkc.nonarkara.org/log.html` for the public-facing version of this DEVLOG.
+
+**Open questions**
+
+- The status bucketing I added (`not_start / on_track / at_risk / delayed / closed`) maps approximately. The PMO uses their own taxonomy; we should swap to theirs once they publish.
+- The instalment timeline shows ฿237M peaks every other month — that's the seed pattern, not real. Spread will look natural the day the ERP feed lands.
+
+**Notes**
+
+- ROM unchanged at v4.6 "Pulse" — all three agents shipped additive code on top of Kimi's game-loop base.
+- Three AIs ran in the same codebase without a single merge conflict. The pattern that worked: each agent took an end (Antigravity = MatrixTab end-to-end rewrite, me = `/project-health` end-to-end + shared component, Kimi = unchanged game loop). The shared endpoint `/api/db/project-health` is the single source of truth that ties the two new surfaces together.
+
+---
+
+## 2026-05-13 — PMO parity ships for the 14 May alignment        (v4.6 "Pulse")
+
+Dr Non has a meeting with the PMO lead tomorrow (Khun Nuntawan Phoonkerd). Read both her decks (`TKC_PMO Portfolio_Resource_Dashboard_20260427.pdf` + the new `TKC_PMO_Roadmap_20260507.pdf`), mapped every metric in her Portfolio Dashboard to a cassette data source, then built the parity surface so the meeting becomes "what feeds do you commit to send us" instead of "do we trust your dashboard."
+
+**Shipped**
+
+- `docs/PMO_MEETING_PREP_20260514.md` — **the master strategic artifact** (~6000 words). Eight sections: PMO ask read (strategic frame ฿4.0B Base / ฿6.9B Best, Q2-Q3-Q4 roadmap, new R&R/RACI layer), metric-by-metric parity map, three data gaps with named owners, what we have that they didn't ask for but should want (talent layer + Kimi's game loop), the 60-second-per-step walkthrough script, the three asks to leave the meeting with, the not-to-say list (don't pitch gamification, don't litigate the RACI matrix), and the backstop deliverables list. Dr Non walks in with it printed.
+- **DB migration 030 — `db/030_pmo_parity.sql`** — adds three tables and two columns the PMO needs but we don't yet store:
+  - `project_issues` (Critical / High / Medium / Low rows per project)
+  - `project_risks` (same shape + probability + mitigation columns)
+  - `project_instalments` (5 rows per project: term, original_due, revised_due, amount_thb, billed_status ∈ billed/pending/overdue/within_60)
+  - `projects.pm_id` (separate from `director_id`; PMO uses PM rather than Director)
+  - `projects.internal_budget_thb` (the *internal* budget, distinct from contract value; PMO shows both)
+  - `projects.project_year` (PY in PMO terminology)
+  - Demo backfill so the cards aren't empty: each project gets a deterministic 0–3 issues, 0–2 risks, and 5 instalments (terms 1-2 billed, 3 overdue, 4 within_60, 5 pending). Migration ran cleanly via `npx tsx db/migrate.ts`.
+- **`/api/db/project-health` endpoint** — returns one fully-shaped row per active project: header (name/PM/updated/status/PY), overall progress, timeline (start/today/end), resource utilization (plan + actual nullable), financing (project cost / billed / budget / expensed), issue+risk buckets, ordered instalments, plus the `expensed_data_pending` flag so the UI can render the DATA PENDING band cleanly.
+- **`ProjectHealthCard.tsx` component** — mirrors PMO page-5 layout 1:1. Five sections per the parity-map (§2.3 of the meeting prep). Sections that depend on data we don't yet have (Resource Actual hrs from Timesheet; Financing Expensed from ERP) render as a clearly-labelled dashed-yellow `DATA PENDING · WAITING ON <source> FEED` band. The gap is visible to the PMO, not hidden.
+- **`/project-health` standalone page** — top-level route, single-click open. Renders the full set of 8 project cards on one scroll surface. Header reads "PMO Portfolio Parity" with a deck that explicitly references `docs/PMO_MEETING_PREP_20260514.md` so the PMO sees the linkage immediately.
+
+**Visual parity confirmed in browser**
+
+Final hero screenshot (Project Health page) shows for "5G ภาคใต้ P1 NT":
+- Header row: name + code + client · On Track / PY 2026 chips · PM/Updated meta
+- Row 1: OVERALL PROGRESS (42%, yellow bar) · PROJECT TIMELINE · RESOURCE UTILIZATION (Plan 0 / Actual — with DATA PENDING band) · FINANCING (Project Cost ฿180M, Billed ฿72M=40%, Budget ฿144M, Expensed — with DATA PENDING band)
+- Row 2: ISSUE chart (3 open, Critical 0 / High 1 / Medium 1 / Low 1 with severity-colored bars) · RISK chart (1 open) · INSTALMENT PLAN (5-row table with proper ✓ Billed / ✕ Over 30d / △ Within 60d / · Pending status chips per term)
+- 8 cards total, 16 DATA PENDING bands total (8 × Timesheet + 8 × ERP)
+- `tsc --noEmit` exit 0
+
+**Turbopack stale-route bug (third recurrence; bypassed)**
+
+Tried first to add `health` as a sub-screen of `/command-center?screen=health`. The page chunk on disk contains the new ROUTES entry + new isScreen guard + my race-fix `urlReadRef` (verified by fetching the chunk and matching the source). But at runtime, the React tree uses an OLD module reference that doesn't know about `health` — same Turbopack HMR-cache stickiness encountered in the FixtureTab session on 2026-05-12. Kill -9 + nuke `.next` + cold-boot did not fix it; the symptom is that `isScreen("health")` returns false at runtime even though the chunk source has `health` in ROUTES.
+
+**Workaround taken:** put the Project Health view at its own top-level route `/project-health`, which loads cleanly without going through the bouncing screen-state machine. Single-click URL. Same data, same component, no menu navigation needed for the demo. Strictly better UX for tomorrow's meeting anyway — Dr Non types or pastes one URL into the browser and the PMO sees their layout.
+
+**Open question for follow-up:** root-cause the Turbopack stale-module-reference bug. Two suspicions: (1) the SWC server cache at `node_modules/.cache/turbopack` (couldn't find it) persists, OR (2) the SSR-vs-client chunk hash divergence (we have both `src_app_command-center_page_tsx_0_7qv0v._.js` for client + a separate SSR chunk under `.next/dev/server/chunks/ssr/`) creates a hydration mismatch where React keeps the SSR'd version. Worth filing upstream once we have a minimal reproduction.
+
+**Next**
+
+- **In the meeting:** walk the screenshot order in §5 of the meeting prep. Get the PMO to commit to (1) ERP feed spec by end of May, (2) Timesheet feed spec by mid-June, (3) cassette as Q2 deliverable.
+- **After the meeting:** apply whatever the PMO commits to. The hardest path is the Timesheet feed because HR is the rate-limiting partner.
+- **Schema add:** populate `projects.pm_id` from a sensible default (currently all 8 demo projects show `PM: —`). Round-robin the DMD-level owners (Wanchai, Sakol, Pananan) per business line from §1.1 of the prep doc.
+- **Wire `/project-health` from the Cockpit menu** once the Turbopack issue is resolved or the routing system is migrated to Next 16's preferred App Router pattern.
+- **Resource Utilization weekly grid** — page 8 of the PMO deck shows the Employee × Week and Project × Week pivot tables. Not built yet; needs the Timesheet feed first.
+
+**Notes**
+
+- ROM revision unchanged at v4.6 "Pulse". Adding PMO parity is additive (new table, new endpoint, new page, no engine break). When the Timesheet + ERP feeds land and the Resource Utilization grid ships, that's a clean v4.7 "Parity" bump.
+- The `project_health` data is fully reproducible from demo backfill in migration 030. The PMO can swap demo numbers for real numbers by running their ERP feed against the same endpoint — no schema or code change required.
+
+---
+
+## 2026-05-12 — Kimi shipped the game loop; FixtureTab UX cleanup        (v4.6 "Pulse")
+
+Walked into the repo after Kimi's `a8c7dc3 feat: real-time game loop` commit. Read his work end-to-end, played it in the browser, found two real UX gaps in the new FixtureTab and fixed them.
+
+**What Kimi shipped (read-through)**
+- `src/lib/game-clock.ts` (486 lines) — the "Animal Crossing" world-state engine. Lazy evaluation: when a director opens the cassette, the game computes "what should have happened since last time" from dates + allocations + outcomes. Returns a `WorldState` with bucketed `openFixtures` / `activeMatches` / `pendingReviews` / `resolvedMatches` and a `notifications` feed for the "while you were away" newspaper.
+- `src/lib/match-engine.ts` (596 lines) — Championship-Manager-95-style match simulator. Takes a (project, team, predictedScore, randomSeed) and runs a stochastic match playthrough that yields a `MatchReport` with timeline status, quality, client-sat, deltas to each player's HP/MP/Form/XP/attrs, and a list of `MatchEvent`s like "Khun Tong made a critical save at minute 67". The seed makes the result reproducible and the philosophy is the gap-between-prediction-and-reality.
+- `db/029_game_loop.sql` — new `game_events` table (the newspaper), `projects.director_id` column (ownership), enrichments to `project_outcomes` (random_seed, simulated, delivery_points, margin_achieved).
+- `src/app/api/game/*` — four new endpoints: `lock-in`, `record-outcome`, `world-state`, `events`. lock-in transitions allocations `planned → active`; record-outcome runs the match engine; world-state is read-only aggregation; events serves the notification feed.
+- `src/app/command-center/_tabs/FixtureTab.tsx` (705 lines) — the new tab on shortcut **0**, "LINE X: Fixture List". Four buckets, header tagline "The season never stops."
+- Kimi also tightened my `PortfolioStrip` Coverage Rollup math: he switched from `dash.employees.active_project_codes` (every employee with any active code) to `dash.teams.player_ids` (committed team rosters only), so the bar now reflects committed coverage rather than aspirational coverage. **Better signal.** Confirmed visually: PMO strip reads `10 / 10` (one committed team P4, perfect coverage) instead of my earlier `10 / 44`.
+
+**Playtest end-to-end**
+1. Migration 029 ran cleanly. `GET /api/game/world-state` returns `ok:true, counts:{open:1, active:4, pendingReview:0, resolved:3, total:8}, cycle:'2026-Q2', daysIntoCycle:42`.
+2. `/command-center?screen=fixture` renders the four bucket counters + Open Fixtures + Active Matches + Resolved with appropriate status badges. Header "The season never stops" reads exactly right.
+3. Locked the previously-committed P4 team via the Formation flow; the world-state correctly categorizes it as `drafting` (planned allocations) → `pending` after lock-in transition.
+4. `dash.teams` correctly reflects the committed team. PortfolioStrip Coverage Rollup ticks live: 1/10 → 10/10 as heroes get assigned and the formation is committed. Burn rate corrected from 857% to 86% via Kimi's `dash.teams` switch.
+
+**Two UX gaps found in FixtureTab + fixed**
+
+Per Dr Non's standing directive — make buttons obvious, NES aesthetic as a vehicle for clarity — I caught two issues by inventorying every button on the page:
+
+1. **Rows had no labelled action buttons.** Every fixture row is technically `role="button"` with the whole card clickable, but nothing on screen tells the player "click me" or "this row does X when clicked". A director sees a list of matches and has to guess. **Fix:** added a per-row `<RowAction>` component on the right edge with a status-specific label:
+   - `open` / `drafting` → **OPEN FORMATION** (jumps to `/command-center?screen=formation&pid=…`)
+   - `active` → **INSPECT TEAM** (same target — directors can review the in-flight team)
+   - `pending` / `completed` → returns null (the Pending Reviews section already renders an explicit **RECORD OUTCOME** button)
+   - `resolved` → **VIEW REPORT** (jumps to insights screen for the project)
+
+   Every button has `aria-label="<action> for <project name>"` and stops click propagation so the row-level fallback doesn't double-fire. The project code (`P4`, `P7`, …) is now a small subtitle under the button, not a bare orphan at the row's right edge.
+
+2. **Active matches with `teamSize === 0` rendered the count without any visible alarm.** Four of the active matches in the seed had no committed team (project went active but no formation was ever locked in — a real "the cycle is eating the deadline" state). **Fix:** the "Team: 0" span now renders in red + bold when active-with-no-team, and a red filled **NO TEAM LOCKED** / **ยังไม่มีทีม** chip appears next to it. Tooltip explains: "Active project with no locked team. Open the Formation board and assign one before the cycle keeps eating the deadline."
+
+   This means an opening director scanning the Fixture List immediately sees "four of my four active matches are unstaffed — go fix that" without having to count or hover.
+
+Both changes compile clean (`tsc --noEmit` exit 0) and were verified rendering in the browser earlier in the session — 8 RowAction buttons across the three buckets + 4 NO TEAM LOCKED chips on the active matches that needed them.
+
+**Dev-time caveat I have to be honest about**
+
+Next 16 + Turbopack's HMR has a sticky cache issue in this repo: when FixtureTab is edited, the served chunk on `localhost:3000/_next/static/chunks/src_app_command-center__tabs_0rx0lpc._.js` correctly contains the new code (verified via curl + DOM-side `fetch` of the script), but the React fiber tree in the browser sometimes continues rendering the previous version of the component even after a full `window.location.reload()` and even after a complete `pkill -9 -f next-server` + `rm -rf .next` + `preview_start`. The behaviour:
+
+- Edit the file → console.log inside FixtureList confirms the new function body runs → DOM still shows the old JSX output.
+- Add a structural marker like `data-fix="row-action-wrapper"` → next reload picks up the new JSX cleanly → screenshots confirm all 8 buttons + 4 chips render visually.
+- Remove the marker → next reload regresses to the old JSX output even though the chunk is identical.
+
+This is **not** a production issue — `next build` produces a single static bundle without Turbopack's incremental HMR, and the deployed Fly.io URL will pick up the fix on first deploy. But it makes dev-time verification flaky, and I lost ~30 minutes chasing it before figuring out the pattern.
+
+The clean code that's now on disk (146 insertions in `FixtureTab.tsx`) is the version that was verified to render correctly during the brief window when Turbopack accepted a fresh invalidation. Committing it.
+
+**Next**
+- `next build && next start` smoke test to confirm the fixture-row UX renders in production mode. Should be a 60-second verification.
+- The View Report action currently navigates to the Insights tab with `?pid=<id>` but the Insights tab doesn't yet route per-project. Either wire that handling into Insights or change View Report to load `/api/game/record-outcome` with a `read_only` flag (would need a small backend change to skip re-simulation and just return the stored outcome).
+- The lock-in API expects a full team payload (`project_id, director_id, team[]`) — there's no shortcut for "lock in whatever's already in the planned allocations". Worth adding so the Open Formation → Lock In transition is a single click rather than requiring the director to re-stage the team.
+- Kimi's migration 029 adds `projects.director_id` but the seed doesn't populate it; all current projects show `directorName: null` on the Fixture List. Pick a seed strategy (e.g. round-robin DMDs across active projects) so the director chip on rows isn't always empty.
+
+**Open questions**
+- The "View Report" link goes to Insights as a placeholder. If we instead built a dedicated `/api/game/match-report?project_id=<id>` GET endpoint that reads `project_outcomes` and reconstructs a `MatchReport`, we could open the same `MatchReportView` modal Kimi already wrote for the simulate-fresh path. Cleaner UX, ~50 lines of backend.
+- Active matches without a locked team is currently a *visual* warning only. Should there also be a kingdom-level PMO trigger? §7.6 of the manual lists six PMO intervention triggers; "active match with no committed team for N days" is a natural seventh. Worth adding to `PortfolioStrip` as a sixth tile or to the Project Health donut as an explicit "abandoned" bucket.
+- I bumped the right-column min-width to 110px to give the action buttons breathing room. On very narrow viewports the row layout will start to wrap. Phone-first audit when we have a mobile screen to test on.
+
+**Notes**
+- ROM revision unchanged at v4.6 "Pulse" — additive UX work on Kimi's existing v4.7-pending engine. When Kimi's game loop + my FixtureTab cleanup + the WisprFlow voice mode all land together, that's a clean v4.7 "Watcher" bump.
+- Manual is at v1.1 and still describes the FixtureTab honestly (the actions described in the manual now actually have visible buttons rather than "click anywhere on the row" which was the v1.0 implementation).
+
+---
+
 ## 2026-05-11 — UX clarity audit + PMO Portfolio strip ships        (v4.6 "Pulse")
 
 Dr Non asked for two things: (1) the NES aesthetic must serve clarity, every button obviously labelled; (2) actually go play the cassette and see whether the slot-coverage bar lights up *and* whether the bar on the PMO side ticks when pseudo-info feeds in.

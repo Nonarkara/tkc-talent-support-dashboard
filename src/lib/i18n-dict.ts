@@ -71,10 +71,10 @@ export const SCREEN = {
   },
   matrix: {
     kicker: { en: "Line M", th: "สาย M" } satisfies Dict,
-    title: { en: "TOM Matrix Lab", th: "ห้องทดสอบโครงสร้างองค์กร" } satisfies Dict,
+    title: { en: "PMO Control Tower", th: "หอคอยควบคุม PMO" } satisfies Dict,
     deck: {
-      en: "Stress-test function and CoE allocations before the operating model hardens.",
-      th: "ทดสอบการกระจายฟังก์ชันและ CoE ก่อนปิดโครงสร้างการดำเนินงาน",
+      en: "Strategic Value Partner view — revenue targets, quarterly roadmap, project health, and resource signals in one scan. Toggle to Matrix Lab for TOM sandbox.",
+      th: "มุมมอง Strategic Value Partner — เป้ารายได้ แผนไตรมาส สุขภาพโครงการ และสัญญาณทรัพยากรในหน้าเดียว สลับไป Matrix Lab สำหรับทดสอบ TOM",
     } satisfies Dict,
   },
   roster: {
@@ -115,6 +115,14 @@ export const SCREEN = {
     deck: {
       en: "Eight live analytics from the May 2026 dossier — succession map, cert decay, gender ladder, school pedigree, birthday clock, archetype mix, attribute curves, ghost calendar.",
       th: "วิเคราะห์ข้อมูลพนักงาน 320 คนจากเอกสารชุด พฤษภาคม 2569 — แผนผังอายุ-อายุงาน ปฏิทินใบรับรองหมดอายุ บันไดความหลากหลายทางเพศ สถานศึกษา ปฏิทินวันเกิด การกระจาย archetype กราฟ attribute และเดือนที่คนลาออก",
+    } satisfies Dict,
+  },
+  health: {
+    kicker: { en: "Line P", th: "สาย P" } satisfies Dict,
+    title: { en: "Project Health", th: "สุขภาพโครงการ" } satisfies Dict,
+    deck: {
+      en: "PMO parity view — one card per project, matching the Portfolio Dashboard page-5 layout. Progress · Timeline · Resource · Financing · Issues · Risks · Instalments. Data-pending bands flag gaps the PMO must close (Timesheet, ERP).",
+      th: "มุมมองเทียบเคียง PMO — การ์ดละหนึ่งโครงการ ตามรูปแบบ Portfolio Dashboard หน้า 5 ของฝ่าย PMO ความคืบหน้า · ไทม์ไลน์ · ทรัพยากร · การเงิน · ปัญหา · ความเสี่ยง · งวดงาน ส่วนที่ขึ้น DATA PENDING คือช่องที่รอข้อมูลจากฝ่าย PMO (Timesheet, ERP)",
     } satisfies Dict,
   },
 };

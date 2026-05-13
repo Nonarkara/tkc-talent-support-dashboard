@@ -383,6 +383,16 @@ function StatTile({ label, value, color }: { label: string; value: number; color
   );
 }
 
+/**
+ * Renders one bucket of fixtures (open / active / resolved). Each row
+ * has a labelled action button on the right edge — see RowAction —
+ * so directors never have to guess what clicking does.
+ *
+ * Layout per row: [meta] [progress?] [action + code stack].
+ * The right-column stack is the click target that matters; the row
+ * itself is also clickable (role=button) as a fallback for keyboard
+ * users navigating with Tab+Enter.
+ */
 function FixtureList({
   projects,
   onSelect,
@@ -401,7 +411,7 @@ function FixtureList({
   compact?: boolean;
 }) {
   return (
-    <div style={{ display: "grid", gap: compact ? 4 : 8 }}>
+    <div style={{ display: "grid", gap: compact ? 4 : 8 }} data-fixture-list="row-actions-v2">
       {projects.map((p) => (
         <div
           key={p.projectId}
@@ -441,10 +451,36 @@ function FixtureList({
               )}
             </div>
             {!compact && (
-              <div style={{ fontSize: 10, color: "var(--ink-1)", display: "flex", gap: 12, flexWrap: "wrap" }}>
+              <div style={{ fontSize: 10, color: "var(--ink-1)", display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
                 <span>{translate(loc, { en: "Budget", th: "งบประมาณ" })}: {formatBudget(p.budgetThb)}</span>
                 <span>{translate(loc, { en: "Margin", th: "มาร์จิ้น" })}: {p.marginPct}%</span>
-                <span>{translate(loc, { en: "Team", th: "ทีม" })}: {p.teamSize}</span>
+                <span
+                  style={
+                    p.gameStatus === "active" && p.teamSize === 0
+                      ? { color: "var(--rpg-red)", fontWeight: 700 }
+                      : undefined
+                  }
+                >
+                  {translate(loc, { en: "Team", th: "ทีม" })}: {p.teamSize}
+                </span>
+                {p.gameStatus === "active" && p.teamSize === 0 && (
+                  <span
+                    style={{
+                      fontSize: 9,
+                      fontWeight: 800,
+                      letterSpacing: "0.10em",
+                      color: "#fff",
+                      background: "var(--rpg-red)",
+                      padding: "1px 6px",
+                    }}
+                    title={translate(loc, {
+                      en: "Active project with no locked team. Open the Formation board and assign one before the cycle keeps eating the deadline.",
+                      th: "โครงการกำลังดำเนินการแต่ยังไม่มีทีมที่ล็อกไว้ เปิดบอร์ดทีมและจัดให้เร็วที่สุด",
+                    })}
+                  >
+                    {translate(loc, { en: "NO TEAM LOCKED", th: "ยังไม่มีทีม" })}
+                  </span>
+                )}
                 {p.predictedScore !== null && (
                   <span>{translate(loc, { en: "Predicted", th: "คาดการณ์" })}: {p.predictedScore}</span>
                 )}
@@ -482,12 +518,116 @@ function FixtureList({
             </div>
           )}
 
-          <span style={{ fontSize: 10, color: "var(--ink-1)", fontFamily: "var(--font-mono)" }}>
-            {p.code}
-          </span>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-end",
+              gap: 4,
+              minWidth: 110,
+            }}
+          >
+            <RowAction project={p} loc={loc} />
+            <span style={{ fontSize: 10, color: "var(--ink-1)", fontFamily: "var(--font-mono)" }}>
+              {p.code}
+            </span>
+          </div>
         </div>
       ))}
     </div>
+  );
+}
+
+/**
+ * RowAction — the labeled call-to-action button per fixture row.
+ *
+ * Per the design directive: every button is plainly named. No
+ * glyph-only chevrons, no "click anywhere on the row" mystery. The
+ * action a director can take depends on game status:
+ *
+ *   open / drafting → OPEN FORMATION (jumps to Formation tab to staff)
+ *   active          → INSPECT TEAM   (jumps to Formation to review)
+ *   pending         → (Pending Reviews section has its own RECORD
+ *                     OUTCOME button — no duplicate here)
+ *   resolved        → VIEW REPORT   (future — reads stored outcome)
+ *
+ * Stops propagation so the row's whole-card click handler does NOT
+ * also fire — only the explicit button triggers navigation.
+ */
+function RowAction({
+  project,
+  loc,
+}: {
+  project: FixtureProject;
+  loc: "en" | "th";
+}) {
+  const { gameStatus } = project;
+
+  let label: string;
+  let tone: string;
+  let onClick: ((e: React.MouseEvent) => void) | null = null;
+
+  switch (gameStatus) {
+    case "open":
+    case "drafting": {
+      label = translate(loc, { en: "Open Formation", th: "เปิดบอร์ดทีม" });
+      tone = "var(--rpg-yellow)";
+      onClick = (e) => {
+        e.stopPropagation();
+        window.location.href = `/command-center?screen=formation&pid=${project.projectId}`;
+      };
+      break;
+    }
+    case "active": {
+      label = translate(loc, { en: "Inspect Team", th: "ดูทีม" });
+      tone = "var(--rpg-green)";
+      onClick = (e) => {
+        e.stopPropagation();
+        window.location.href = `/command-center?screen=formation&pid=${project.projectId}`;
+      };
+      break;
+    }
+    case "pending":
+    case "completed": {
+      // Pending Reviews section above already renders the
+      // "Record Outcome" button. Don't double up here.
+      return null;
+    }
+    case "resolved": {
+      label = translate(loc, { en: "View Report", th: "ดูรายงาน" });
+      tone = "var(--rpg-purple, #9F7BFF)";
+      onClick = (e) => {
+        e.stopPropagation();
+        window.location.href = `/command-center?screen=insights&pid=${project.projectId}`;
+      };
+      break;
+    }
+    default: {
+      return null;
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={onClick ?? undefined}
+      aria-label={`${label} for ${project.name}`}
+      style={{
+        border: `1px solid ${tone}`,
+        background: "transparent",
+        color: tone,
+        cursor: "pointer",
+        fontFamily: "inherit",
+        fontSize: 9,
+        fontWeight: 800,
+        letterSpacing: "0.10em",
+        textTransform: "uppercase",
+        padding: "4px 10px",
+        whiteSpace: "nowrap",
+      }}
+    >
+      {label}
+    </button>
   );
 }
 

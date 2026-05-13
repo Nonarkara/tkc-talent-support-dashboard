@@ -35,7 +35,7 @@ interface SlotMap {
   paperwork?: number;
 }
 
-const ANNUAL_TARGET_THB = 1_500_000_000;
+const ANNUAL_TARGET_THB = 4_000_000_000; // PMO Base Case 2026 (Roadmap 2026-05-07)
 
 function sumSlots(slots: SlotMap | null | undefined): number {
   if (!slots) return 0;
@@ -188,7 +188,7 @@ export function PortfolioStrip({ dash }: { dash: DashboardPayload }) {
           label="Project Value"
           big={`${value_pct}%`}
           subline={`${thb(rollup.total_value)} / ${thb(ANNUAL_TARGET_THB)}`}
-          tooltip="Sum of project budgets versus the kingdom's annual revenue target. The PMO target is currently set to ฿1.5B placeholder — replace from PMO config when wired."
+          tooltip="Sum of project budgets versus the PMO 2026 Base Case revenue target of ฿4.0B (Best Case ฿6.9B). See TKC_PMO_Roadmap_20260507.pdf §1.1."
           bar={value_pct}
           barTone={value_pct >= 90 ? "good" : value_pct >= 60 ? "watch" : "bad"}
         />

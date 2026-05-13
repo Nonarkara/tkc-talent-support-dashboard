@@ -13,7 +13,7 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import { startTransition, useEffect, useMemo, useState } from "react";
+import { startTransition, useEffect, useMemo, useRef, useState } from "react";
 import { MenuWindow } from "@/components/MenuWindow";
 import { CockpitTab } from "./_tabs/CockpitTab";
 import { FixtureTab } from "./_tabs/FixtureTab";
@@ -25,6 +25,7 @@ import { MatrixTab } from "./_tabs/MatrixTab";
 import { LobbyTab } from "./_tabs/LobbyTab";
 import { LedgerTab } from "./_tabs/LedgerTab";
 import { InsightsTab } from "./_tabs/InsightsTab";
+import { ProjectHealthPage } from "@/components/ProjectHealthCard";
 import { useDashboard } from "./_shared/useDashboard";
 import type { DashboardPayload, RouteScreen, Screen } from "./_shared/types";
 import { tkcTicker, TKC_ANNUAL, isAnchor } from "@/lib/company-pulse";
@@ -42,6 +43,9 @@ type RouteMetric = {
   hint?: string;
 };
 
+// PMO Parity (key: "health") landed in migration 030. Eleventh route,
+// shortcut "P" — keyboard handler is digit-only so this one is mouse/URL
+// driven. Driven by /api/db/project-health.
 const ROUTES: Array<{ key: RouteScreen; shortcut: string }> = [
   { key: "cockpit", shortcut: "1" },
   { key: "formation", shortcut: "2" },
@@ -53,6 +57,7 @@ const ROUTES: Array<{ key: RouteScreen; shortcut: string }> = [
   { key: "ledger", shortcut: "8" },
   { key: "insights", shortcut: "9" },
   { key: "fixture", shortcut: "0" },
+  { key: "health", shortcut: "P" },
 ];
 
 const ROUTE_ACCENT: Record<RouteScreen, string> = {
@@ -66,6 +71,7 @@ const ROUTE_ACCENT: Record<RouteScreen, string> = {
   lobby: "#d8411f",
   ledger: "#f3b61f",
   insights: "#9F7BFF",
+  health: "#FB923C",
 };
 
 type RouteMeta = { kicker: string; title: string; deck: string; accent: string };
@@ -249,11 +255,22 @@ export default function CommandCenterPage() {
       setScreen(requested);
       if (requested !== "home") setHomeSelection(requested);
     }
+    // Now safe to let the URL-write effect run.
+    urlReadRef.current = true;
 
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
+  // Track whether the initial URL-sync effect (below) has consumed
+  // the boot-time `?screen=…` param. Without this, the URL-write
+  // effect would fire on mount with state="home", see "health" in the
+  // URL, and strip the param before the boot-time URL-read effect
+  // gets to call setScreen("health"). That race meant /screen=health
+  // would always bounce to Boss Room.
+  const urlReadRef = useRef(false);
+
   useEffect(() => {
+    if (!urlReadRef.current) return;
     const params = new URLSearchParams(window.location.search);
     const current = params.get("screen") || "home";
     if (current === screen) return;
@@ -265,7 +282,7 @@ export default function CommandCenterPage() {
     }
     const next = params.toString();
     const target = next ? `${window.location.pathname}?${next}` : window.location.pathname;
-    
+
     // Only push if we are navigating manually, not via popstate
     window.history.pushState({ screen }, "", target);
   }, [screen]);
@@ -948,6 +965,10 @@ function RouteContent({
       return <LedgerTab dash={dash} />;
     case "insights":
       return <InsightsTab dash={dash} />;
+    case "health":
+      // dash prop unused; ProjectHealthPage fetches its own /api endpoint.
+      void dash;
+      return <ProjectHealthPage />;
     default:
       return null;
   }
