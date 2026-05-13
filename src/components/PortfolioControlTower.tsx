@@ -229,6 +229,24 @@ function SectionHeader({ numeral, label_en, label_th }: { numeral: string; label
       <span style={{ color: "var(--rpg-yellow, #ca8a04)" }}>{numeral}</span>
       <span>{label_en}</span>
       <span style={{ color: "rgba(255,255,255,0.55)", fontSize: 11, fontWeight: 500 }}>· {label_th}</span>
+      <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 6, fontSize: 9, opacity: 0.6 }}>
+        <span style={{ 
+          width: 6, 
+          height: 6, 
+          borderRadius: "50%", 
+          background: "#10b981", 
+          boxShadow: "0 0 4px #10b981",
+          animation: "pulse 2s infinite" 
+        }} />
+        <span>LIVE DATA</span>
+      </div>
+      <style jsx>{`
+        @keyframes pulse {
+          0% { opacity: 0.4; transform: scale(0.8); }
+          50% { opacity: 1; transform: scale(1.1); }
+          100% { opacity: 0.4; transform: scale(0.8); }
+        }
+      `}</style>
     </header>
   );
 }

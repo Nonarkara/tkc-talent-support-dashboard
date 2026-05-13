@@ -1013,11 +1013,12 @@ export async function restorePlayersFromSheet(): Promise<RestoreResult> {
  * and the slot BOM.
  *
  * DB writes: UPSERT projects(code, name, client_name, status, priority,
+ *   budget_thb, internal_budget_thb, progress_pct, dates,
  *   game scores, lock/source, project_slots, team_size).
  *
- * Lossy: filled_pct, league_points (recomputed). Missing: description,
- * budget_thb, monthly_ceiling, gross_margin_pct, required_skills,
- * progress_pct, dates, division/dept association — kept untouched on
+ * Lossy: filled_pct (recomputed). Missing: description,
+ * monthly_ceiling, gross_margin_pct, required_skills,
+ * division/dept association — kept untouched on
  * UPDATE; defaulted on INSERT.
  */
 export async function restoreProjectsFromSheet(): Promise<RestoreResult> {
@@ -1074,27 +1075,38 @@ export async function restoreProjectsFromSheet(): Promise<RestoreResult> {
       const out = await query<{ xmax: string }>(
         `INSERT INTO projects (
            code, name, client_name, status, priority,
+           budget_thb, internal_budget_thb, progress_pct,
+           start_date, end_date,
            complexity_score, urgency_score, strategic_value_score,
            delivery_risk_score, ai_leverage_score,
+           overall_score,
            config_locked, config_lock_reason, config_source,
            project_slots, team_size
          )
          VALUES (
            $1, $2, $3, $4, $5,
-           $6, $7, $8, $9, $10,
-           $11, $12, NULLIF($13, ''),
-           $14::jsonb, $15
+           $6, $7, $8,
+           $9, $10,
+           $11, $12, $13, $14, $15,
+           $16, $17, $18, NULLIF($19, ''),
+           $20::jsonb, $21
          )
          ON CONFLICT (code) DO UPDATE SET
            name          = EXCLUDED.name,
            client_name   = COALESCE(EXCLUDED.client_name, projects.client_name),
            status        = EXCLUDED.status,
            priority      = EXCLUDED.priority,
+           budget_thb    = EXCLUDED.budget_thb,
+           internal_budget_thb = EXCLUDED.internal_budget_thb,
+           progress_pct  = EXCLUDED.progress_pct,
+           start_date    = EXCLUDED.start_date,
+           end_date      = EXCLUDED.end_date,
            complexity_score = EXCLUDED.complexity_score,
            urgency_score = EXCLUDED.urgency_score,
            strategic_value_score = EXCLUDED.strategic_value_score,
            delivery_risk_score = EXCLUDED.delivery_risk_score,
            ai_leverage_score = EXCLUDED.ai_leverage_score,
+           overall_score = EXCLUDED.overall_score,
            config_locked = EXCLUDED.config_locked,
            config_lock_reason = EXCLUDED.config_lock_reason,
            config_source = COALESCE(EXCLUDED.config_source, projects.config_source),
@@ -1108,11 +1120,17 @@ export async function restoreProjectsFromSheet(): Promise<RestoreResult> {
           r.client?.trim() || null,
           status,
           priority,
+          intOrZero(r.budget_thb),
+          intOrZero(r.internal_budget_thb),
+          intOrZero(r.progress_pct),
+          r.start_date?.trim() || null,
+          r.end_date?.trim() || null,
           scoreOr(r.complexity_score, 50),
           scoreOr(r.urgency_score, 50),
           scoreOr(r.strategic_value_score, 50),
           scoreOr(r.delivery_risk_score, 50),
           scoreOr(r.ai_leverage_score, 50),
+          intOrZero(r.league_points),
           locked,
           locked ? r.config_reason?.trim() || "Restored locked state from Sheets" : null,
           r.config_source?.trim() ?? "",

@@ -626,8 +626,8 @@ function RestorePanel({
         }}
       >
         {translate(loc, {
-          en: "Reverse direction. Reads the Sheet rows back into Postgres if the database has been wiped or seeded fresh. UPSERTs only — never deletes. Computed columns (HP, MP, token cost, league points) are skipped and recomputed on next save.",
-          th: "ทิศทางย้อนกลับ อ่านแถวจากชีตกลับเข้าฐานข้อมูล Postgres ในกรณีฐานข้อมูลถูกล้างหรือเริ่มใหม่ ใช้ UPSERT เท่านั้น ไม่ลบข้อมูล คอลัมน์ที่คำนวณได้ (HP, MP, token cost, league points) จะถูกข้ามและคำนวณใหม่เมื่อบันทึกครั้งถัดไป",
+          en: "Reverse direction. Reads the Sheet rows back into Postgres if the database has been wiped or seeded fresh. UPSERTs only — never deletes. Restores projects (budgets, progress, dates, and league points), players (attributes and lock state), and resources. Recomputed columns (HP, MP, token cost) are re-derived on the next mirror update.",
+          th: "ทิศทางย้อนกลับ อ่านแถวจากชีตกลับเข้าฐานข้อมูล Postgres ในกรณีฐานข้อมูลถูกล้างหรือเริ่มใหม่ ใช้ UPSERT เท่านั้น ไม่ลบข้อมูล กู้คืนทั้งโครงการ (งบประมาณ ความคืบหน้า วันที่ และแต้มลีก) พนักงาน (ค่าพลังและสถานะล็อค) และทรัพยากร คอลัมน์ที่คำนวณซ้ำ (HP, MP, token cost) จะถูกคำนวณใหม่เมื่อมีการอัปเดตครั้งถัดไป",
         })}
       </p>
 
