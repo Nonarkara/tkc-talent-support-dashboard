@@ -2547,6 +2547,24 @@ if (canonHost) {
 // ── Changelog ──
 const CHANGELOG = [
   {
+    version: "v4.6.3", codename: "TOWER", date: "14 พ.ค. 2569", accent: "#15803d", major: true,
+    title: "PMO Control Tower · สามเอไอ ทำงานร่วมกัน บนหอควบคุม PMO",
+    desc: "ทีมเอไอสามตัว — Claude, Antigravity, Kimi — มาเจอกันบนหอควบคุมเดียวกัน โดยอ่าน PDF จาก PMO (Portfolio Dashboard 27 เม.ย. + Roadmap 7 พ.ค.) เป็น spec · <strong>Antigravity</strong> rebuild <code>MatrixTab</code> ทั้งหน้า (783 lines) ให้เป็น PMO Control Tower แบบ Roadmap deck — Q2 Standardize / Q3 Control / Q4 Optimize + 5 business lines (Pananan, Wanchai, Sakol, DMD Op Piya) · <strong>Claude</strong> ขยาย <code>/api/db/project-health</code> ให้คืน portfolio rollup + สร้าง shared <code>PortfolioControlTower</code> component แบบ bilingual (EN+ไทย) สำหรับ PMO Dashboard deck (page 4) · <strong>Kimi</strong>'s real-time game loop จาก 12 พ.ค. ยังอยู่ unchanged เป็น substrate · หนึ่ง endpoint, สอง surface, ศูนย์ merge conflict · เป้ารายได้ปรับเป็น ฿4.0B Base Case (Roadmap p.2)",
+    tags: ["pmo", "control-tower", "multi-agent", "bilingual", "real-data"]
+  },
+  {
+    version: "v4.6.2", codename: "PARITY", date: "13 พ.ค. 2569", accent: "#D4A843", major: true,
+    title: "PMO Parity · สอดคล้องกับ Portfolio Dashboard ของฝ่าย PMO",
+    desc: "Migration 030 เพิ่ม 3 ตาราง: <code>project_issues</code>, <code>project_risks</code>, <code>project_instalments</code> + columns <code>pm_id</code>, <code>internal_budget_thb</code>, <code>project_year</code> · Demo backfill: 5 งวดต่อโครงการ + 0-3 issue + 0-2 risk · <strong>/api/db/project-health</strong> endpoint คืน per-project card data แบบ PMO PDF page 5 · <strong>/project-health</strong> route สำหรับเปิดให้ฝ่าย PMO ดูในการประชุม 14 พ.ค. · ช่องที่ยังไม่มีข้อมูล (Timesheet, ERP) แสดง <code>DATA PENDING</code> banner ชัดเจน — gap เห็นได้ ไม่ถูกซ่อน · 8 cards, 16 DATA PENDING banners",
+    tags: ["pmo", "schema", "data-pending", "meeting-ready"]
+  },
+  {
+    version: "v4.6.1", codename: "GAME LOOP", date: "12 พ.ค. 2569", accent: "#5B89B5", major: true,
+    title: "Real-Time Game Loop · cassette เดินเองได้แม้คุณไม่เล่น",
+    desc: "<strong>Kimi</strong> commit <code>a8c7dc3</code> · <code>game-clock.ts</code> เป็น lazy world-state engine แบบ Animal Crossing — เมื่อ director login แล้ว cassette คำนวณ \"สิ่งที่ควรเกิดขึ้นตั้งแต่ครั้งก่อน\" อัตโนมัติ · <code>match-engine.ts</code> เป็น CM95-style stochastic match simulator คืน <code>MatchReport</code> ที่ reproducible (timeline, quality, per-player stat deltas, named events) · Migration 029 เพิ่ม <code>game_events</code> table (newspaper \"while you were away\") + <code>projects.director_id</code> + outcome enrichments · 4 API routes ใหม่ · FixtureTab on shortcut <strong>0</strong> · <strong>Claude</strong> ตามด้วยการเพิ่ม labelled action buttons (OPEN FORMATION / INSPECT TEAM / VIEW REPORT) และ red NO TEAM LOCKED chip บน active match ที่ไม่มี team",
+    tags: ["game-loop", "match-engine", "world-state", "kimi"]
+  },
+  {
     version: "v4.6", codename: "PULSE", date: "พ.ค. 2569", accent: "#C44D3F", major: true,
     title: "Org Pulse + Hiring Gauge · จับชีพจรองค์กร",
     desc: "<strong>/api/pulse</strong> รวม active heroes, in-office check-ins, skill family stack, department head-counts, anchor count, ghost count แล้ว render เป็น banner แรกที่เห็นหลัง login · <strong>/api/hiring</strong> อ่าน 33 ประกาศรับสมัครจริงของ TKC แล้วคำนวณ need-gauge ต่อตำแหน่ง (HOT/WARM/COVERED/DEEP) โดย token-matching กับ title + skill ของพนักงานปัจจุบัน",
