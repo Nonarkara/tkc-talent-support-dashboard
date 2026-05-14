@@ -2547,6 +2547,12 @@ if (canonHost) {
 // ── Changelog ──
 const CHANGELOG = [
   {
+    version: "v4.6.5", codename: "HANDBOOK", date: "14 พ.ค. 2569", accent: "#9f2e2e", major: true,
+    title: "Player's Handbook · คู่มือเกมพลิกหน้าได้จริง บนหน้า Ledger",
+    desc: "คู่มือผู้เล่นแบบเกมคลาสสิก ฉบับสองภาษา EN/TH · 13 spreads ครอบคลุมเรื่องราว, เจ็ดวีรบุรุษ, หกค่าพลัง, อาคาร + Lobby + เส้นเชื่อมที่มองไม่เห็น, การลงทะเบียนภารกิจ + กฎ 10×, การจัดทีม + readiness formula, รอบสัปดาห์ + feedback loop, ห้ากับดักและกฎ ๘๐%, ผู้สังเกตการณ์ PMO, เกมที่ไม่มีจบ · สไตล์อิงจาก <strong>Championship Manager Italia '95</strong> (Domark) แถบสีแดงหัวข้อ + คอลัมน์ผลสกอร์ข้างขอบ, <strong>Dragon Warrior III Explorer's Handbook</strong> (Enix America 1991) สีกระดาษพาร์ชเมนต์ + คำบรรยายภาพ \"Picture N\", และ <strong>CM 01/02</strong> วงแขนเฮ็กซ์ · นำทางด้วย ◀ PREV / ▶ NEXT ปุ่ม + คีย์ ← → + คลิกแถวสารบัญเพื่อกระโดด · วางบนหน้า Ledger เพราะที่นี่คือที่เก็บบันทึก — Sheets mirror + Bootstrap + restore — และคู่มือก็เป็นส่วนหนึ่งของบันทึก ในแบบที่มนุษย์อ่านได้",
+    tags: ["handbook", "flipbook", "bilingual", "dq3", "cm95", "ledger"]
+  },
+  {
     version: "v4.6.4", codename: "MIRROR", date: "14 พ.ค. 2569", accent: "#5B89B5",
     title: "Full Sheets Restore + LIVE indicator · กระจกครอบคลุมเต็มงบ",
     desc: "<strong>Kimi</strong> ปิดช่องว่างใน restore path · <code>restoreProjectsFromSheet</code> เดิมขาด <code>budget_thb</code>, <code>internal_budget_thb</code>, <code>progress_pct</code>, <code>start_date</code>, <code>end_date</code>, <code>overall_score</code> — ถ้า DB ถูกล้างแล้วเรียก restore กลับมา ฟิลด์เหล่านี้จะหายเงียบๆ ตอนนี้ครบทั้งหมดแล้ว · <strong>PortfolioControlTower</strong> ได้ LIVE DATA pulse indicator สีเขียวที่ขวาของแต่ละ section header — สื่อว่า cassette กำลังหายใจอยู่ ไม่ใช่ภาพถ่ายเก่า · <strong>LedgerTab</strong> bilingual copy แม่นยำขึ้น — บอกชัดว่า restore ครอบคลุม projects (งบ, ความคืบหน้า, วันที่, league points), players (ค่าพลังและสถานะล็อค), resources",

@@ -14,6 +14,7 @@
 
 import type { CSSProperties } from "react";
 import { startTransition, useEffect, useMemo, useRef, useState } from "react";
+import { BookOpen, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { MenuWindow } from "@/components/MenuWindow";
 import { CockpitTab } from "./_tabs/CockpitTab";
 import { FixtureTab } from "./_tabs/FixtureTab";
@@ -139,6 +140,7 @@ export default function CommandCenterPage() {
   const [homeSelection, setHomeSelection] = useState<RouteScreen>("cockpit");
   const [history, setHistory] = useState<Screen[]>([]);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [manualOpen, setManualOpen] = useState(false);
   const [syncOpen, setSyncOpen] = useState(false);
   const [sheetsHealth, setSheetsHealth] = useState<SheetsHealth | null>(null);
   const dash = useDashboard();
@@ -296,6 +298,11 @@ export default function CommandCenterPage() {
       const k = e.key.toLowerCase();
 
       if (e.key === "Escape") {
+        if (manualOpen) {
+          setManualOpen(false);
+          e.preventDefault();
+          return;
+        }
         if (syncOpen) {
           setSyncOpen(false);
           e.preventDefault();
@@ -323,6 +330,11 @@ export default function CommandCenterPage() {
         e.preventDefault();
         return;
       }
+      if (k === "?") {
+        setManualOpen((prev) => !prev);
+        e.preventDefault();
+        return;
+      }
 
       // Numeric 1-6 jumps to ROUTES[index].
       const idx = Number.parseInt(e.key, 10);
@@ -335,7 +347,7 @@ export default function CommandCenterPage() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [screen, menuOpen, syncOpen, history.length]);
+  }, [screen, menuOpen, manualOpen, syncOpen, history.length]);
 
   const activeProjects = dash.projects.filter((project) => project.status !== "done").length;
   const chemistryScore = Math.round(aggregateChemistry(dash.teams));
@@ -520,6 +532,15 @@ export default function CommandCenterPage() {
             <button
               type="button"
               className="cc-nav-button"
+              onClick={() => setManualOpen(true)}
+              title="Open the player manual"
+            >
+              <BookOpen size={14} aria-hidden="true" />
+              {translate(loc, { en: "Manual", th: "คู่มือ" })}
+            </button>
+            <button
+              type="button"
+              className="cc-nav-button"
               onClick={() => navigateTo("ledger")}
               title="Open the in-app company ledger and sync status"
             >
@@ -645,6 +666,18 @@ export default function CommandCenterPage() {
             />
           )}
 
+          {manualOpen && (
+            <ManualOverlay
+              activeRoute={activeRoute}
+              onClose={() => setManualOpen(false)}
+              onNavigate={(route) => {
+                setManualOpen(false);
+                navigateTo(route);
+              }}
+              loc={loc}
+            />
+          )}
+
           {syncOpen && (
             <SyncStatusPopup
               health={sheetsHealth}
@@ -657,6 +690,7 @@ export default function CommandCenterPage() {
           <span><kbd>Esc</kbd> {translate(loc, NAV.back)}</span>
           <span><kbd>H</kbd> {translate(loc, NAV.home)}</span>
           <span><kbd>M</kbd> {translate(loc, NAV.menu)}</span>
+          <span><kbd>?</kbd> {translate(loc, { en: "Manual", th: "คู่มือ" })}</span>
           <span><kbd>1</kbd>–<kbd>9</kbd><kbd>0</kbd> {translate(loc, { en: "Route", th: "เส้นทาง" })}</span>
         </div>
       </main>
@@ -885,6 +919,224 @@ function HomeScreen({
           )}
         </MenuWindow>
       </div>
+      </div>
+    </div>
+  );
+}
+
+type ManualPage = {
+  eyebrow: string;
+  title: string;
+  body: string;
+  steps: string[];
+  buttons: Array<{ label: string; action: string; route?: RouteScreen }>;
+};
+
+const MANUAL_PAGES: ManualPage[] = [
+  {
+    eyebrow: "READ FIRST",
+    title: "You are running a kingdom, not reading a dashboard",
+    body:
+      "Each project is a quest. Each employee is a hero with limits, strengths, fatigue, salary cost, and social fit. The game is endless: improve the chair, revenue, buzz, and share-price signal by making better weekly formation decisions.",
+    steps: [
+      "Start in Boss Room and read the Board Pulse.",
+      "Open Fixture List to see which quests are open, active, waiting for review, or done.",
+      "Use Formation Board or Ninja Squad Builder to staff the quest.",
+      "Lock the squad only when budget, skills, chemistry, and morale all make sense.",
+      "Record the outcome after the work lands. The gap between prediction and reality is how the kingdom learns.",
+    ],
+    buttons: [
+      { label: "Home", action: "Return to Boss Room without losing the selected route." },
+      { label: "Menu", action: "Open the route chooser for every playable screen." },
+      { label: "Back / Esc", action: "Move one browser-history step back. Esc also closes overlays first." },
+      { label: "Manual / ?", action: "Open or close this player manual." },
+    ],
+  },
+  {
+    eyebrow: "BOSS ROOM",
+    title: "Read the board before moving pieces",
+    body:
+      "The first screen is a morning ritual. It tells you whether the game is using live data, how the company pulse feels, which routes matter today, and whether the save pipe is healthy.",
+    steps: [
+      "Use Command List to preview a route, then press Enter on the preview or click the route itself.",
+      "Board Pulse gives the quick compass: active quests, chemistry, at-risk heroes, anchors, support load, and roster size.",
+      "System Linkage shows whether the data pipes are connected. Check Ledger before save-heavy sessions.",
+      "Operator Notes become warnings when the app falls back to seeded demo data.",
+    ],
+    buttons: [
+      { label: "Enter", action: "Open the selected route from the preview panel." },
+      { label: "Live / Demo / Offline", action: "Refresh dashboard data. Purple Demo means local fallback, green Live means Neon DB." },
+      { label: "DB / Sync / Err", action: "Open Sheets mirror status. Err means a missing or broken memory-card tab." },
+      { label: "TH / EN", action: "Switch shell language." },
+      { label: "Sign Out", action: "Clear the access cookie and return to login." },
+    ],
+  },
+  {
+    eyebrow: "ROUTES",
+    title: "Every route has a job",
+    body:
+      "The route menu is the cartridge map. Use number keys for speed after you know the board. Health uses the P route button because the number row is already full.",
+    steps: [
+      "1 Company Pulse: read financial tempo, KPIs, and active quest pressure.",
+      "0 Fixture List: advance the season from open quest to outcome review.",
+      "2 Formation Board: assign heroes to real project slots and lock squads.",
+      "3 Ninja Squad Builder: build a compact skill-first squad and save it as a quest.",
+      "4 Matrix / PMO: compare strategy, resource pressure, and capability demand.",
+      "5 Roster, 6 Signals, 7 Lobby, 8 Ledger, 9 Insights, P Health: inspect people, risk, floor motion, saves, analytics, and PMO parity.",
+    ],
+    buttons: ROUTES.map((route) => ({
+      label: route.shortcut,
+      action: `${SCREEN[route.key].title.en}: ${SCREEN[route.key].deck.en}`,
+      route: route.key,
+    })),
+  },
+  {
+    eyebrow: "FORMATION",
+    title: "Build parties like you mean it",
+    body:
+      "Formation is the main game mechanic. A high readiness score is not enough if the team is over cap. A legal team with weak chemistry may ship once and damage the kingdom later. Read all gates together.",
+    steps: [
+      "Pick an active quest, then fill required slots with heroes from the pool.",
+      "Use filters to find people by department, class, fit, availability, and risk signal.",
+      "Cycle party row on assigned heroes: front, middle, back. Captain up front plus support in back earns the DQ3-style chemistry lift.",
+      "Watch Capacity Points, missing skills, chemistry, quality, morale, and party split before committing.",
+      "Save/Lock writes to the ledger and makes the quest active. Unlocking values should be deliberate because the audit log records it.",
+    ],
+    buttons: [
+      { label: "Assign / hero card", action: "Place a hero into the selected project slot." },
+      { label: "Party row", action: "Cycle front, middle, and back row for chemistry calculation." },
+      { label: "Save formation", action: "Persist the current board and mirror it to Sheets when configured." },
+      { label: "Lock squad", action: "Start the game loop for the project with predicted scores and team state." },
+      { label: "+ / - value controls", action: "Manual score edits work only after unlock and write to the adjustment log." },
+    ],
+  },
+  {
+    eyebrow: "FLOOR AND MEMORY",
+    title: "The kingdom keeps moving after deployment",
+    body:
+      "Lobby, Signals, Ledger, and Health make the game honest. They show whether people are present, overloaded, drifting, supported, and recorded.",
+    steps: [
+      "Lobby check-in shows who is on the floor and who naturally clusters. It is a visibility tool, not a prescription.",
+      "Signals surfaces risk and support actions before they become resignation or delivery problems.",
+      "Ledger confirms that Postgres and the Google Sheets memory card are in step.",
+      "Project Health mirrors PMO language so the game and the business review can talk to each other.",
+      "When a quest ends, record the outcome. Prediction versus reality is more important than a perfect-looking draft.",
+    ],
+    buttons: [
+      { label: "Check In / Check Out", action: "Toggle a hero's floor presence in the Lobby." },
+      { label: "Create missing tabs", action: "Bootstrap Sheets tabs when the memory card is configured but incomplete." },
+      { label: "Close Quest", action: "Record the real outcome and update the feedback loop." },
+      { label: "Open Tome", action: "Inspect the printable story and quest history for one hero." },
+    ],
+  },
+];
+
+function ManualOverlay({
+  activeRoute,
+  onClose,
+  onNavigate,
+  loc,
+}: {
+  activeRoute: RouteScreen;
+  onClose: () => void;
+  onNavigate: (route: RouteScreen) => void;
+  loc: Locale;
+}) {
+  const [pageIndex, setPageIndex] = useState(0);
+  const [turning, setTurning] = useState<"prev" | "next" | null>(null);
+  const page = MANUAL_PAGES[pageIndex];
+  const activeTitle = SCREEN[activeRoute].title.en;
+
+  function flip(nextIndex: number, direction: "prev" | "next") {
+    setTurning(direction);
+    window.setTimeout(() => {
+      setPageIndex(nextIndex);
+      setTurning(null);
+    }, 120);
+  }
+
+  function prevPage() {
+    if (pageIndex === 0) return;
+    flip(pageIndex - 1, "prev");
+  }
+
+  function nextPage() {
+    if (pageIndex >= MANUAL_PAGES.length - 1) return;
+    flip(pageIndex + 1, "next");
+  }
+
+  return (
+    <div className="cc-overlay cc-manual-overlay" role="dialog" aria-modal="true" aria-label="Player manual">
+      <div className="cc-overlay-scrim" onClick={onClose} />
+      <div className="cc-manual-window">
+        <div className="cc-manual-chrome">
+          <div>
+            <span className="cc-manual-kicker">{page.eyebrow}</span>
+            <h2>TKCX Player Manual</h2>
+            <p>Current route: {activeTitle}</p>
+          </div>
+          <button type="button" className="cc-icon-button" onClick={onClose} aria-label="Close manual">
+            <X size={18} aria-hidden="true" />
+          </button>
+        </div>
+
+        <div className="cc-manual-book" data-turning={turning ?? "idle"}>
+          <section className="cc-manual-page" aria-live="polite">
+            <div className="cc-manual-page-number">
+              Page {pageIndex + 1} / {MANUAL_PAGES.length}
+            </div>
+            <h3>{page.title}</h3>
+            <p>{page.body}</p>
+            <ol className="cc-manual-steps">
+              {page.steps.map((step) => (
+                <li key={step}>{step}</li>
+              ))}
+            </ol>
+          </section>
+
+          <section className="cc-manual-page cc-manual-buttons">
+            <div className="cc-manual-page-number">Button map</div>
+            <div className="cc-manual-button-list">
+              {page.buttons.map((button) => (
+                <button
+                  key={`${page.title}-${button.label}`}
+                  type="button"
+                  className="cc-manual-button-row"
+                  onClick={button.route ? () => onNavigate(button.route!) : undefined}
+                  disabled={!button.route}
+                >
+                  <strong>{button.label}</strong>
+                  <span>{button.action}</span>
+                </button>
+              ))}
+            </div>
+          </section>
+        </div>
+
+        <div className="cc-manual-controls">
+          <button type="button" className="cc-nav-button" onClick={prevPage} disabled={pageIndex === 0}>
+            <ChevronLeft size={15} aria-hidden="true" />
+            {translate(loc, { en: "Prev", th: "ก่อนหน้า" })}
+          </button>
+          <div className="cc-manual-dots" aria-label="Manual pages">
+            {MANUAL_PAGES.map((manualPage, idx) => (
+              <button
+                key={manualPage.title}
+                type="button"
+                aria-label={`Open manual page ${idx + 1}`}
+                data-active={idx === pageIndex ? "true" : "false"}
+                onClick={() => {
+                  if (idx === pageIndex) return;
+                  flip(idx, idx > pageIndex ? "next" : "prev");
+                }}
+              />
+            ))}
+          </div>
+          <button type="button" className="cc-nav-button" onClick={nextPage} disabled={pageIndex >= MANUAL_PAGES.length - 1}>
+            {translate(loc, { en: "Next", th: "ถัดไป" })}
+            <ChevronRight size={15} aria-hidden="true" />
+          </button>
+        </div>
       </div>
     </div>
   );

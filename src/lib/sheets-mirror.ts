@@ -134,12 +134,15 @@ interface ProjectMirrorRow {
   status: string;
   priority: string;
   budget_thb: number | null;
+  internal_budget_thb: number | null;
   monthly_ceiling: number | null;
   gross_margin_pct: number | null;
   required_skills: string[] | null;
   team_size: number | null;
   project_slots: Record<string, number> | null;
   progress_pct: number | null;
+  start_date: string | null;
+  end_date: string | null;
   overall_score: number | null;
   complexity_score: number | null;
   urgency_score: number | null;
@@ -159,8 +162,9 @@ export async function mirrorProject(projectCode: string): Promise<void> {
     const rows = await query<ProjectMirrorRow>(
       `SELECT
          p.id, p.code, p.name, p.client_name, p.status, p.priority,
-         p.budget_thb, p.monthly_ceiling, p.gross_margin_pct,
+         p.budget_thb, p.internal_budget_thb, p.monthly_ceiling, p.gross_margin_pct,
          p.required_skills, p.team_size, p.project_slots, p.progress_pct,
+         p.start_date::text AS start_date, p.end_date::text AS end_date,
          p.complexity_score, p.urgency_score, p.strategic_value_score,
          p.delivery_risk_score, p.ai_leverage_score,
          COALESCE(p.config_locked, false) AS config_locked,
@@ -199,6 +203,11 @@ export async function mirrorProject(projectCode: string): Promise<void> {
       client: project.client_name ?? "",
       status: project.status,
       priority: project.priority,
+      budget_thb: project.budget_thb ?? "",
+      internal_budget_thb: project.internal_budget_thb ?? "",
+      progress_pct: project.progress_pct ?? "",
+      start_date: project.start_date ?? "",
+      end_date: project.end_date ?? "",
       complexity_score: project.complexity_score ?? 50,
       urgency_score: project.urgency_score ?? 50,
       strategic_value_score: project.strategic_value_score ?? 50,

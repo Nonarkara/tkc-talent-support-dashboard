@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import { MenuWindow } from "@/components/MenuWindow";
 import { translate, useLocale } from "@/lib/i18n";
 import { LEDGER } from "@/lib/i18n-dict";
+import { HandbookFlipbook } from "@/components/HandbookFlipbook";
 import type { DashboardPayload } from "../_shared/types";
 
 type SheetsHealth = {
@@ -205,6 +206,32 @@ export function LedgerTab({ dash: _dash }: { dash: DashboardPayload }) {
         margin: "0 auto",
       }}
     >
+      {/* ── Panel 0: Player's Handbook (page-flipping) ─────────────
+          The cassette's archives surface. The handbook is here on
+          the Ledger because this is where the cassette's *records*
+          live — the Google Sheets mirror, the bootstrap controls,
+          the restore path. The Handbook is the human-readable rules
+          alongside the machine-readable ledger. */}
+      <div style={{ display: "grid", gap: 8 }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "baseline",
+            fontSize: 10,
+            letterSpacing: "0.14em",
+            textTransform: "uppercase",
+            color: "var(--text-muted, #7a6b54)",
+          }}
+        >
+          <span style={{ color: "var(--accent-gold, #D4A843)", fontWeight: 700 }}>
+            ⌥ Player&rsquo;s Handbook · คู่มือผู้เล่น
+          </span>
+          <span>← → keys to flip · กดลูกศรเพื่อพลิกหน้า</span>
+        </div>
+        <HandbookFlipbook />
+      </div>
+
       {/* ── Panel 1: Setup checklist ───────────────────────────────── */}
       <MenuWindow title={translate(loc, LEDGER.setup_heading)}>
         <div

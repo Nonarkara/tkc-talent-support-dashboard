@@ -49,6 +49,11 @@ interface ProjectRow {
   client_name: string | null;
   status: string;
   priority: string;
+  budget_thb: number | null;
+  internal_budget_thb: number | null;
+  progress_pct: number | null;
+  start_date: string | null;
+  end_date: string | null;
   complexity_score: number | null;
   urgency_score: number | null;
   strategic_value_score: number | null;
@@ -187,6 +192,8 @@ async function hydrateProjects(): Promise<Row[]> {
   if (!isDbConfigured()) return [];
   const rows = await query<ProjectRow>(`
     SELECT code, name, client_name, status, priority,
+           budget_thb, internal_budget_thb, progress_pct,
+           start_date::text AS start_date, end_date::text AS end_date,
            complexity_score, urgency_score, strategic_value_score,
            delivery_risk_score, ai_leverage_score,
            COALESCE(config_locked, false) AS config_locked,
@@ -213,6 +220,11 @@ async function hydrateProjects(): Promise<Row[]> {
       client: p.client_name ?? "—",
       status: p.status,
       priority: p.priority,
+      budget_thb: p.budget_thb ?? "",
+      internal_budget_thb: p.internal_budget_thb ?? "",
+      progress_pct: p.progress_pct ?? "",
+      start_date: p.start_date ?? "",
+      end_date: p.end_date ?? "",
       complexity_score: p.complexity_score ?? 50,
       urgency_score: p.urgency_score ?? 50,
       strategic_value_score: p.strategic_value_score ?? 50,

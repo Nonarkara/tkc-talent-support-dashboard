@@ -200,7 +200,7 @@ export async function GET() {
       const updated_ms = new Date(p.updated_at).getTime();
       const days_since_update = Math.floor((now - updated_ms) / (1000 * 60 * 60 * 24));
 
-      const days_until_deadline = end && end > now
+      const days_until_deadline = end
         ? Math.ceil((end - now) / (1000 * 60 * 60 * 24))
         : null;
 
