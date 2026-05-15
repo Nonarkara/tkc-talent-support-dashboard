@@ -226,7 +226,7 @@ export default function CommandCenterPage() {
           declared: [],
           missing: [],
           error: "health endpoint unreachable",
-          checked_at: new Date().toISOString(),
+          checked_at: "",
         });
       }
     }
@@ -421,7 +421,10 @@ export default function CommandCenterPage() {
         : "Demo";
 
   const grade = orgGrade(chemistryScore, activeEmployees.length, atRiskCount);
-  const daysLeft = sprintDaysLeft();
+  const [daysLeft, setDaysLeft] = useState(0);
+  useEffect(() => {
+    setDaysLeft(sprintDaysLeft());
+  }, []);
 
   const ticker = useMemo(() => {
     const stockData = liveStock ?? tkcTicker({ teams: dash.teams, projects: dash.projects });
@@ -647,7 +650,7 @@ export default function CommandCenterPage() {
                   openSupportActions,
                   heroCount: dash.employees.length,
                   orgGrade: orgGrade(chemistryScore, dash.employees.length, atRiskCount),
-                  sprintDaysLeft: sprintDaysLeft(),
+                  sprintDaysLeft: daysLeft,
                 }}
               />
             ) : (

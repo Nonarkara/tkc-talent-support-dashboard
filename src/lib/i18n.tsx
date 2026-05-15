@@ -52,21 +52,17 @@ const LocaleContext = createContext<LocaleContextValue>({
 export function LocaleProvider({ children }: { children: ReactNode }) {
   const [loc, setLocState] = useState<Locale>(DEFAULT_LOCALE);
 
-  // Hydrate from localStorage after mount — avoids SSR mismatch.
+  // Hydrate from localStorage after mount — useEffect runs after hydration,
+  // so this never causes a server/client mismatch.
   useEffect(() => {
-    let frame = 0;
     try {
       const stored = window.localStorage.getItem(STORAGE_KEY);
       if (stored === "en" || stored === "th") {
-        frame = requestAnimationFrame(() => setLocState(stored));
+        setLocState(stored);
       }
     } catch {
       // localStorage disabled — stay on default.
     }
-
-    return () => {
-      if (frame) cancelAnimationFrame(frame);
-    };
   }, []);
 
   const setLoc = useCallback((next: Locale) => {

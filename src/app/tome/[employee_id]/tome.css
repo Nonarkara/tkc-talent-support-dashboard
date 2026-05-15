@@ -698,3 +698,123 @@
   margin-bottom: 3pt;
   font-family: "IBM Plex Sans", sans-serif;
 }
+/* ── Mobile pass: Tome readable at 360px ── */
+@media screen and (max-width: 640px) {
+  .tome-root {
+    font-size: 12pt;
+    line-height: 1.5;
+  }
+
+  .tome-page {
+    width: 100%;
+    min-height: auto;
+    padding: 18px 16px 24px;
+    margin: 0;
+    box-shadow: none;
+    border-left: 0;
+    border-right: 0;
+    border-bottom: 1px solid rgba(24, 24, 22, 0.08);
+    page-break-after: auto;
+    break-after: auto;
+  }
+
+  .tome-letter-page {
+    padding: 18px 16px 24px;
+  }
+
+  .tome-letterhead-en {
+    font-size: 13pt;
+  }
+  .tome-letterhead-th {
+    font-size: 10pt;
+  }
+
+  .tome-letter-body p {
+    font-size: 11pt;
+    line-height: 1.6;
+    text-align: left;
+    text-justify: auto;
+  }
+
+  .tome-letter-signature {
+    width: 100%;
+    margin-top: 1cm;
+  }
+
+  .tome-section-h {
+    font-size: 20pt;
+  }
+  .tome-section-deck {
+    font-size: 11pt;
+  }
+
+  .tome-attrs {
+    grid-template-columns: 1fr;
+    gap: 6pt 0;
+  }
+
+  .tome-attr {
+    grid-template-columns: 30pt 32pt 1fr;
+    gap: 6pt;
+    padding: 4pt 0;
+  }
+
+  .tome-table {
+    font-size: 10.5pt;
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .tome-table th {
+    width: auto;
+    min-width: 100px;
+  }
+
+  .tome-quests {
+    font-size: 9.5pt;
+  }
+
+  .tome-chronicle-body {
+    font-size: 11pt;
+    line-height: 1.6;
+    text-indent: 0.5em;
+  }
+
+  .tome-tag-row {
+    gap: 4pt 6pt;
+  }
+
+  .tome-tag {
+    font-size: 9pt;
+    padding: 2pt 6pt;
+  }
+
+  .tome-strength-headline {
+    font-size: 11pt;
+  }
+  .tome-strength-evidence {
+    font-size: 10pt;
+  }
+
+  .tome-closing {
+    padding: 2cm 1cm;
+  }
+  .tome-closing-text {
+    font-size: 11pt;
+    text-align: left;
+    hyphens: none;
+  }
+
+  .tome-cover-name {
+    font-size: 24pt;
+  }
+  .tome-cover-thai {
+    font-size: 14pt;
+  }
+
+  .tome-ascensions li {
+    grid-template-columns: 1fr;
+    gap: 4pt;
+  }
+}

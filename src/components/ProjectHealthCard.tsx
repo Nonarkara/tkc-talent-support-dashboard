@@ -223,6 +223,7 @@ function Card({ card: c }: { card: HealthCard }) {
 
       {/* ── ROW 1: Progress · Timeline · Resource · Financing ── */}
       <div
+        className="project-health-row1"
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(4, 1fr)",
@@ -244,14 +245,16 @@ function Card({ card: c }: { card: HealthCard }) {
           <div style={{ fontSize: 9, color: "var(--ink-1)", textAlign: "right" }}>{fmtDate(c.end_date)}</div>
           {c.days_until_deadline !== null && (
             <div style={{ fontSize: 9, color: "var(--ink-1)" }}>
-              {c.days_until_deadline} days to deadline
+              {c.days_until_deadline >= 0
+                ? `${c.days_until_deadline} days to deadline`
+                : `${Math.abs(c.days_until_deadline)} days overdue`}
             </div>
           )}
         </Section>
 
         {/* Resource Utilization */}
         <Section label="Resource Utilization">
-          <div style={{ display: "flex", gap: 12, alignItems: "baseline" }}>
+          <div className="resource-flex" style={{ display: "flex", gap: 12, alignItems: "baseline" }}>
             <div>
               <div style={{ fontSize: 9, color: "var(--ink-1)" }}>Plan</div>
               <div style={{ fontSize: 18, fontWeight: 700, color: "var(--ink-0)", fontFamily: "var(--font-mono)" }}>
@@ -272,7 +275,7 @@ function Card({ card: c }: { card: HealthCard }) {
 
         {/* Financing (Exc. VAT) */}
         <Section label="Financing (Exc. VAT)">
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8, fontFamily: "var(--font-mono)" }}>
+          <div className="financing-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8, fontFamily: "var(--font-mono)" }}>
             <div>
               <div style={{ fontSize: 9, color: "var(--ink-1)" }}>Project Cost</div>
               <div style={{ fontSize: 15, fontWeight: 700, color: "var(--ink-0)" }}>{fmtM(c.project_cost_thb)}</div>
@@ -301,7 +304,7 @@ function Card({ card: c }: { card: HealthCard }) {
       </div>
 
       {/* ── ROW 2: Issues · Risks · Instalments ────────────────── */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 2fr", gap: 10 }}>
+      <div className="project-health-row2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 2fr", gap: 10 }}>
         <Section label={`Issue (${c.issues.total} open)`}>
           <SeverityBars buckets={c.issues} />
         </Section>
@@ -309,7 +312,9 @@ function Card({ card: c }: { card: HealthCard }) {
           <SeverityBars buckets={c.risks} />
         </Section>
         <Section label="Instalment Plan">
-          <InstalmentTable rows={c.instalments} />
+          <div className="instalment-scroll">
+            <InstalmentTable rows={c.instalments} />
+          </div>
         </Section>
       </div>
     </article>
@@ -427,6 +432,7 @@ function InstalmentTable({ rows }: { rows: Instalment[] }) {
   }
   return (
     <table
+      className="instalment-table"
       style={{
         width: "100%",
         borderCollapse: "collapse",

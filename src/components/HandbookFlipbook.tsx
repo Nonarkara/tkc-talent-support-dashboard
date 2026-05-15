@@ -482,6 +482,7 @@ export function HandbookFlipbook() {
 
   return (
     <article
+      className="handbook-root"
       style={{
         border: "1px solid var(--border-strong, #5a4530)",
         background: PARCHMENT,
@@ -517,9 +518,10 @@ export function HandbookFlipbook() {
       </header>
 
       {/* Body — bounded width, parchment, with score-bleed sidebars */}
-      <div style={{ display: "grid", gridTemplateColumns: "32px 1fr 32px", minHeight: 0 }}>
+      <div className="handbook-body-grid" style={{ display: "grid", gridTemplateColumns: "32px 1fr 32px", minHeight: 0 }}>
         <ScoreBleed side="left" />
         <div
+          className="handbook-body"
           style={{
             padding: "20px 24px 12px",
             fontSize: 12,
@@ -653,7 +655,7 @@ function Subhead({ en, th }: { en: string; th: string }) {
 
 function Caption({ text }: { text: string }) {
   return (
-    <div style={{ fontSize: 9, fontStyle: "italic", color: "#7a6b54", textAlign: "center", margin: "6px 0 10px", letterSpacing: "0.04em" }}>
+    <div style={{ fontSize: 9, fontStyle: "italic", color: "#5a4530", textAlign: "center", margin: "6px 0 10px", letterSpacing: "0.04em" }}>
       {text}
     </div>
   );

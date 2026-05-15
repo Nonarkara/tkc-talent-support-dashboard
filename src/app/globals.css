@@ -327,6 +327,12 @@
   50% { box-shadow: 0 0 16px rgba(212,168,67,0.5); }
 }
 
+@keyframes pmo-pulse {
+  0% { opacity: 0.4; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.1); }
+  100% { opacity: 0.4; transform: scale(0.8); }
+}
+
 @keyframes card-deal {
   from { transform: translateX(40px) rotate(5deg); opacity: 0; }
   to { transform: translateX(0) rotate(0deg); opacity: 1; }
@@ -359,7 +365,12 @@
 .anim-fade-out      { animation: card-appear 150ms ease-in reverse forwards; }
 .anim-snap-lock     { animation: snap-lock 200ms ease-out; }
 .anim-card-deal     { animation: card-deal 300ms ease-out; }
-.anim-screen-enter  { animation: screen-fade 220ms steps(8, end); }
+.anim-screen-enter  { animation: screen-fade 280ms ease-out; }
+
+/* Trigger snap-bounce on click / active state */
+.anim-snap-active:active {
+  animation: snap-bounce 200ms ease-out;
+}
 
 /* ─── Card flip (forecast → reality) ─── */
 @keyframes card-flip-out { from { transform: rotateY(0deg); } to { transform: rotateY(90deg); } }
@@ -2013,6 +2024,98 @@ button.cc-status:disabled {
 
   .cc-shortcut-legend {
     display: none;
+  }
+
+  /* ── Handbook Flipbook mobile pass ── */
+  .handbook-root {
+    min-height: auto !important;
+    height: auto;
+  }
+  .handbook-root header {
+    grid-template-columns: 1fr !important;
+    gap: 4px !important;
+    padding: 8px 12px !important;
+  }
+  .handbook-root header h2 {
+    font-size: 16px !important;
+  }
+  .handbook-root header div {
+    justify-self: start !important;
+    text-align: left !important;
+    max-width: none !important;
+  }
+  .handbook-body-grid {
+    grid-template-columns: 0 1fr 0 !important;
+  }
+  .handbook-body {
+    padding: 12px 14px !important;
+    font-size: 11px !important;
+    max-height: none !important;
+    overflow-y: visible !important;
+  }
+  .handbook-root footer {
+    padding: 8px 12px !important;
+  }
+  .handbook-root footer button {
+    padding: 8px 12px !important;
+    font-size: 11px !important;
+    min-height: 40px;
+  }
+
+  /* ── Lobby mobile pass ── */
+  .lobby-root {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: 1fr auto !important;
+    min-height: auto !important;
+    height: auto !important;
+  }
+  .lobby-map-pane {
+    min-height: 320px;
+    border-right: 0 !important;
+    border-bottom: 1px solid #3d2e1e;
+  }
+
+  /* ── PMO Control Tower mobile pass ── */
+  .pmo-summary-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  .pmo-performance-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ── Project Health cards mobile pass ── */
+  .project-health-row1 {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  .project-health-row2 {
+    grid-template-columns: 1fr !important;
+  }
+  .instalment-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    box-shadow: inset -8px 0 6px -6px rgba(0,0,0,0.35);
+  }
+  .instalment-scroll table {
+    width: auto !important;
+    min-width: 100%;
+  }
+  .instalment-scroll th,
+  .instalment-scroll td {
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 420px) {
+  .project-health-row1 {
+    grid-template-columns: 1fr !important;
+  }
+  .financing-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .resource-flex {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
   }
 }
 

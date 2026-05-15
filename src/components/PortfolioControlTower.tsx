@@ -127,7 +127,7 @@ export function PortfolioControlTower({ pollMs = 30_000 }: { pollMs?: number }) 
           label_en="Executive Summary"
           label_th="สรุปผู้บริหาร"
         />
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
+        <div className="pmo-summary-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
           <SummaryCard
             title_en="Total Projects 2026"
             title_th="โครงการทั้งหมด 2569"
@@ -179,7 +179,7 @@ export function PortfolioControlTower({ pollMs = 30_000 }: { pollMs?: number }) 
           label_en="Overall Project Performance"
           label_th="ภาพรวมผลการดำเนินงาน"
         />
-        <div style={{ display: "grid", gridTemplateColumns: "minmax(220px, 1fr) 2fr", gap: 16 }}>
+        <div className="pmo-performance-grid" style={{ display: "grid", gridTemplateColumns: "minmax(220px, 1fr) 2fr", gap: 16 }}>
           <StatusDistribution counts={portfolio.status_counts} />
           <InstalmentTimeline
             monthly={portfolio.monthly_instalments_thb}
@@ -230,23 +230,18 @@ function SectionHeader({ numeral, label_en, label_th }: { numeral: string; label
       <span>{label_en}</span>
       <span style={{ color: "rgba(255,255,255,0.55)", fontSize: 11, fontWeight: 500 }}>· {label_th}</span>
       <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 6, fontSize: 9, opacity: 0.6 }}>
-        <span style={{ 
-          width: 6, 
-          height: 6, 
-          borderRadius: "50%", 
-          background: "#10b981", 
-          boxShadow: "0 0 4px #10b981",
-          animation: "pulse 2s infinite" 
-        }} />
+        <span
+          style={{
+            width: 6,
+            height: 6,
+            borderRadius: "50%",
+            background: "#10b981",
+            boxShadow: "0 0 4px #10b981",
+            animation: "pmo-pulse 2s infinite",
+          }}
+        />
         <span>LIVE DATA</span>
       </div>
-      <style jsx>{`
-        @keyframes pulse {
-          0% { opacity: 0.4; transform: scale(0.8); }
-          50% { opacity: 1; transform: scale(1.1); }
-          100% { opacity: 0.4; transform: scale(0.8); }
-        }
-      `}</style>
     </header>
   );
 }

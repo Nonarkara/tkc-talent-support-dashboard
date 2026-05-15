@@ -176,7 +176,7 @@ function compactThb(value: unknown) {
   const next = numberOr(value, Number.NaN);
   if (!Number.isFinite(next)) return "--";
   if (Math.abs(next) >= 1_000_000) return `฿${(next / 1_000_000).toFixed(1)}M`;
-  if (Math.abs(next) >= 1_000) return `฿${Math.round(next / 1_000)}k`;
+  if (Math.abs(next) >= 1_000) return `฿${(next / 1_000).toFixed(1)}k`;
   return `฿${Math.round(next)}`;
 }
 
@@ -749,6 +749,7 @@ export function FormationCanvas({ dash }: { dash: DashboardPayload }) {
   const [openSlot, setOpenSlot] = useState<{ project_code: string; dimension: SlotDimension } | null>(null);
   const [poolOpen, setPoolOpen] = useState(true);
   const [filters, setFilters] = useState<FormationFilterState>(EMPTY_FILTERS);
+  const [announcement, setAnnouncement] = useState<string>("");
 
   useEffect(() => {
     if (activeProjects.length === 0) {
@@ -891,6 +892,7 @@ export function FormationCanvas({ dash }: { dash: DashboardPayload }) {
       });
     });
     setProjectNotice(projectCode, "ok", `${employee.display_name} snapped into ${SLOT_LABEL[dimension]}.`);
+    setAnnouncement(`${employee.display_name} assigned to ${SLOT_LABEL[dimension]}`);
     // Snap-flash: mark the dropped card for one animation cycle then clear
     setLastDroppedId(employee.id);
     setTimeout(() => setLastDroppedId(null), 400);
@@ -932,6 +934,15 @@ export function FormationCanvas({ dash }: { dash: DashboardPayload }) {
   function handleDropOnRoster(event: React.DragEvent) {
     event.preventDefault();
     if (!dragging) return;
+    const droppedEmployee = dash.employees.find((candidate) => candidate.id === dragging.employee_id);
+    let removedDimension: SlotDimension | null = null;
+    for (const list of Object.values(assignments)) {
+      const found = list.find((assignment) => assignment.employee_id === dragging.employee_id);
+      if (found) {
+        removedDimension = found.dimension;
+        break;
+      }
+    }
     startTransition(() => {
       setAssignments((current) => {
         const next: AssignmentMap = {};
@@ -941,6 +952,9 @@ export function FormationCanvas({ dash }: { dash: DashboardPayload }) {
         return next;
       });
     });
+    setAnnouncement(
+      `${droppedEmployee?.display_name ?? "Hero"} removed from ${removedDimension ? SLOT_LABEL[removedDimension] : "formation"}`,
+    );
     setDragging(null);
     setActiveDropKey(null);
   }
@@ -1003,6 +1017,7 @@ export function FormationCanvas({ dash }: { dash: DashboardPayload }) {
       "ok",
       `${employee?.display_name ?? "Hero"} left ${SLOT_LABEL[dimension]}.`,
     );
+    setAnnouncement(`${employee?.display_name ?? "Hero"} removed from ${SLOT_LABEL[dimension]}`);
   }
 
   function handleDragOver(event: React.DragEvent) {
@@ -1405,6 +1420,23 @@ export function FormationCanvas({ dash }: { dash: DashboardPayload }) {
   return (
     <>
       <div
+        aria-live="polite"
+        aria-atomic="true"
+        style={{
+          position: "absolute",
+          width: 1,
+          height: 1,
+          padding: 0,
+          margin: -1,
+          overflow: "hidden",
+          clip: "rect(0, 0, 0, 0)",
+          whiteSpace: "nowrap",
+          border: 0,
+        }}
+      >
+        {announcement}
+      </div>
+      <div
         className="formation-two-pane"
         style={{
           display: "grid",
@@ -1427,8 +1459,19 @@ export function FormationCanvas({ dash }: { dash: DashboardPayload }) {
           <MenuWindow title="Active Quests">
             <div style={{ display: "grid", gap: 8 }}>
               {activeProjects.length === 0 ? (
-                <div style={{ color: "var(--ink-1)", fontSize: 11, lineHeight: 1.5 }}>
-                  No active quests are waiting for formation.
+                <div style={{
+                  padding: "16px 12px",
+                  border: "1px dashed var(--ink-2)",
+                  background: "rgba(0,0,0,0.04)",
+                  color: "var(--ink-1)",
+                  fontSize: 11,
+                  lineHeight: 1.6,
+                  textAlign: "center",
+                  borderRadius: 2,
+                }}>
+                  <div style={{ fontSize: 18, marginBottom: 8, opacity: 0.5 }}>◩</div>
+                  No active quests are waiting for formation.<br/>
+                  Check the project ledger to seed new ones.
                 </div>
               ) : (
                 activeProjects.map((project) => (
@@ -1736,6 +1779,15 @@ function VirtualizedHeroPool({
               draggable
               onDragStart={(event) => onDragStart(event, employee)}
               onDragEnd={onDragEnd}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  onSelect(employee);
+                }
+              }}
+              tabIndex={0}
+              role="button"
+              aria-label={`Select ${employee.display_name}`}
               style={{
                 cursor: "grab",
                 height: POOL_CARD_HEIGHT,
@@ -2210,6 +2262,7 @@ function ProjectBoard({
               : "Not started yet. Fill every required seat, then lock the team and launch the quest."}
           </div>
           <button
+            className="anim-snap-active"
             onClick={onCommit}
             style={buttonStyle("var(--rpg-orange)", "var(--ink-4)")}
           >
@@ -2574,6 +2627,15 @@ function AssignedHeroCard({
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
       onClick={onOpen}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onOpen(event as unknown as React.MouseEvent);
+        }
+      }}
+      tabIndex={0}
+      role="button"
+      aria-label={`Open ${employee.display_name} slot details`}
       className={isNewlyDropped ? "anim-snap-bounce" : undefined}
       style={{
         minHeight: 66,
@@ -2657,16 +2719,16 @@ function AssignedHeroCard({
             onClick={onRemove}
             title={`Remove ${employee.display_name} from ${SLOT_LABEL[dimension]}`}
             style={{
-              border: "1px solid rgba(196,77,63,0.6)",
-              background: "rgba(196,77,63,0.12)",
-              color: "var(--rpg-red)",
+              border: "1px solid rgba(196,77,63,0.3)",
+              background: "rgba(196,77,63,0.05)",
+              color: "rgba(196,77,63,0.8)",
               cursor: "pointer",
               fontFamily: "inherit",
-              fontSize: 9,
+              fontSize: 8,
               fontWeight: 700,
               letterSpacing: "0.08em",
               lineHeight: 1,
-              padding: "3px 6px",
+              padding: "2px 5px",
               textTransform: "uppercase",
             }}
           >
@@ -2710,6 +2772,7 @@ function DnaPill({
         gap: 5,
         opacity: dim ? 0.72 : 1,
       }}
+      title={`${SLOT_LABEL[dimension]} coverage: ${filled}/${needed} seats filled. Use ± to adjust required count.`}
     >
       <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "center" }}>
         <span style={{ fontSize: 9, color: tone, letterSpacing: "0.1em", textTransform: "uppercase" }}>

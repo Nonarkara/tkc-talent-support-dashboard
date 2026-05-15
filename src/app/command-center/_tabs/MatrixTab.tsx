@@ -187,7 +187,7 @@ function ControlTower({ dash }: { dash: DashboardPayload }) {
   }, [dash.support_actions, variance]);
 
   return (
-    <div style={{ display: 'grid', gap: 16, gridAutoRows: 'max-content' }}>
+    <div className="anim-card-appear" style={{ display: 'grid', gap: 16, gridAutoRows: 'max-content' }}>
       {/* ── Antigravity's PMO Portfolio Dashboard (pages 4-5) ─────── */}
       <PortfolioControlTower pollMs={30_000} />
 

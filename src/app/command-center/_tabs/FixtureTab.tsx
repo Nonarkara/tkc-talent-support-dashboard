@@ -643,7 +643,7 @@ function MatchReportView({
   const gap = report.actual.overallScore - report.predicted.overallScore;
 
   return (
-    <div style={{ display: "grid", gap: 14 }}>
+    <div className="anim-card-appear" style={{ display: "grid", gap: 14 }}>
       {/* Score comparison */}
       <div
         style={{
@@ -659,7 +659,7 @@ function MatchReportView({
           <div style={{ fontSize: 9, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--ink-1)", marginBottom: 4 }}>
             {translate(loc, { en: "Predicted", th: "คาดการณ์" })}
           </div>
-          <strong style={{ fontSize: 36, fontFamily: "var(--font-mono)", color: "var(--ink-1)" }}>
+          <strong className="anim-score-pulse" style={{ fontSize: 36, fontFamily: "var(--font-mono)", color: "var(--ink-1)" }}>
             {report.predicted.overallScore}
           </strong>
         </div>
@@ -678,7 +678,7 @@ function MatchReportView({
           <div style={{ fontSize: 9, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--ink-1)", marginBottom: 4 }}>
             {translate(loc, { en: "Actual", th: "ผลจริง" })}
           </div>
-          <strong style={{ fontSize: 36, fontFamily: "var(--font-mono)", color: "var(--ink-0)" }}>
+          <strong className="anim-score-pulse" style={{ fontSize: 36, fontFamily: "var(--font-mono)", color: "var(--ink-0)" }}>
             {report.actual.overallScore}
           </strong>
         </div>

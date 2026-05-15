@@ -401,6 +401,7 @@ function HeroGallery({
       }}
     >
       <div
+        className="anim-card-appear"
         style={{
           background: "#14142a",
           border: "2px solid var(--ink-0)",

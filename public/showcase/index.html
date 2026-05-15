@@ -2547,6 +2547,12 @@ if (canonHost) {
 // ── Changelog ──
 const CHANGELOG = [
   {
+    version: "v4.6.6", codename: "RED DOT", date: "16 พ.ค. 2569", accent: "#15803d", major: true,
+    title: "Red Dot Gates · ปิดเจ็ดประตูการเข้าถึง + มือถือ",
+    desc: "<strong>Kimi</strong> ปิด backlog เจ็ดข้อจาก Red Dot blocker list · <strong>Formation drag-drop</strong> ตอนนี้ประกาศทุกการ assign/remove ผ่าน aria-live region แบบ visually-hidden — \"Pim assigned to Technical\", \"Tong removed from Sales\" — screen reader ได้ยินทุกครั้ง · การ์ดฮีโร่ทั้งใน pool และในสนามรับ Enter/Space เพื่อ select/open ได้ทั้งหมด · <strong>Project Health cards</strong> ยุบเรียบที่ 768px (4 → 2 col) และ 420px (2 → 1 col) · Instalment table ได้ horizontal scroll พร้อม inset shadow บอกใบ้ขอบ — ตอนนี้ดูบนมือถือไม่ล้นแล้ว · <strong>Tome</strong> (/tome/[employee_id]) ได้ mobile pass +120 lines ครอบคลุม cover, letter, attrs, tables, ascensions · <strong>Handbook flipbook</strong> ปรับให้อ่านได้ที่ 360px (score-bleed ซ่อน, header stack) · <strong>Lobby</strong> ยุบเป็น 1 column วางแผนที่ทับสไปรท์ · Viewport meta + theme-color ใน layout.tsx · SSR hydration cleanup — ตัด requestAnimationFrame ใน i18n hydrator, ย้าย sprintDaysLeft ไป useEffect, ตัด Date() ระหว่าง render · PMO Control Tower ดึง inline &lt;style jsx&gt; keyframe ขึ้น globals.css · Card-appear animation บน Fixture/Matrix/Roster tab enter · <code>docs/HOUSE_STYLE_AUDIT.md</code> (212 บรรทัด) เป็น single source สำหรับการ์ดของ Red Dot submission",
+    tags: ["a11y", "mobile", "aria", "house-style", "kimi", "red-dot"]
+  },
+  {
     version: "v4.6.5", codename: "HANDBOOK", date: "14 พ.ค. 2569", accent: "#9f2e2e", major: true,
     title: "Player's Handbook · คู่มือเกมพลิกหน้าได้จริง บนหน้า Ledger",
     desc: "คู่มือผู้เล่นแบบเกมคลาสสิก ฉบับสองภาษา EN/TH · 13 spreads ครอบคลุมเรื่องราว, เจ็ดวีรบุรุษ, หกค่าพลัง, อาคาร + Lobby + เส้นเชื่อมที่มองไม่เห็น, การลงทะเบียนภารกิจ + กฎ 10×, การจัดทีม + readiness formula, รอบสัปดาห์ + feedback loop, ห้ากับดักและกฎ ๘๐%, ผู้สังเกตการณ์ PMO, เกมที่ไม่มีจบ · สไตล์อิงจาก <strong>Championship Manager Italia '95</strong> (Domark) แถบสีแดงหัวข้อ + คอลัมน์ผลสกอร์ข้างขอบ, <strong>Dragon Warrior III Explorer's Handbook</strong> (Enix America 1991) สีกระดาษพาร์ชเมนต์ + คำบรรยายภาพ \"Picture N\", และ <strong>CM 01/02</strong> วงแขนเฮ็กซ์ · นำทางด้วย ◀ PREV / ▶ NEXT ปุ่ม + คีย์ ← → + คลิกแถวสารบัญเพื่อกระโดด · วางบนหน้า Ledger เพราะที่นี่คือที่เก็บบันทึก — Sheets mirror + Bootstrap + restore — และคู่มือก็เป็นส่วนหนึ่งของบันทึก ในแบบที่มนุษย์อ่านได้",

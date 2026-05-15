@@ -32,6 +32,45 @@ When a ROM revision bumps mid-session, note the old → new bump in the entry he
 
 ---
 
+## 2026-05-16 — Red Dot accessibility + mobile gates closed        (v4.6.5 → v4.6.6 "Red Dot")
+
+Kimi shipped against the seven-point Red Dot blocker list. I verified, wired the build-version, wrote the changelog, and pushed. The cassette now passes the smartphone-first §11.8 floor on every surface that ships.
+
+**Shipped**
+
+- **Formation drag-drop ARIA live regions.** A visually-hidden `aria-live="polite" aria-atomic="true"` region in `FormationCanvas.tsx` announces every assign / remove. Three call sites set the announcement: drop into slot ("X assigned to Sales"), drop on roster pool ("X removed from Sales"), kebab-button remove ("X removed from Outsourcing"). Pool cards and assigned hero cards both gained `tabIndex={0} role="button" aria-label="…"` with Enter/Space keyboard handlers — drag-drop is no longer mouse-only. `DnaPill` got a `title` tooltip explaining coverage maths.
+- **Project Health phone overflow.** Two new class hooks on `ProjectHealthCard.tsx` — `project-health-row1` (the four KPI sections) and `project-health-row2` (Issues/Risks/Instalments). Media queries in `globals.css` collapse Row 1 to 2-col at ≤768px and 1-col at ≤420px; Row 2 collapses to 1-col at ≤768px. Instalment table wrapped in `.instalment-scroll` with `overflow-x: auto` + an `inset -8px 0 6px -6px rgba(0,0,0,0.35)` shadow hinting at scrollable content. `financing-grid` and `resource-flex` also collapse at 420px. Also: days_until_deadline now correctly renders "X days overdue" when negative.
+- **Tome mobile pass.** +120 lines of `@media screen and (max-width: 640px)` rules in `tome.css` — strips A4 fixed width, collapses the attributes grid to one column, makes tables horizontally scrollable, reflows the cover headline, the letter body, the chronicle, and the ascensions list. Readable at 360px without zoom.
+- **Handbook flipbook mobile pass.** `handbook-root` / `handbook-body-grid` / `handbook-body` class hooks; mobile rules hide the score-bleed sidebars, stack the header, drop body font to 11px, remove the max-height clamp so the parchment scrolls naturally. `Caption` colour bumped from `#7a6b54` → `#5a4530` for a real 4.5:1 on parchment.
+- **Lobby mobile pass.** `lobby-root` class replaces the old `lobby-floor-grid`; collapses to 1 column on phone, map pane ≥320px tall with a hairline border between map and side panel.
+- **PortfolioControlTower polish.** Removed the inline `<style jsx>` block (hydration risk) — the `pmo-pulse` keyframe now lives in `globals.css` alongside the other animations. `pmo-summary-grid` / `pmo-performance-grid` class hooks for the same 768px collapse pattern.
+- **SSR hydration cleanup.**
+  - `i18n.tsx`: removed the stray `requestAnimationFrame(setLocState)` — `useEffect` already runs post-hydration, the rAF was redundant and introduced a one-frame flash.
+  - `command-center/page.tsx`: `sprintDaysLeft()` moved into `useEffect` so the server doesn't render a value that diverges from the client clock. `checked_at` defaults to `""` instead of `new Date().toISOString()` for the same reason — the empty string is a server-stable sentinel.
+- **Viewport meta + theme-color.** `layout.tsx` now exports `viewport: Viewport` with `width: 'device-width'`, `initialScale: 1`, `themeColor: '#1a1209'`. Status bar matches the cassette on iOS.
+- **Tab-enter animations.** `anim-card-appear` on FixtureTab match report container, MatrixTab control tower wrapper, RosterTab hero gallery panel. `anim-score-pulse` on the predicted/actual score numerals. Subtle — 250–400ms ease-out, no decoration.
+- **`docs/HOUSE_STYLE_AUDIT.md` (212 lines).** Backlog item 4 closed. Captures §0 non-negotiables, §1 colour system (tabletop + parchment), §2 typography scale for all three surface families (Command Center, Tome, Handbook), §3 layout rules with breakpoints, §4 animation discipline, §5 component primitives, §6 responsive checklist, §7 per-surface audit grid (which surfaces are Done vs Pending), §8 dev artefacts that must never ship (styled-jsx, rAF state updates, `new Date()` during render, `toLocaleTimeString()` without `suppressHydrationWarning`, console errors, Turbopack badges), §9 how to apply. Single source for Red Dot reviewer documentation.
+
+**Backlog status (the seven-point list)**
+
+1. ✅ Formation drag-drop ARIA live regions — shipped
+2. ✅ Project Health card inner tables phone overflow — shipped
+3. ⏳ Demo film script (2-minute scripted, bilingually narrated) — own session
+4. ✅ House-style audit doc — `docs/HOUSE_STYLE_AUDIT.md` shipped
+5. ⏳ Tome mobile pass — **also shipped this cycle** (bonus)
+6. ⏳ Lobby canvas a11y (screen reader read of sprite world) — open
+7. ⏳ Signals / Insights / Ledger / showcase-log mobile pass — open per §7
+
+**Patent pivot** — still open. The "qualitative + quantitative weekly observation streams → six-axis team-efficiency signal with deterministic reconciliation" method is not time-bound by a submission window, so it waits one more cycle.
+
+**Notes**
+
+- ROM bumped `v4.6 "Pulse"` → `v4.6.6 "Red Dot"`. The `.6.6` suffix is intentional — we held at v4.6 from Pulse through Handbook (v4.6.1–v4.6.5) and the Red Dot pass is a horizontal accessibility/mobile sweep, not a new mechanic, so a fresh `.X` revision under the same `v4.6` major.
+- Type-check clean. No lint errors. Single coordinated commit.
+- No Sheets schema change this cycle. No mirror bootstrap re-run needed.
+
+---
+
 ## 2026-05-14 — Three-AI coordination on the PMO Control Tower        (v4.6 "Pulse")
 
 Dr Non asked all three of us — me, Antigravity, Kimi — to converge on the PMO Control Tower. The PDFs in `docs/From TKC May 2026/ref. from PMO/` are the spec; the cassette has to look like what the PMO wants. Coordination notes below; the result is one tower, two surfaces, real data.

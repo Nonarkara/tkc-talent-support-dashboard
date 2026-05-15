@@ -599,7 +599,7 @@ export function LobbyTab({ dash }: { dash: DashboardPayload }) {
 
   return (
     <div
-      className="lobby-floor-grid"
+      className="lobby-root"
       style={{
         display: "grid",
         gridTemplateColumns: "1fr 320px",

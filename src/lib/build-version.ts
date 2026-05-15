@@ -80,9 +80,29 @@
  *                             matching against employee titles + skills.
  *                             HiringNow component shows the openings
  *                             with their gauge filter + colored badges.
+ *   v4.6.6 · Red Dot          Closed the seven Red Dot accessibility +
+ *                             mobile gates. Formation drag-drop now
+ *                             announces every assign/remove via a
+ *                             visually-hidden aria-live region; hero
+ *                             cards (pool + assigned) are keyboard-
+ *                             reachable with Enter/Space. Project Health
+ *                             cards collapse cleanly at 768px and 420px,
+ *                             instalment tables get a horizontal-scroll
+ *                             hint with inset shadow. Handbook flipbook,
+ *                             Tome (/tome/[employee_id]), and Lobby all
+ *                             get a 360px mobile pass. Viewport meta
+ *                             added with theme-color. SSR hydration
+ *                             cleanup: removed stray requestAnimationFrame
+ *                             in i18n hydrator, moved sprintDaysLeft into
+ *                             useEffect, dropped Date() during render. PMO
+ *                             Control Tower lifted its inline <style jsx>
+ *                             keyframe into globals.css. Card-appear
+ *                             animation on Fixture / Matrix / Roster tab
+ *                             enters. docs/HOUSE_STYLE_AUDIT.md captures
+ *                             the full rule set for third-party review.
  *
  * Bump both fields together. Codename stays one or two words.
  */
 
-export const BUILD_VERSION = "v4.6";
-export const BUILD_CODENAME = "Pulse";
+export const BUILD_VERSION = "v4.6.6";
+export const BUILD_CODENAME = "Red Dot";
