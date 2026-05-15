@@ -84,7 +84,7 @@ export function InsightsTab({ dash }: { dash: DashboardPayload }) {
 
   return (
     <div
-      className="cc-tab-frame"
+      className="cc-tab-frame anim-card-appear"
       style={{
         gridTemplateRows: "auto 1fr",
         gap: 8,

@@ -97,7 +97,7 @@ export function SignalsTab({ dash }: { dash: DashboardPayload }) {
   const milestones = milestonesApproaching(dash.employees);
 
   return (
-    <div style={{ display: "grid", gap: 20 }}>
+    <div className="anim-card-appear" style={{ display: "grid", gap: 20 }}>
       <MenuWindow title="At-Risk Watch">
         {atRisk.length === 0 ? (
           <div style={{ color: "var(--ink-1)", fontSize: 12 }}>

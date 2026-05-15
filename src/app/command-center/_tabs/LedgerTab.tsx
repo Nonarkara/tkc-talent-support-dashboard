@@ -197,6 +197,7 @@ export function LedgerTab({ dash: _dash }: { dash: DashboardPayload }) {
 
   return (
     <div
+      className="anim-card-appear"
       style={{
         display: "flex",
         flexDirection: "column",

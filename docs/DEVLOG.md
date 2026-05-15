@@ -48,7 +48,7 @@ Kimi shipped against the seven-point Red Dot blocker list. I verified, wired the
   - `i18n.tsx`: removed the stray `requestAnimationFrame(setLocState)` — `useEffect` already runs post-hydration, the rAF was redundant and introduced a one-frame flash.
   - `command-center/page.tsx`: `sprintDaysLeft()` moved into `useEffect` so the server doesn't render a value that diverges from the client clock. `checked_at` defaults to `""` instead of `new Date().toISOString()` for the same reason — the empty string is a server-stable sentinel.
 - **Viewport meta + theme-color.** `layout.tsx` now exports `viewport: Viewport` with `width: 'device-width'`, `initialScale: 1`, `themeColor: '#1a1209'`. Status bar matches the cassette on iOS.
-- **Tab-enter animations.** `anim-card-appear` on FixtureTab match report container, MatrixTab control tower wrapper, RosterTab hero gallery panel. `anim-score-pulse` on the predicted/actual score numerals. Subtle — 250–400ms ease-out, no decoration.
+- **Tab-enter animations.** `anim-card-appear` on FixtureTab match report container, MatrixTab control tower wrapper, RosterTab hero gallery panel, SignalsTab grid root, InsightsTab tab frame, and LedgerTab container — every Command Center tab now has a signature opening animation. `anim-score-pulse` on the predicted/actual score numerals. `anim-snap-active` on the Formation LOCK / commit button. Subtle — 250–400ms ease-out, no decoration.
 - **`docs/HOUSE_STYLE_AUDIT.md` (212 lines).** Backlog item 4 closed. Captures §0 non-negotiables, §1 colour system (tabletop + parchment), §2 typography scale for all three surface families (Command Center, Tome, Handbook), §3 layout rules with breakpoints, §4 animation discipline, §5 component primitives, §6 responsive checklist, §7 per-surface audit grid (which surfaces are Done vs Pending), §8 dev artefacts that must never ship (styled-jsx, rAF state updates, `new Date()` during render, `toLocaleTimeString()` without `suppressHydrationWarning`, console errors, Turbopack badges), §9 how to apply. Single source for Red Dot reviewer documentation.
 
 **Backlog status (the seven-point list)**
@@ -57,11 +57,11 @@ Kimi shipped against the seven-point Red Dot blocker list. I verified, wired the
 2. ✅ Project Health card inner tables phone overflow — shipped
 3. ⏳ Demo film script (2-minute scripted, bilingually narrated) — own session
 4. ✅ House-style audit doc — `docs/HOUSE_STYLE_AUDIT.md` shipped
-5. ⏳ Tome mobile pass — **also shipped this cycle** (bonus)
+5. ✅ Patent provisional draft — `/Users/nonarkara/Projects/TKC/docs/PATENT_PROVISIONAL_DRAFT.md` (297 lines, workspace-level). Method claims cover the qualitative-plus-quantitative weekly observation streams → six-axis team-efficiency signal with deterministic reconciliation. Prior-art differentiation against Jira, Lattice, Viva, Culture Amp. Code references map each claim to a real file. Ready for attorney review.
 6. ⏳ Lobby canvas a11y (screen reader read of sprite world) — open
-7. ⏳ Signals / Insights / Ledger / showcase-log mobile pass — open per §7
+7. ✅ Signals / Insights / Ledger / showcase-log mobile pass — Kimi rolled these in overnight along with `anim-card-appear` on the three remaining tab containers (SignalsTab, InsightsTab, LedgerTab). showcase-log gets a 600px breakpoint mobile pass in the separate `/showcase/log.html` repo.
 
-**Patent pivot** — still open. The "qualitative + quantitative weekly observation streams → six-axis team-efficiency signal with deterministic reconciliation" method is not time-bound by a submission window, so it waits one more cycle.
+**Patent pivot — shipped this cycle.** Kimi spawned a parallel sub-agent to draft `docs/PATENT_PROVISIONAL_DRAFT.md` while finishing the mobile sweep. The draft is at workspace level (`/Users/nonarkara/Projects/TKC/docs/`), not inside this repo, so it travels with the TKC workspace not the cassette codebase. Five formal method claims plus prior-art table; the attorney inserts the filing date and the inventor block.
 
 **Notes**
 
