@@ -954,7 +954,7 @@ main {
 }
 .footer-hint { font-family: var(--font-mono); font-size: 9px; color: var(--text-muted); }
 .btn-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
-.btn-pdf, .btn-paper {
+.btn-pdf, .btn-paper, .btn-placeholder {
   display: inline-flex; align-items: center; gap: 8px;
   padding: 10px 18px;
   background: var(--bg-elevated);
@@ -968,6 +968,17 @@ main {
 .btn-paper { border: 2px solid var(--accent-blue); color: var(--accent-blue); }
 .btn-paper:hover { background: rgba(91,137,181,0.16); }
 .btn-paper:active { transform: scale(0.97); }
+/* Placeholder chip — a paper slot already reserved on the shelf for a future
+   deliverable. Dashed outline says "this box is waiting"; muted colour says
+   "don't click yet". The moment a report drops, swap the className to
+   .btn-paper or .btn-pdf and the slot lights up. */
+.btn-placeholder {
+  border: 2px dashed var(--border-color);
+  color: var(--text-muted);
+  cursor: default;
+  opacity: 0.6;
+}
+.btn-placeholder:hover { background: var(--bg-elevated); }
 .btn-gh { border: 1px solid var(--border-color); color: var(--text-muted); }
 .btn-gh:hover { background: rgba(255,255,255,0.06); }
 .btn-gh:active { transform: scale(0.97); }
@@ -1441,14 +1452,20 @@ main {
     </main>
   </div>
 
-  <!-- Footer -->
+  <!-- Footer — the paper shelf.
+       Every milestone's deliverables get a slot, even unsigned future ones.
+       Delivered = solid chip (clickable). Placeholder = dashed chip
+       (waiting). When the next acceptance lands, flip `placeholder: false`
+       in the MILESTONES array and the chip lights up. Pre-creating the
+       slots keeps the shelf legible: a partner can see at a glance what
+       has shipped, what's in motion, and what's still to come. -->
   <div class="footer">
     <span class="footer-hint">▲▼ keys: 1–9 to switch panels · 8 = Changelog · 9 = Next</span>
-    <div class="btn-row">
-      <a class="btn-paper" href="whitepaper.html" target="_blank" rel="noopener" title="งวดที่ 1 deliverable">📖 งวด 1 · WHITEPAPER</a>
-      <a class="btn-pdf"   href="print.html"      target="_blank" rel="noopener" title="งวดที่ 1 acceptance">📄 งวด 1 · ใบตรวจรับงาน</a>
-      <a class="btn-paper" href="report-02.html"  target="_blank" rel="noopener" title="งวดที่ 2 deliverable">📊 งวด 2 · PAIN POINTS</a>
-      <a class="btn-gh" href="https://github.com/Nonarkara/tkc-digital-twin-showcase" target="_blank" rel="noopener">⌥ GITHUB</a>
+    <div class="btn-row" id="paper-shelf">
+      <!-- rendered by JS from MILESTONES — first WHITEPAPER + acceptance for งวด 1
+           are hand-mapped to keep the existing print.html / whitepaper.html names,
+           subsequent installments follow the report-NN.html / acceptance-NN.html
+           pattern automatically. -->
     </div>
   </div>
 
@@ -2018,7 +2035,8 @@ const MILESTONES = [
     accent: "#D4A843",
     pct: 20,
     reports: [
-      { label: "REPORT 02", href: "report-02.html" },
+      { label: "REPORT 02",      href: "report-02.html" },
+      { label: "ใบตรวจรับงาน",   href: "acceptance-02.html" },
     ],
   },
   {
@@ -2030,7 +2048,13 @@ const MILESTONES = [
     status: "planned",
     accent: "#8B6FB5",
     pct: 20,
-    reports: [],
+    // Pre-reserved slots — render as placeholder chips on the milestone
+    // card and on the footer paper-shelf. Drop the file + flip placeholder
+    // to false and they go live.
+    reports: [
+      { label: "REPORT 03",      href: "report-03.html",     placeholder: true },
+      { label: "ใบตรวจรับงาน",   href: "acceptance-03.html", placeholder: true },
+    ],
   },
   {
     num: 4,
@@ -2041,7 +2065,10 @@ const MILESTONES = [
     status: "planned",
     accent: "#5B8C4A",
     pct: 20,
-    reports: [],
+    reports: [
+      { label: "REPORT 04",      href: "report-04.html",     placeholder: true },
+      { label: "ใบตรวจรับงาน",   href: "acceptance-04.html", placeholder: true },
+    ],
   },
   {
     num: 5,
@@ -2052,7 +2079,10 @@ const MILESTONES = [
     status: "planned",
     accent: "#C44D3F",
     pct: 20,
-    reports: [],
+    reports: [
+      { label: "REPORT 05",      href: "report-05.html",     placeholder: true },
+      { label: "ใบตรวจรับงาน",   href: "acceptance-05.html", placeholder: true },
+    ],
   },
 ];
 
@@ -2077,7 +2107,10 @@ if (msHost) {
       <div class="ms-reports">
         ${m.reports.length === 0
           ? '<span class="ms-report-chip" style="opacity:0.5; cursor:default">รายงานกำลังจัดทำ</span>'
-          : m.reports.map(r => `<a class="ms-report-chip" href="${r.href}" target="_blank" rel="noopener">📄 ${r.label}</a>`).join('')
+          : m.reports.map(r => r.placeholder
+              ? `<span class="ms-report-chip" style="opacity:0.45; cursor:default; border-style:dashed" title="ยังไม่ส่งมอบ">◇ ${r.label}</span>`
+              : `<a class="ms-report-chip" href="${r.href}" target="_blank" rel="noopener">📄 ${r.label}</a>`
+            ).join('')
         }
       </div>
     `;
@@ -2089,6 +2122,50 @@ function niceDate(iso) {
   const d = new Date(iso + 'T00:00:00');
   return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' });
 }
+
+// ── Paper shelf (footer chips) ──
+// Renders every report from every milestone as a footer chip. Delivered
+// reports render as colored btn-paper (deliverable, blue) or btn-pdf
+// (acceptance, gold). Placeholder reports render as btn-placeholder
+// (dashed, muted). One source of truth: MILESTONES above.
+(function () {
+  const shelf = document.getElementById('paper-shelf');
+  if (!shelf) return;
+  const isAcceptance = (label) => /ใบตรวจรับงาน/.test(label);
+  const icon = (r) => r.placeholder ? '◇' : (isAcceptance(r.label) ? '📄' : '📖');
+  for (const m of MILESTONES) {
+    for (const r of m.reports) {
+      const cls = r.placeholder
+        ? 'btn-placeholder'
+        : (isAcceptance(r.label) ? 'btn-pdf' : 'btn-paper');
+      const label = `${icon(r)} งวด ${m.num} · ${r.label}`;
+      if (r.placeholder) {
+        const el = document.createElement('span');
+        el.className = cls;
+        el.title = `งวดที่ ${m.num} · ${r.label} — ยังไม่ส่งมอบ`;
+        el.textContent = label;
+        shelf.appendChild(el);
+      } else {
+        const a = document.createElement('a');
+        a.className = cls;
+        a.href = r.href;
+        a.target = '_blank';
+        a.rel = 'noopener';
+        a.title = `งวดที่ ${m.num} · ${r.label}`;
+        a.textContent = label;
+        shelf.appendChild(a);
+      }
+    }
+  }
+  // GitHub pin stays at the end of the row.
+  const gh = document.createElement('a');
+  gh.className = 'btn-gh';
+  gh.href = 'https://github.com/Nonarkara/tkc-digital-twin-showcase';
+  gh.target = '_blank';
+  gh.rel = 'noopener';
+  gh.textContent = '⌥ GITHUB';
+  shelf.appendChild(gh);
+})();
 
 // ── Atomic clock + submission countdown ──
 // Atomic clock = current Bangkok wall time, ticking every second.

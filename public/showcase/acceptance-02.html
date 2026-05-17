@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#ffffff">
+<title>ใบตรวจรับงาน · งวดที่ 2 · TKC-NONA-018/03/2026</title>
+<meta name="description" content="ใบตรวจรับงาน งวดที่ 2 จาก 5 · สัญญาเลขที่ TKC-NONA-018/03/2026 · TKC Digital Twin Work Acceptance Certificate · Installment 2 of 5.">
+<link rel="canonical" href="https://tkc.nonarkara.org/acceptance-02.html">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #f5f0e8; }
+  body {
+    font-family: "IBM Plex Sans Thai", "Noto Sans Thai", "Prompt", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    color: #1a1209;
+    line-height: 1.45;
+    padding: 32px 16px 56px;
+    min-height: 100vh;
+  }
+
+  /* ── Print toolbar (screen only) ── */
+  .toolbar {
+    max-width: 800px;
+    margin: 0 auto 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #5a4530;
+  }
+  .toolbar a { color: #5a4530; text-decoration: none; border-bottom: 1px dotted #8a7a5e; padding-bottom: 1px; }
+  .toolbar a:hover { color: #1a1209; border-bottom-color: #1a1209; }
+  .toolbar button {
+    background: #1a1209;
+    color: #f5f0e8;
+    border: 0;
+    padding: 8px 14px;
+    font-family: inherit;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .toolbar button:hover { background: #3d2e1e; }
+
+  /* ── Page ── */
+  .page {
+    max-width: 800px;
+    min-height: 1120px;
+    margin: 0 auto;
+    background: #ffffff;
+    padding: 56px 56px 64px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    color: #1a1209;
+  }
+
+  /* ── Header ── */
+  .doc-header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 16px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid #1a1209;
+    margin-bottom: 14px;
+  }
+  .doc-title-th {
+    font-size: 22pt;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+  }
+  .doc-title-en {
+    font-size: 13pt;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-align: right;
+    color: #1a1209;
+    text-transform: uppercase;
+  }
+
+  /* ── Meta row ── */
+  .meta-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    font-size: 10pt;
+    color: #5a4530;
+    margin-bottom: 20px;
+  }
+  .meta-row .right { text-align: right; }
+
+  /* ── Parties ── */
+  .parties {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 18px;
+    font-size: 10pt;
+  }
+  .party-label {
+    color: #5a4530;
+    font-size: 9pt;
+    border-bottom: 1px solid #d4c8b8;
+    padding-bottom: 4px;
+    margin-bottom: 6px;
+  }
+  .party-name {
+    font-weight: 700;
+    font-size: 11pt;
+    margin-bottom: 2px;
+  }
+  .party-line {
+    color: #3d2e1e;
+    line-height: 1.5;
+    font-size: 9.5pt;
+  }
+
+  /* ── Items table ── */
+  table.items {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10pt;
+    margin-bottom: 0;
+  }
+  table.items thead th {
+    text-align: left;
+    background: #1a1209;
+    color: #ffffff;
+    padding: 8px 10px;
+    font-weight: 600;
+    font-size: 9.5pt;
+    border: 1px solid #1a1209;
+  }
+  table.items thead th.right { text-align: right; }
+  table.items tbody td {
+    padding: 10px 10px;
+    border: 1px solid #d4c8b8;
+    vertical-align: top;
+  }
+  table.items tbody td.qty {
+    text-align: center;
+    width: 80px;
+    font-family: "JetBrains Mono", "IBM Plex Mono", monospace;
+  }
+  table.items tbody td.amount {
+    text-align: right;
+    width: 140px;
+    font-family: "JetBrains Mono", "IBM Plex Mono", monospace;
+  }
+  table.items .scope-sub {
+    color: #5a4530;
+    font-size: 8.5pt;
+    margin-top: 3px;
+  }
+
+  /* ── Totals ── */
+  table.totals {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10pt;
+    margin-bottom: 22px;
+  }
+  table.totals td {
+    padding: 7px 10px;
+    border: 1px solid #d4c8b8;
+  }
+  table.totals td.label {
+    text-align: right;
+    color: #3d2e1e;
+    width: 75%;
+  }
+  table.totals td.value {
+    text-align: right;
+    font-family: "JetBrains Mono", "IBM Plex Mono", monospace;
+    width: 25%;
+  }
+  table.totals tr.grand td {
+    background: #1a1209;
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 11pt;
+  }
+  table.totals tr.grand td.label {
+    color: #ffffff;
+  }
+  .in-words {
+    color: #3d2e1e;
+    font-size: 9.5pt;
+    margin: 4px 0 22px;
+    padding: 6px 10px;
+    background: #f5f0e8;
+    border-left: 3px solid #1a1209;
+  }
+
+  /* ── Result section ── */
+  .result-title {
+    font-weight: 700;
+    font-size: 11pt;
+    border-left: 4px solid #1a1209;
+    padding-left: 10px;
+    margin-bottom: 10px;
+  }
+  .result-list {
+    list-style: none;
+    margin-bottom: 22px;
+  }
+  .result-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 5px 0;
+    font-size: 10pt;
+  }
+  .result-list .box {
+    display: inline-block;
+    width: 13px;
+    height: 13px;
+    border: 1.5px solid #1a1209;
+    flex-shrink: 0;
+    margin-top: 3px;
+  }
+
+  /* ── Notes line ── */
+  .notes-section {
+    margin-bottom: 28px;
+  }
+  .notes-label {
+    font-size: 9.5pt;
+    color: #5a4530;
+    margin-bottom: 2px;
+  }
+  .notes-line {
+    border-bottom: 1px solid #5a4530;
+    height: 22px;
+    margin-bottom: 4px;
+  }
+
+  /* ── Signature grid ── */
+  .sig-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 18px;
+    margin-top: 18px;
+  }
+  .sig-block {
+    font-size: 9pt;
+  }
+  .sig-label {
+    color: #5a4530;
+    margin-bottom: 6px;
+    border-bottom: 1px solid #d4c8b8;
+    padding-bottom: 2px;
+  }
+  .sig-line {
+    border-bottom: 1px solid #1a1209;
+    height: 50px;
+    margin-bottom: 5px;
+  }
+  .sig-name {
+    font-weight: 700;
+    font-size: 9pt;
+    margin-bottom: 2px;
+    min-height: 13px;
+  }
+  .sig-role {
+    color: #3d2e1e;
+    font-size: 8.5pt;
+    margin-bottom: 4px;
+  }
+  .sig-date {
+    color: #5a4530;
+    font-size: 8.5pt;
+  }
+
+  /* ── Footer strip ── */
+  .doc-footer {
+    margin-top: 36px;
+    padding: 8px 10px;
+    background: #1a1209;
+    color: #f5f0e8;
+    font-size: 8.5pt;
+    display: flex;
+    justify-content: space-between;
+    letter-spacing: 0.04em;
+  }
+
+  /* ── Print ── */
+  @media print {
+    @page {
+      size: A4;
+      margin: 14mm 16mm 14mm 16mm;
+    }
+    html, body { background: #ffffff; }
+    body { padding: 0; }
+    .toolbar { display: none; }
+    .page { box-shadow: none; padding: 0; max-width: none; min-height: auto; }
+    table.items thead th, table.totals tr.grand td, .doc-footer {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+  }
+
+  /* ── Mobile ── */
+  @media (max-width: 720px) {
+    body { padding: 16px 8px 32px; }
+    .page { padding: 28px 24px 36px; }
+    .doc-header { grid-template-columns: 1fr; }
+    .doc-title-en { text-align: left; }
+    .doc-title-th { font-size: 18pt; }
+    .parties { grid-template-columns: 1fr; }
+    .sig-grid { grid-template-columns: 1fr 1fr; }
+    table.items thead th, table.items tbody td { font-size: 9pt; padding: 6px 7px; }
+    table.totals td { font-size: 9pt; padding: 6px 7px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- screen-only toolbar -->
+<div class="toolbar">
+  <span>tkc.nonarkara.org / acceptance-02</span>
+  <span>
+    <a href="/report-02.html">report 02 →</a>
+    &nbsp;·&nbsp;
+    <a href="/log.html">devlog →</a>
+    &nbsp;·&nbsp;
+    <button onclick="window.print()">พิมพ์ · Print</button>
+  </span>
+</div>
+
+<div class="page">
+
+  <!-- ── Header ── -->
+  <header class="doc-header">
+    <div>
+      <div class="doc-title-th">ใบตรวจรับงาน</div>
+    </div>
+    <div class="doc-title-en">WORK ACCEPTANCE<br>CERTIFICATE</div>
+  </header>
+
+  <div class="meta-row">
+    <div>สัญญาเลขที่ <strong>TKC-NONA-018/03/2026</strong></div>
+    <div class="right">งวดที่ <strong>2 / 5</strong></div>
+  </div>
+
+  <!-- ── Parties ── -->
+  <div class="parties">
+    <div>
+      <div class="party-label">ผู้ว่าจ้าง · CLIENT</div>
+      <div class="party-name">บริษัท เทิร์นคีย์ คอมมูนิเคชั่น เซอร์วิส จำกัด (มหาชน)</div>
+      <div class="party-line">44/44 ซอยวิภาวดีรังสิต 60 แยก 18-1-2 แขวงตลาดบางเขน</div>
+      <div class="party-line">เขตหลักสี่ กรุงเทพมหานคร 10210</div>
+      <div class="party-line">Tax ID: 0107564000219</div>
+    </div>
+    <div>
+      <div class="party-label">ผู้รับจ้าง · CONTRACTOR</div>
+      <div class="party-name">นายนน อัครประเสริฐกุล</div>
+      <div class="party-line">48/286 ถ.รัชดาภิเษก แขวงห้วยขวาง</div>
+      <div class="party-line">เขตห้วยขวาง กรุงเทพมหานคร 10310</div>
+      <div class="party-line">ID: 3 1014 01804 84 9</div>
+    </div>
+  </div>
+
+  <!-- ── Items ── -->
+  <table class="items">
+    <thead>
+      <tr>
+        <th>รายการงานที่ส่งมอบ</th>
+        <th class="right" style="width:80px;">จำนวน</th>
+        <th class="right" style="width:140px;">มูลค่า (บาท)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          รายงานการสังเคราะห์ข้อมูลจากการสังเกตและสัมภาษณ์<br>
+          รวมถึงรายงาน Pain Points ของ TKC
+          <div class="scope-sub">(งวดที่ 2 ตามสัญญาข้อ 5.1)</div>
+        </td>
+        <td class="qty">1</td>
+        <td class="amount">200,000.00</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ── Totals ── -->
+  <table class="totals">
+    <tr>
+      <td class="label">รวมเงิน · Subtotal</td>
+      <td class="value">200,000.00</td>
+    </tr>
+    <tr>
+      <td class="label">ภาษีหัก ณ ที่จ่าย (3%) · Withholding Tax</td>
+      <td class="value">6,000.00</td>
+    </tr>
+    <tr class="grand">
+      <td class="label">จำนวนเงินรวมทั้งสิ้น · NET PAYABLE (THB)</td>
+      <td class="value">194,000.00</td>
+    </tr>
+  </table>
+  <div class="in-words">
+    (หนึ่งแสนเก้าหมื่นสี่พันบาทถ้วน · One Hundred Ninety-Four Thousand Baht Only)
+  </div>
+
+  <!-- ── Acceptance result ── -->
+  <div class="result-title">ผลการตรวจรับงาน · Acceptance Result</div>
+  <ul class="result-list">
+    <li><span class="box"></span><span>ตรวจรับงานแล้ว · งานถูกต้องครบถ้วนตามสัญญา (Accepted — work is complete per contract)</span></li>
+    <li><span class="box"></span><span>ตรวจรับงานแล้ว · แต่มีข้อแก้ไขเพิ่มเติม (ดูเอกสารแนบ) (Accepted with conditions — see attachment)</span></li>
+    <li><span class="box"></span><span>ยังไม่ตรวจรับงาน เนื่องจาก ________________________________________ (Not yet accepted because …)</span></li>
+  </ul>
+
+  <!-- ── Notes ── -->
+  <div class="notes-section">
+    <div class="notes-label">หมายเหตุ · Notes</div>
+    <div class="notes-line"></div>
+    <div class="notes-line"></div>
+  </div>
+
+  <!-- ── Signatures ── -->
+  <div class="sig-grid">
+    <div class="sig-block">
+      <div class="sig-label">ผู้ส่งมอบงาน · Contractor</div>
+      <div class="sig-line"></div>
+      <div class="sig-name">(นายนน อัครประเสริฐกุล)</div>
+      <div class="sig-role">ผู้รับจ้าง</div>
+      <div class="sig-date">วันที่ ……… / ……… / …………</div>
+    </div>
+
+    <div class="sig-block">
+      <div class="sig-label">ผู้ตรวจรับงาน · Reviewer</div>
+      <div class="sig-line"></div>
+      <div class="sig-name">________________________</div>
+      <div class="sig-role">ฝ่ายที่เกี่ยวข้อง</div>
+      <div class="sig-date">วันที่ ……… / ……… / …………</div>
+    </div>
+
+    <div class="sig-block">
+      <div class="sig-label">ผู้มีอำนาจอนุมัติ · Approver</div>
+      <div class="sig-line"></div>
+      <div class="sig-name">(นายปิยะ จิราภาพงศา)</div>
+      <div class="sig-role">ผู้ว่าจ้าง</div>
+      <div class="sig-date">วันที่ ……… / ……… / …………</div>
+    </div>
+
+    <div class="sig-block">
+      <div class="sig-label">พยาน · Witness</div>
+      <div class="sig-line"></div>
+      <div class="sig-name">________________________</div>
+      <div class="sig-role">&nbsp;</div>
+      <div class="sig-date">วันที่ ……… / ……… / …………</div>
+    </div>
+  </div>
+
+  <!-- ── Footer strip ── -->
+  <div class="doc-footer">
+    <span>TKC-NONA-018/03/2026 · ใบตรวจรับงาน งวดที่ 2</span>
+    <span>วันที่จัดทำเอกสาร 8 พฤษภาคม 2569</span>
+  </div>
+
+</div>
+
+</body>
+</html>
