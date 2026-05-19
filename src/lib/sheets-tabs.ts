@@ -414,6 +414,40 @@ export const TABS: readonly TabConfig[] = [
       "note",
     ],
   },
+
+  // v4.7 · Ninja. The Talent Management Program (Phase 1) snapshot —
+  // one row per nominee per cycle. Keyed on `employee_id + cycle` so a
+  // 2026-H1 row and a 2026-H2 row for the same person coexist; the UI
+  // reads `cycle` to pick the current view. Aligned with the
+  // Performance/Potential framework in `TKC Talent rev.4` (Apr 2026).
+  {
+    name: "TalentAssessment",
+    strategy: "upsert",
+    description: "Talent Management Program — per-nominee Performance/Potential, 9-Box, Final Cut.",
+    headers: [
+      "employee_id",
+      "cycle",
+      "employee_code",
+      "employee_name",
+      "department",
+      "position",
+      "job_grade",
+      "grade_prev",
+      "grade_curr",
+      "performance_score",
+      "potential_score",
+      "avg_score",
+      "performance_band",
+      "potential_band",
+      "box_id",
+      "box_label",
+      "in_talent_pool",
+      "referrence",
+      "remark",
+      "assessment_date",
+      "imported_at",
+    ],
+  },
 ] as const;
 
 /** Lookup a tab by name. Throws if missing — fail loud on typos. */

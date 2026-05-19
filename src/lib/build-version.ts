@@ -100,9 +100,27 @@
  *                             animation on Fixture / Matrix / Roster tab
  *                             enters. docs/HOUSE_STYLE_AUDIT.md captures
  *                             the full rule set for third-party review.
+ *   v4.7 · Ninja              Talent Management Program (Phase 1)
+ *                             wired end-to-end. Migration 031 adds the
+ *                             9-Box columns to `employees` plus a
+ *                             `talent_assessments` history table keyed
+ *                             on (employee_id, cycle). 48 of 49
+ *                             nominees from Khun Jun's CSV imported
+ *                             to Postgres + mirrored to the new
+ *                             `TalentAssessment` Sheets tab.
+ *                             `/api/db/talent-assessment` returns the
+ *                             full snapshot (funnel · 9-Box buckets ·
+ *                             dept roll-up · Final Cut ranking).
+ *                             Standalone route `/talent` mirrors the
+ *                             `/project-health` pattern. NinjaTab gets
+ *                             a thin Talent-Pool strip up top with
+ *                             headline counts + link to /talent.
+ *                             Aligned with the framework in
+ *                             `TKC Talent rev.4.pdf` (HR Strategy
+ *                             Map Y2026, Danang management meeting).
  *
  * Bump both fields together. Codename stays one or two words.
  */
 
-export const BUILD_VERSION = "v4.6.6";
-export const BUILD_CODENAME = "Red Dot";
+export const BUILD_VERSION = "v4.7";
+export const BUILD_CODENAME = "Ninja";

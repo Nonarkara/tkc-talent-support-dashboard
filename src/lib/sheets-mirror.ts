@@ -1237,3 +1237,68 @@ function cryptoId(): string {
   }
   return `ev-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }
+
+// ─── v4.7 · Talent Assessment (Ninja Team / Talent Management Program) ──
+//
+// Mirrors one nominee per cycle into the `TalentAssessment` Sheet tab.
+// Upsert-keyed on (employee_id, cycle) — see sheets-tabs.ts. Fire-and-
+// forget per §6 of CLAUDE.md.
+
+export interface TalentAssessmentMirrorPayload {
+  employee_id: string;
+  cycle: string;
+  employee_code: string | null;
+  employee_name: string | null;
+  department: string | null;
+  position: string | null;
+  job_grade: string | null;
+  grade_prev: string | null;
+  grade_curr: string | null;
+  performance_score: number | null;
+  potential_score: number | null;
+  avg_score: number | null;
+  performance_band: number | null;
+  potential_band: number | null;
+  box_id: number | null;
+  box_label: string | null;
+  in_talent_pool: boolean;
+  referrence: string | null;
+  remark: string | null;
+  assessment_date: string;
+}
+
+export async function mirrorTalentAssessment(
+  data: TalentAssessmentMirrorPayload,
+): Promise<void> {
+  try {
+    // Composite key: employee_id|cycle. Sheets-sync's upsertRow keys on
+    // the first header, so we pre-compose it.
+    const composite = `${data.employee_id}|${data.cycle}`;
+    await upsertRow("TalentAssessment", {
+      employee_id: composite,
+      cycle: data.cycle,
+      employee_code: data.employee_code ?? "",
+      employee_name: data.employee_name ?? "",
+      department: data.department ?? "",
+      position: data.position ?? "",
+      job_grade: data.job_grade ?? "",
+      grade_prev: data.grade_prev ?? "",
+      grade_curr: data.grade_curr ?? "",
+      performance_score: data.performance_score ?? "",
+      potential_score: data.potential_score ?? "",
+      avg_score: data.avg_score ?? "",
+      performance_band: data.performance_band ?? "",
+      potential_band: data.potential_band ?? "",
+      box_id: data.box_id ?? "",
+      box_label: data.box_label ?? "",
+      in_talent_pool: data.in_talent_pool ? "Y" : "N",
+      referrence: data.referrence ?? "",
+      remark: data.remark ?? "",
+      assessment_date: data.assessment_date,
+      imported_at: new Date().toISOString(),
+    });
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error("[sheets-mirror] mirrorTalentAssessment failed:", err);
+  }
+}

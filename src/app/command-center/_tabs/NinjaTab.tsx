@@ -603,10 +603,11 @@ export function NinjaTab({ dash }: Props) {
     <div
       className="cc-tab-frame"
       style={{
-        gridTemplateRows: "auto auto 1fr",
+        gridTemplateRows: "auto auto auto 1fr",
         gap: 12,
       }}
     >
+      <NinjaTalentStrip />
       <ReadinessStrip
         report={reportsByTeam[activeTeam]}
         memberCount={membersByTeam[activeTeam].length}
@@ -1287,5 +1288,109 @@ function MetricRail({
       </div>
       <div style={{ color: tone, fontSize: 16, fontWeight: 800 }}>{value}</div>
     </div>
+  );
+}
+
+// ─── v4.7 · Talent Pipeline thin strip ────────────────────────────────
+//
+// One-row ticker that surfaces the live Talent Pool counts in the
+// staffing surface without disrupting the project-staffing flow.
+// Clicks open the full /talent page (matches /project-health pattern).
+// Polls `/api/db/talent-assessment` once per 90s — cheap signal, no
+// state coupling with the rest of the tab.
+
+function NinjaTalentStrip() {
+  const [data, setData] = useState<{
+    nominees: number;
+    pool: number;
+    target: number;
+    boxStars: number;
+    boxHighPot: number;
+  } | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      try {
+        const r = await fetch("/api/db/talent-assessment", { cache: "no-store" });
+        if (!r.ok) return;
+        const j = await r.json();
+        if (cancelled) return;
+        const boxes = j.boxes ?? [];
+        const findBox = (id: number) =>
+          (boxes.find((b: { id: number; final_cut?: number }) => b.id === id)?.final_cut ?? 0) as number;
+        setData({
+          nominees: j.total_nominees ?? 0,
+          pool: j.total_pool ?? 0,
+          target: j.funnel?.target ?? 20,
+          boxStars: findBox(9),
+          boxHighPot: findBox(8),
+        });
+      } catch {
+        // silent fail — strip is supplementary
+      }
+    }
+    load();
+    const t = setInterval(load, 90_000);
+    return () => {
+      cancelled = true;
+      clearInterval(t);
+    };
+  }, []);
+
+  return (
+    <a
+      href="/talent"
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 14,
+        padding: "8px 12px",
+        border: "1px solid rgba(212,168,67,0.28)",
+        background: "rgba(212,168,67,0.04)",
+        color: "var(--ink-0)",
+        textDecoration: "none",
+        fontSize: 11,
+        letterSpacing: "0.04em",
+      }}
+    >
+      <span style={{ color: "#D4A843", fontWeight: 700, letterSpacing: "0.14em" }}>
+        TALENT POOL · 2026-H1
+      </span>
+      <span style={{ color: "#8a7a5e" }}>·</span>
+      <NinjaTalentMetric label="Nominees" value={data?.nominees ?? "—"} />
+      <NinjaTalentMetric label="Pool" value={data?.pool ?? "—"} accent />
+      <NinjaTalentMetric label="Target" value={data?.target ?? "—"} />
+      <NinjaTalentMetric label="★ Stars" value={data?.boxStars ?? "—"} />
+      <NinjaTalentMetric label="High Pot" value={data?.boxHighPot ?? "—"} />
+      <span style={{ marginLeft: "auto", color: "#D4A843" }}>open full view →</span>
+    </a>
+  );
+}
+
+function NinjaTalentMetric({
+  label,
+  value,
+  accent = false,
+}: {
+  label: string;
+  value: number | string;
+  accent?: boolean;
+}) {
+  return (
+    <span style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+      <span style={{ color: "#8a7a5e", fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase" }}>
+        {label}
+      </span>
+      <span
+        style={{
+          color: accent ? "#D4A843" : "var(--ink-0)",
+          fontWeight: 700,
+          fontFamily: "var(--font-mono, ui-monospace)",
+        }}
+      >
+        {value}
+      </span>
+    </span>
   );
 }
