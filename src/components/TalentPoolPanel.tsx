@@ -20,6 +20,16 @@
  */
 
 import { useEffect, useState } from "react";
+import { TalentDrillDownDrawer, type NomineeDetail } from "./TalentDrillDownDrawer";
+
+interface BoxNominee {
+  employee_code: string | null;
+  display_name: string;
+  department: string | null;
+  position: string | null;
+  avg_score: number | null;
+  in_talent_pool: boolean;
+}
 
 interface BoxBucket {
   id: number;
@@ -28,14 +38,7 @@ interface BoxBucket {
   group: "low" | "mid" | "high";
   headcount: number;
   final_cut: number;
-  nominees: Array<{
-    employee_code: string | null;
-    display_name: string;
-    department: string | null;
-    position: string | null;
-    avg_score: number | null;
-    in_talent_pool: boolean;
-  }>;
+  nominees: BoxNominee[];
 }
 
 interface DeptRow {
@@ -47,11 +50,14 @@ interface DeptRow {
 
 interface RankingRow {
   rank: number;
+  employee_id?: string;
   employee_code: string | null;
   display_name: string;
   department: string | null;
   position: string | null;
   job_grade: string | null;
+  grade_prev?: string | null;
+  grade_curr?: string | null;
   performance_score: number | null;
   potential_score: number | null;
   avg_score: number | null;
@@ -60,6 +66,8 @@ interface RankingRow {
   box_id: number | null;
   box_label: string | null;
   referrence: string | null;
+  remark?: string | null;
+  in_talent_pool: boolean;
 }
 
 interface TalentPayload {
@@ -74,6 +82,7 @@ interface TalentPayload {
   boxes: BoxBucket[];
   departments: DeptRow[];
   ranking: RankingRow[];
+  emerging?: RankingRow[];
   total_nominees: number;
   total_pool: number;
 }
@@ -101,6 +110,21 @@ export function TalentPoolPanel({
 }) {
   const [data, setData] = useState<TalentPayload | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [drillDown, setDrillDown] = useState<NomineeDetail | null>(null);
+
+  // Build a fast lookup so a click on a 9-Box mini-row can find the
+  // full ranking row (which carries grades + scores). Falls back to the
+  // mini-row data so the drawer always has something to show.
+  const lookup = (n: BoxNominee | RankingRow): NomineeDetail => {
+    const allRows = [...(data?.ranking ?? []), ...(data?.emerging ?? [])];
+    const hit = allRows.find(
+      (r) =>
+        ("employee_code" in n && r.employee_code === n.employee_code) ||
+        r.display_name === n.display_name,
+    );
+    if (hit) return hit as NomineeDetail;
+    return n as NomineeDetail;
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -195,12 +219,25 @@ export function TalentPoolPanel({
       />
 
       <div className="talent-9box" style={{ display: "grid", gap: 8 }}>
-        <div style={axisLabel}>↑ Potential / ศักยภาพ</div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+          <span style={axisLabel}>↑ Potential / ศักยภาพ</span>
+          <span style={{ ...axisLabel, color: "#5a4530" }}>
+            cuts: Potential <strong style={{ color: "#8a7a5e" }}>65</strong> · Performance{" "}
+            <strong style={{ color: "#8a7a5e" }}>80</strong>
+          </span>
+        </div>
         <div className="talent-9box-grid" style={gridStyle}>
           {BOX_GRID_ORDER.map((boxId) => {
             const b = boxById.get(boxId);
             if (!b) return <div key={boxId} style={emptyBoxStyle} />;
-            return <BoxCell key={boxId} box={b} compact={compact} />;
+            return (
+              <BoxCell
+                key={boxId}
+                box={b}
+                compact={compact}
+                onPick={(n) => setDrillDown(lookup(n))}
+              />
+            );
           })}
         </div>
         <div style={axisLabel}>Performance / ผลงาน →</div>
@@ -247,44 +284,101 @@ export function TalentPoolPanel({
         sub_th="(เรียงตามคะแนนเฉลี่ย)"
       />
 
-      <div style={rankingWrap}>
-        <table style={rankingTable}>
-          <thead>
-            <tr>
-              <th style={thRankRight}>#</th>
-              <th style={thLeft}>Name</th>
-              <th style={thLeft}>Department</th>
-              <th style={thLeft}>Position</th>
-              <th style={thRight}>JG</th>
-              <th style={thRight}>Perf</th>
-              <th style={thRight}>Pot</th>
-              <th style={thRight}>Avg</th>
-              <th style={thLeft}>9-Box</th>
+      <RankingTable rows={ranking} onPick={(n) => setDrillDown(lookup(n))} tone="pool" />
+
+      {data.emerging && data.emerging.length > 0 && (
+        <>
+          <SectionHeader
+            numeral="E"
+            label_en="Emerging Group · the bench"
+            label_th="กลุ่ม Emerging · บัลลังก์รอ"
+            sub_en={`${data.emerging.length} from Box 4 + 5 · Improving Trend candidates`}
+            sub_th="(กลุ่มที่ปิด Competency Gap แล้วเข้า Pipeline ได้ในรอบหน้า)"
+          />
+          <RankingTable
+            rows={data.emerging}
+            onPick={(n) => setDrillDown(lookup(n))}
+            tone="emerging"
+          />
+        </>
+      )}
+
+      <TalentDrillDownDrawer
+        nominee={drillDown}
+        onClose={() => setDrillDown(null)}
+      />
+    </div>
+  );
+}
+
+function RankingTable({
+  rows,
+  onPick,
+  tone,
+}: {
+  rows: RankingRow[];
+  onPick: (r: RankingRow) => void;
+  tone: "pool" | "emerging";
+}) {
+  const isEmerging = tone === "emerging";
+  return (
+    <div style={rankingWrap}>
+      <table style={rankingTable}>
+        <thead>
+          <tr>
+            <th style={thRankRight}>#</th>
+            <th style={thLeft}>Name</th>
+            <th style={thLeft}>Department</th>
+            <th style={thLeft}>Position</th>
+            <th style={thRight}>JG</th>
+            <th style={thRight}>Perf</th>
+            <th style={thRight}>Pot</th>
+            <th style={thRight}>Avg</th>
+            <th style={thLeft}>9-Box</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr
+              key={`${r.employee_code}-${r.rank}`}
+              onClick={() => onPick(r)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onPick(r);
+                }
+              }}
+              tabIndex={0}
+              role="button"
+              aria-label={`Open assessment for ${r.display_name}`}
+              style={{ cursor: "pointer" }}
+              className="talent-row-clickable"
+            >
+              <td style={tdRankRight}>{r.rank.toString().padStart(2, "0")}</td>
+              <td style={isEmerging ? tdLeft : tdLeftBold}>{r.display_name}</td>
+              <td style={tdLeftMuted}>{r.department ?? "—"}</td>
+              <td style={tdLeftMuted}>{r.position ?? "—"}</td>
+              <td style={tdRight}>{r.job_grade ?? "—"}</td>
+              <td style={tdRight}>{r.performance_score?.toFixed(1) ?? "—"}</td>
+              <td style={tdRight}>{r.potential_score?.toFixed(1) ?? "—"}</td>
+              <td
+                style={{
+                  ...tdRight,
+                  color: isEmerging ? "#b8a88a" : "#D4A843",
+                  fontWeight: isEmerging ? 500 : 700,
+                }}
+              >
+                {r.avg_score?.toFixed(1) ?? "—"}
+              </td>
+              <td style={tdLeftMuted}>
+                <span style={{ color: BOX_ACCENT[r.box_id ?? 0] ?? "#8a7a5e" }}>
+                  {r.box_label ?? "—"}
+                </span>
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {ranking.map((r) => (
-              <tr key={`${r.employee_code}-${r.rank}`}>
-                <td style={tdRankRight}>{r.rank.toString().padStart(2, "0")}</td>
-                <td style={tdLeftBold}>{r.display_name}</td>
-                <td style={tdLeftMuted}>{r.department ?? "—"}</td>
-                <td style={tdLeftMuted}>{r.position ?? "—"}</td>
-                <td style={tdRight}>{r.job_grade ?? "—"}</td>
-                <td style={tdRight}>{r.performance_score?.toFixed(1) ?? "—"}</td>
-                <td style={tdRight}>{r.potential_score?.toFixed(1) ?? "—"}</td>
-                <td style={{ ...tdRight, color: "#D4A843", fontWeight: 700 }}>
-                  {r.avg_score?.toFixed(1) ?? "—"}
-                </td>
-                <td style={tdLeftMuted}>
-                  <span style={{ color: BOX_ACCENT[r.box_id ?? 0] ?? "#8a7a5e" }}>
-                    {r.box_label ?? "—"}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
@@ -358,7 +452,15 @@ function FunnelTile({
   );
 }
 
-function BoxCell({ box, compact }: { box: BoxBucket; compact?: boolean }) {
+function BoxCell({
+  box,
+  compact,
+  onPick,
+}: {
+  box: BoxBucket;
+  compact?: boolean;
+  onPick: (n: BoxNominee) => void;
+}) {
   const accent = BOX_ACCENT[box.id] ?? "#8a7a5e";
   return (
     <div
@@ -394,8 +496,11 @@ function BoxCell({ box, compact }: { box: BoxBucket; compact?: boolean }) {
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 2, marginTop: 2 }}>
         {box.nominees.slice(0, compact ? 4 : 8).map((n) => (
-          <div
+          <button
             key={(n.employee_code ?? "") + n.display_name}
+            onClick={() => onPick(n)}
+            type="button"
+            title={`${n.position ?? ""} · ${n.department ?? ""} · avg ${n.avg_score?.toFixed(1) ?? "—"} · click to drill down`}
             style={{
               fontSize: 10,
               color: n.in_talent_pool ? "#f5f0e8" : "#8a7a5e",
@@ -403,8 +508,15 @@ function BoxCell({ box, compact }: { box: BoxBucket; compact?: boolean }) {
               display: "flex",
               justifyContent: "space-between",
               gap: 6,
+              background: "transparent",
+              border: 0,
+              padding: "2px 0",
+              cursor: "pointer",
+              fontFamily: "inherit",
+              textAlign: "left",
+              width: "100%",
             }}
-            title={`${n.position ?? ""} · ${n.department ?? ""} · avg ${n.avg_score?.toFixed(1) ?? "—"}`}
+            className="talent-nominee-btn"
           >
             <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {n.in_talent_pool ? "★ " : "  "}
@@ -413,7 +525,7 @@ function BoxCell({ box, compact }: { box: BoxBucket; compact?: boolean }) {
             <span style={{ fontFamily: "var(--font-mono, monospace)", color: "#8a7a5e", fontSize: 9 }}>
               {n.avg_score?.toFixed(1) ?? ""}
             </span>
-          </div>
+          </button>
         ))}
         {box.nominees.length > (compact ? 4 : 8) && (
           <div style={{ fontSize: 9, color: "#8a7a5e", marginTop: 2 }}>

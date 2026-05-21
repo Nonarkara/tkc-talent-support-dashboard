@@ -2210,3 +2210,45 @@ button.cc-status:disabled {
 .card-back {
   transform: rotateY(180deg);
 }
+
+/* ── v4.7.1 · Talent Pool polish ───────────────────────────────────── */
+
+/* Hover + focus affordance on clickable nominees in 9-Box cells.
+   Without this the cursor:pointer is the only signal something is
+   clickable — Norman door avoided. */
+.talent-nominee-btn:hover,
+.talent-nominee-btn:focus-visible {
+  color: #D4A843 !important;
+  outline: none;
+  background: rgba(212,168,67,0.06) !important;
+}
+.talent-row-clickable:hover {
+  background: rgba(212,168,67,0.04);
+}
+.talent-row-clickable:focus-visible {
+  outline: 2px solid #D4A843;
+  outline-offset: -2px;
+}
+
+/* Mobile pass · funnel and 9-Box collapse cleanly down to 360px.
+   At 768px we go 4-col funnel → 2-col, 3-col 9-Box stays 3-col but
+   each cell shrinks. At 480px funnel becomes 1-col and 9-Box becomes
+   1-col so each box gets full width (otherwise box names truncate). */
+@media (max-width: 768px) {
+  .talent-funnel-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+@media (max-width: 520px) {
+  .talent-9box-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .talent-funnel-grid {
+    grid-template-columns: 1fr !important;
+  }
+  /* On phone, the drawer takes full viewport to avoid being squeezed. */
+  .talent-drawer {
+    width: 100vw !important;
+    padding: 16px 18px 28px !important;
+  }
+}

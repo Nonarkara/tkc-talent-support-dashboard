@@ -118,9 +118,34 @@
  *                             Aligned with the framework in
  *                             `TKC Talent rev.4.pdf` (HR Strategy
  *                             Map Y2026, Danang management meeting).
+ *   v4.7.1 · Scout            Talent surface turns from dashboard into
+ *                             working tool. Per-person drill-down
+ *                             drawer opens on any name click — 9-Box
+ *                             cell or ranking row — and shows full
+ *                             Performance × Potential breakdown
+ *                             (40/60 and 50/50 weights named), 2-yr
+ *                             grade history pills, provenance
+ *                             (referrence + remark), and a computed
+ *                             "Next step" hint specific to the box
+ *                             they sit in (Project Assignment for
+ *                             Box 9, Development Plan for Box 8,
+ *                             Polish + Visibility for Box 7, etc.).
+ *                             Box-cell rows are now real buttons
+ *                             (Enter/Space + hover/focus rings).
+ *                             Ranking rows are clickable + keyboard-
+ *                             reachable. 65/80 axis-cut thresholds
+ *                             now shown on the 9-Box header. New
+ *                             "Emerging Group" section surfaces the
+ *                             Box 4/5 bench (the ~23 the framework
+ *                             explicitly calls out as next-cycle
+ *                             pipeline candidates) — addresses the
+ *                             previously invisible middle tier.
+ *                             Mobile: funnel collapses 4→2→1 col,
+ *                             9-Box collapses to 1-col at ≤520px,
+ *                             drawer takes 100vw on phones.
  *
  * Bump both fields together. Codename stays one or two words.
  */
 
-export const BUILD_VERSION = "v4.7";
-export const BUILD_CODENAME = "Ninja";
+export const BUILD_VERSION = "v4.7.1";
+export const BUILD_CODENAME = "Scout";

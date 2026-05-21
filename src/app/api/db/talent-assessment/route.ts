@@ -156,27 +156,41 @@ export async function GET() {
       target: 20, // from TKC's 7% selection logic
     };
 
-    // ── Top-20 ranking (Talent Pool members, then by avg desc) ──
+    // ── Final Cut ranking (all Talent Pool members, ordered by avg desc) ──
+    const rankRow = (r: NomineeRow, rank: number) => ({
+      rank,
+      employee_id: r.employee_id,
+      employee_code: r.employee_code,
+      display_name: r.display_name,
+      department: r.department,
+      position: r.position,
+      job_grade: r.job_grade,
+      grade_prev: r.grade_prev,
+      grade_curr: r.grade_curr,
+      performance_score: r.performance_score,
+      potential_score: r.potential_score,
+      avg_score: r.avg_score,
+      performance_band: r.performance_band,
+      potential_band: r.potential_band,
+      box_id: r.box_id,
+      box_label: r.box_label,
+      referrence: r.talent_referrence,
+      remark: r.talent_remark,
+      in_talent_pool: r.in_talent_pool,
+    });
+
     const ranking = rows
       .filter((r) => r.in_talent_pool)
       .sort((a, b) => (b.avg_score ?? 0) - (a.avg_score ?? 0))
-      .slice(0, 25)
-      .map((r, i) => ({
-        rank: i + 1,
-        employee_code: r.employee_code,
-        display_name: r.display_name,
-        department: r.department,
-        position: r.position,
-        job_grade: r.job_grade,
-        performance_score: r.performance_score,
-        potential_score: r.potential_score,
-        avg_score: r.avg_score,
-        performance_band: r.performance_band,
-        potential_band: r.potential_band,
-        box_id: r.box_id,
-        box_label: r.box_label,
-        referrence: r.talent_referrence,
-      }));
+      .map((r, i) => rankRow(r, i + 1));
+
+    // ── Emerging Group · framework §11 (Box 4 + 5 nominees not in pool) ──
+    //    "Improving Trend + Competency Gap" cohort — the bench that needs
+    //    development to qualify for the Final Cut next cycle.
+    const emerging = rows
+      .filter((r) => !r.in_talent_pool && (r.box_id === 4 || r.box_id === 5))
+      .sort((a, b) => (b.avg_score ?? 0) - (a.avg_score ?? 0))
+      .map((r, i) => rankRow(r, i + 1));
 
     return NextResponse.json({
       cycle: "2026-H1",
@@ -185,6 +199,7 @@ export async function GET() {
       boxes,
       departments,
       ranking,
+      emerging,
       total_nominees: rows.length,
       total_pool: funnel.talent_pool,
     });

@@ -4,8 +4,9 @@
     {
       "name": "talent-dashboard",
       "runtimeExecutable": "/usr/local/bin/node",
-      "runtimeArgs": ["node_modules/.bin/next", "dev"],
-      "port": 3000
+      "runtimeArgs": ["node_modules/.bin/next", "dev", "-p", "3717"],
+      "port": 3717,
+      "autoPort": false
     }
   ]
 }
