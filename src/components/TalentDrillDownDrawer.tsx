@@ -275,6 +275,21 @@ export function TalentDrillDownDrawer({
                 ★ Final Cut
               </span>
             )}
+            {/* Scout rank — cassette dialect: stars derived from box.
+                Box 9 = ★★★, Box 8 = ★★, Box 7 = ★, others = none. */}
+            {(nominee.box_id ?? 0) >= 7 && (
+              <span
+                title={`Scout rank ${"★".repeat(Math.max(1, (nominee.box_id ?? 7) - 6))}`}
+                style={{
+                  color: "#D4A843",
+                  fontSize: 13,
+                  letterSpacing: "0.1em",
+                  fontFamily: "var(--font-mono, monospace)",
+                }}
+              >
+                {"★".repeat(Math.max(1, (nominee.box_id ?? 7) - 6))}
+              </span>
+            )}
           </div>
         </div>
 

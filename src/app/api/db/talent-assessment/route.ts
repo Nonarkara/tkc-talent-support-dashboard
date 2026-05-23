@@ -110,6 +110,7 @@ export async function GET() {
       return {
         ...b,
         nominees: list.map((r) => ({
+          employee_id: r.employee_id,
           employee_code: r.employee_code,
           display_name: r.display_name,
           department: r.department,

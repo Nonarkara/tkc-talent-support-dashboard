@@ -23,6 +23,7 @@ import { useEffect, useState } from "react";
 import { TalentDrillDownDrawer, type NomineeDetail } from "./TalentDrillDownDrawer";
 
 interface BoxNominee {
+  employee_id: string;
   employee_code: string | null;
   display_name: string;
   department: string | null;
@@ -112,6 +113,14 @@ export function TalentPoolPanel({
   const [error, setError] = useState<string | null>(null);
   const [drillDown, setDrillDown] = useState<NomineeDetail | null>(null);
 
+  // ── Filter state ──────────────────────────────────────────────────
+  // Sticky search + dept multi-select + Final Cut toggle. Closes the
+  // "with 45+ nominees this becomes a wall" problem we'd hit by Phase 2
+  // when nominee count climbs.
+  const [search, setSearch] = useState("");
+  const [deptFilter, setDeptFilter] = useState<Set<string>>(new Set());
+  const [finalCutOnly, setFinalCutOnly] = useState(false);
+
   // Build a fast lookup so a click on a 9-Box mini-row can find the
   // full ranking row (which carries grades + scores). Falls back to the
   // mini-row data so the drawer always has something to show.
@@ -119,7 +128,8 @@ export function TalentPoolPanel({
     const allRows = [...(data?.ranking ?? []), ...(data?.emerging ?? [])];
     const hit = allRows.find(
       (r) =>
-        ("employee_code" in n && r.employee_code === n.employee_code) ||
+        ("employee_id" in n && n.employee_id ? r.employee_id === n.employee_id : false) ||
+        (n.employee_code ? r.employee_code === n.employee_code : false) ||
         r.display_name === n.display_name,
     );
     if (hit) return hit as NomineeDetail;
@@ -166,11 +176,167 @@ export function TalentPoolPanel({
     return <div style={loadingStyle}>Loading talent snapshot…</div>;
   }
 
-  const { funnel, boxes, departments, ranking, cycle, generated_at } = data;
+  const { funnel, departments, cycle, generated_at } = data;
+
+  // ── Filter strip state-derived ────────────────────────────────────
+  // Filters are local-only (no URL state) — keeps the page reload
+  // cheap and the data read-only. If we ever need to share a filtered
+  // view, we'll lift this into the URL.
+  const allDepts = new Set<string>();
+  for (const r of [...data.ranking, ...(data.emerging ?? [])]) {
+    if (r.department) allDepts.add(r.department);
+  }
+  for (const b of data.boxes) {
+    for (const n of b.nominees) if (n.department) allDepts.add(n.department);
+  }
+  const deptOptions = [...allDepts].sort();
+
+  const q = search.trim().toLowerCase();
+  const matches = (name: string, dept: string | null, inPool: boolean) => {
+    if (finalCutOnly && !inPool) return false;
+    if (deptFilter.size > 0 && (!dept || !deptFilter.has(dept))) return false;
+    if (q.length === 0) return true;
+    return (
+      name.toLowerCase().includes(q) ||
+      (dept ?? "").toLowerCase().includes(q)
+    );
+  };
+
+  const boxes = data.boxes.map((b) => {
+    const filtered = b.nominees.filter((n) =>
+      matches(n.display_name, n.department, n.in_talent_pool),
+    );
+    return {
+      ...b,
+      nominees: filtered,
+      headcount: filtered.length,
+      final_cut: filtered.filter((n) => n.in_talent_pool).length,
+    };
+  });
   const boxById = new Map(boxes.map((b) => [b.id, b]));
+
+  const ranking = data.ranking
+    .filter((r) => matches(r.display_name, r.department, r.in_talent_pool))
+    .map((r, i) => ({ ...r, rank: i + 1 }));
+
+  const emerging = (data.emerging ?? [])
+    .filter((r) => matches(r.display_name, r.department, r.in_talent_pool))
+    .map((r, i) => ({ ...r, rank: i + 1 }));
+
+  const totalNominees =
+    data.ranking.length + (data.emerging?.length ?? 0);
+  const visibleNominees =
+    ranking.length + emerging.length;
+  const filterActive = q.length > 0 || deptFilter.size > 0 || finalCutOnly;
+
+  function clearFilters() {
+    setSearch("");
+    setDeptFilter(new Set());
+    setFinalCutOnly(false);
+  }
+
+  function toggleDept(d: string) {
+    setDeptFilter((prev) => {
+      const next = new Set(prev);
+      if (next.has(d)) next.delete(d);
+      else next.add(d);
+      return next;
+    });
+  }
 
   return (
     <div style={{ display: "grid", gap: 18 }}>
+      {/* ── Filter strip (sticky on scroll) ─────────────────────── */}
+      <div className="talent-filter-strip" style={filterStripStyle}>
+        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 10 }}>
+          <span
+            style={{
+              fontSize: 9,
+              letterSpacing: "0.16em",
+              textTransform: "uppercase",
+              color: "#D4A843",
+              fontWeight: 700,
+            }}
+          >
+            Sieve
+          </span>
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="name or department…"
+            aria-label="Filter talent pool by name or department"
+            className="talent-filter-input"
+            style={filterInputStyle}
+          />
+          <label
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              cursor: "pointer",
+              fontSize: 11,
+              color: finalCutOnly ? "#D4A843" : "#b8a88a",
+              userSelect: "none",
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={finalCutOnly}
+              onChange={(e) => setFinalCutOnly(e.target.checked)}
+              style={{ accentColor: "#D4A843", cursor: "pointer" }}
+            />
+            ★ Final Cut only
+          </label>
+          <span
+            style={{
+              marginLeft: "auto",
+              fontSize: 10,
+              color: filterActive ? "#D4A843" : "#8a7a5e",
+              letterSpacing: "0.08em",
+              fontFamily: "var(--font-mono, monospace)",
+            }}
+          >
+            {filterActive ? "filtered" : "showing"} {visibleNominees} / {totalNominees}
+          </span>
+          {filterActive && (
+            <button
+              onClick={clearFilters}
+              type="button"
+              className="talent-clear-btn"
+              style={filterClearStyle}
+            >
+              clear ×
+            </button>
+          )}
+        </div>
+        {deptOptions.length > 0 && (
+          <div className="talent-dept-chips" style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
+            {deptOptions.map((d) => {
+              const active = deptFilter.has(d);
+              return (
+                <button
+                  key={d}
+                  onClick={() => toggleDept(d)}
+                  type="button"
+                  aria-pressed={active}
+                  className="talent-dept-chip"
+                  style={{
+                    ...deptChipStyle,
+                    borderColor: active ? "#D4A843" : "rgba(212,168,67,0.22)",
+                    color: active ? "#D4A843" : "#b8a88a",
+                    background: active ? "rgba(212,168,67,0.08)" : "transparent",
+                    fontWeight: active ? 700 : 400,
+                  }}
+                >
+                  {d}
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
       <SectionHeader
         numeral="A"
         label_en="Funnel"
@@ -284,19 +450,25 @@ export function TalentPoolPanel({
         sub_th="(เรียงตามคะแนนเฉลี่ย)"
       />
 
-      <RankingTable rows={ranking} onPick={(n) => setDrillDown(lookup(n))} tone="pool" />
+      {ranking.length === 0 && filterActive ? (
+        <div style={emptyStateStyle}>
+          No Final Cut nominees match the current sieve.
+        </div>
+      ) : (
+        <RankingTable rows={ranking} onPick={(n) => setDrillDown(lookup(n))} tone="pool" />
+      )}
 
-      {data.emerging && data.emerging.length > 0 && (
+      {emerging.length > 0 && (
         <>
           <SectionHeader
             numeral="E"
             label_en="Emerging Group · the bench"
             label_th="กลุ่ม Emerging · บัลลังก์รอ"
-            sub_en={`${data.emerging.length} from Box 4 + 5 · Improving Trend candidates`}
+            sub_en={`${emerging.length} from Box 4 + 5 · Improving Trend candidates`}
             sub_th="(กลุ่มที่ปิด Competency Gap แล้วเข้า Pipeline ได้ในรอบหน้า)"
           />
           <RankingTable
-            rows={data.emerging}
+            rows={emerging}
             onPick={(n) => setDrillDown(lookup(n))}
             tone="emerging"
           />
@@ -667,4 +839,55 @@ const errorStyle: React.CSSProperties = {
   padding: 14,
   border: "1px solid rgba(196,77,63,0.4)",
   background: "rgba(196,77,63,0.05)",
+};
+
+const filterStripStyle: React.CSSProperties = {
+  position: "sticky",
+  top: 0,
+  zIndex: 5,
+  background: "#14100a",
+  border: "1px solid rgba(212,168,67,0.18)",
+  padding: "10px 12px",
+};
+
+const filterInputStyle: React.CSSProperties = {
+  background: "rgba(255,255,255,0.04)",
+  border: "1px solid rgba(212,168,67,0.22)",
+  color: "#f5f0e8",
+  padding: "6px 10px",
+  fontSize: 12,
+  fontFamily: "inherit",
+  minWidth: 220,
+  flexGrow: 1,
+  maxWidth: 360,
+};
+
+const filterClearStyle: React.CSSProperties = {
+  background: "transparent",
+  border: "1px solid rgba(212,168,67,0.4)",
+  color: "#D4A843",
+  cursor: "pointer",
+  fontSize: 10,
+  letterSpacing: "0.1em",
+  padding: "4px 8px",
+  fontFamily: "inherit",
+};
+
+const deptChipStyle: React.CSSProperties = {
+  border: "1px solid rgba(212,168,67,0.22)",
+  padding: "4px 9px",
+  fontSize: 10,
+  letterSpacing: "0.06em",
+  cursor: "pointer",
+  fontFamily: "inherit",
+  textTransform: "uppercase",
+};
+
+const emptyStateStyle: React.CSSProperties = {
+  padding: "20px 16px",
+  border: "1px dashed rgba(212,168,67,0.22)",
+  color: "#8a7a5e",
+  fontSize: 12,
+  letterSpacing: "0.06em",
+  textAlign: "center",
 };

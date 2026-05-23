@@ -118,6 +118,26 @@
  *                             Aligned with the framework in
  *                             `TKC Talent rev.4.pdf` (HR Strategy
  *                             Map Y2026, Danang management meeting).
+ *   v4.7.2 · Sieve            Filter strip on the Talent Pool surface.
+ *                             Sticky-on-scroll row with text search
+ *                             (name + dept substring), department
+ *                             multi-select chips, and a "Final Cut
+ *                             only" toggle. Filters scope every
+ *                             surface together — the 9-Box grid
+ *                             rebalances nominee counts per box, the
+ *                             ranking + emerging tables shrink to
+ *                             matches, and the counter shows "filtered
+ *                             X / Y". Clear-button appears when any
+ *                             filter is active. Empty-state placeholder
+ *                             when the sieve catches nothing.
+ *                             Bonus: Scout-rank stars (★/★★/★★★) on
+ *                             the drawer header derived from box_id
+ *                             (Box 9 = ★★★, Box 8 = ★★, Box 7 = ★).
+ *                             Cassette-dialect touch without renaming
+ *                             Khun Jun's HR vocabulary.
+ *                             Mobile pass: dept chips scroll
+ *                             horizontally instead of wrapping; search
+ *                             input takes full row width at ≤520px.
  *   v4.7.1 · Scout            Talent surface turns from dashboard into
  *                             working tool. Per-person drill-down
  *                             drawer opens on any name click — 9-Box
@@ -147,5 +167,5 @@
  * Bump both fields together. Codename stays one or two words.
  */
 
-export const BUILD_VERSION = "v4.7.1";
-export const BUILD_CODENAME = "Scout";
+export const BUILD_VERSION = "v4.7.2";
+export const BUILD_CODENAME = "Sieve";

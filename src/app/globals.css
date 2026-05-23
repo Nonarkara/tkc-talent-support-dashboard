@@ -2252,3 +2252,46 @@ button.cc-status:disabled {
     padding: 16px 18px 28px !important;
   }
 }
+
+/* ── v4.7.2 · Filter strip polish ──────────────────────────────────── */
+
+/* Search input focus ring. */
+.talent-filter-input:focus-visible {
+  outline: 2px solid #D4A843;
+  outline-offset: 1px;
+  background: rgba(255,255,255,0.06) !important;
+}
+
+/* Dept chip hover + focus. */
+.talent-dept-chip:hover,
+.talent-dept-chip:focus-visible {
+  outline: none;
+  border-color: #D4A843 !important;
+  color: #D4A843 !important;
+}
+
+.talent-clear-btn:hover,
+.talent-clear-btn:focus-visible {
+  outline: none;
+  background: rgba(212,168,67,0.08);
+}
+
+/* Mobile: chip row scrolls horizontally instead of stacking — keeps
+   the filter strip a constant height, lets directors swipe through
+   the dept list on phones. */
+@media (max-width: 520px) {
+  .talent-dept-chips {
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .talent-dept-chip {
+    flex-shrink: 0;
+  }
+  .talent-filter-input {
+    min-width: 0 !important;
+    max-width: none !important;
+    flex-basis: 100%;
+  }
+}
