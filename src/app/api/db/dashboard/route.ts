@@ -113,6 +113,7 @@ interface SupportActionRow {
   employee_id: string;
   cycle: string;
   action_type: string;
+  target_pillar: string | null;
   title: string;
   note: string | null;
   status: string;
@@ -247,6 +248,7 @@ async function loadSupportActions() {
         sa.employee_id,
         sa.cycle,
         sa.action_type,
+        sa.target_pillar,
         sa.title,
         sa.note,
         sa.status,

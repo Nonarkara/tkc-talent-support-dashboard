@@ -58,6 +58,7 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     try {
       const stored = window.localStorage.getItem(STORAGE_KEY);
       if (stored === "en" || stored === "th") {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- Locale hydration must read client storage after mount.
         setLocState(stored);
       }
     } catch {

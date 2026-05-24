@@ -34,6 +34,55 @@ export function FormationTab({ dash }: { dash: DashboardPayload }) {
 
   return (
     <div style={{ display: "grid", gap: 14 }}>
+      <MenuWindow title="Formation Board — Drop people into the group">
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 200px), 1fr))",
+            gap: 10,
+            padding: "6px 2px",
+          }}
+        >
+          {[
+            { num: "1", label: "Select quest", desc: "Pick an active project" },
+            { num: "2", label: "Drag heroes", desc: "Drop into slot cells" },
+            { num: "3", label: "Check gates", desc: "Budget, chemistry, fit" },
+            { num: "4", label: "Lock squad", desc: "Commit the formation" },
+          ].map((step) => (
+            <div
+              key={step.num}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                padding: "8px 10px",
+                border: "1px solid var(--border-subtle)",
+                background: "rgba(0,0,0,0.06)",
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 18,
+                  fontWeight: 700,
+                  color: "var(--rpg-yellow)",
+                  lineHeight: 1,
+                  minWidth: 24,
+                  textAlign: "center",
+                }}
+              >
+                {step.num}
+              </span>
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-0)", letterSpacing: "0.02em" }}>
+                  {step.label}
+                </div>
+                <div style={{ fontSize: 9, color: "var(--ink-1)", marginTop: 2 }}>{step.desc}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </MenuWindow>
       <FormationCanvas dash={dash} />
 
       <MenuWindow title="Workshop Controls">

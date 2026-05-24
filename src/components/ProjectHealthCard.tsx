@@ -146,7 +146,7 @@ export function ProjectHealthPage() {
         </div>
         <div style={{ fontSize: 11, color: "var(--ink-1)", lineHeight: 1.5 }}>
           Mirrors the PMO Portfolio Dashboard page-5 layout. Five metric strips per project,
-          each fed from the cassette's source-of-truth tables. Sections labelled
+          each fed from the cassette&apos;s source-of-truth tables. Sections labelled
           <span style={{ color: "var(--rpg-yellow)", margin: "0 6px" }}>DATA PENDING</span>
           require a feed the PMO must provide (Timesheet for actuals, ERP for billing). See
           <span style={{ fontFamily: "var(--font-mono)", color: "var(--ink-0)", margin: "0 6px" }}>
@@ -355,6 +355,7 @@ function Timeline({ start, end }: { start: string | null; end: string | null }) 
   }
   const startMs = new Date(start).getTime();
   const endMs = new Date(end).getTime();
+  // eslint-disable-next-line react-hooks/purity -- Timeline progress is a display-only wall-clock read.
   const now = Date.now();
   const total = endMs - startMs;
   let pct = 0;

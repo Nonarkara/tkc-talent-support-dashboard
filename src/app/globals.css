@@ -1722,15 +1722,7 @@ button.cc-status:disabled {
 }
 
 /* ─── Drop zone affordance for Formation drag-drop ─── */
-.drop-zone {
-  border: 2px dashed var(--ink-2);
-  background: rgba(43,95,160,0.08);
-  transition: background 120ms ease, border-color 120ms ease;
-}
-.drop-zone[data-hover="true"] {
-  border-color: var(--rpg-yellow);
-  background: rgba(232,197,71,0.18);
-}
+/* Refactored into inline styles + CSS hover on SlotZone parent */
 
 @media (max-width: 1120px) {
   html:has(.cc-root),

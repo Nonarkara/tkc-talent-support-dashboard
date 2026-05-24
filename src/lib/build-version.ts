@@ -118,6 +118,24 @@
  *                             Aligned with the framework in
  *                             `TKC Talent rev.4.pdf` (HR Strategy
  *                             Map Y2026, Danang management meeting).
+ *   v4.8.0 · Crystal          Four C Framework + drag-drop perfection.
+ *                             Migration 032 creates four_pillar_responses,
+ *                             credo_scores, and house_score_history tables.
+ *                             POST /api/four-pillars/respond and
+ *                             POST /api/credo/respond let employees and
+ *                             managers self-report Community, Career, Cause,
+ *                             and Compensation scores. Sheets tabs
+ *                             FourPillarResponses, CredoScores,
+ *                             HouseScoreHistory, and SupportActions mirror
+ *                             the new data. Formation Board drag-drop:
+ *                             dragLeave flicker fixed with ref counter,
+ *                             custom dark drag image, opacity 0.3→0.5 +
+ *                             scale(0.97), cursor grabbing on all sources,
+ *                             preemptive "Slot full" red warning on hover,
+ *                             persistent Return-to-Pool strip, aria-grabbed
+ *                             + aria-label on all drag sources and drop
+ *                             zones. Dead .drop-zone CSS removed from
+ *                             globals.css.
  *   v4.7.2 · Sieve            Filter strip on the Talent Pool surface.
  *                             Sticky-on-scroll row with text search
  *                             (name + dept substring), department
@@ -167,5 +185,5 @@
  * Bump both fields together. Codename stays one or two words.
  */
 
-export const BUILD_VERSION = "v4.7.2";
-export const BUILD_CODENAME = "Sieve";
+export const BUILD_VERSION = "v4.8.0";
+export const BUILD_CODENAME = "Crystal";
