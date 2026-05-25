@@ -30,7 +30,7 @@ export async function POST(request: Request) {
 
     const { employee_id, cycle, compensation, purpose, career, community, source } = parsed.data;
 
-    await query(
+    const upsertedRows = await query<{ created_at: string }>(
       `INSERT INTO four_pillar_responses (employee_id, cycle, compensation, purpose, career, community, source, updated_at)
        VALUES ($1, $2, $3, $4, $5, $6, $7, now())
        ON CONFLICT (employee_id, cycle) DO UPDATE SET
@@ -39,7 +39,8 @@ export async function POST(request: Request) {
          career       = EXCLUDED.career,
          community    = EXCLUDED.community,
          source       = EXCLUDED.source,
-         updated_at   = now()`,
+         updated_at   = now()
+       RETURNING created_at`,
       [employee_id, cycle, compensation, purpose, career, community, source],
     );
 
@@ -61,7 +62,7 @@ export async function POST(request: Request) {
       career,
       community,
       source,
-      created_at: new Date().toISOString(),
+      created_at: upsertedRows[0]?.created_at ?? new Date().toISOString(),
     });
 
     return apiJson({ ok: true, employee_id, cycle, compensation, purpose, career, community, source });

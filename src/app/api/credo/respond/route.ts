@@ -31,7 +31,7 @@ export async function POST(request: Request) {
       return apiError("Database not configured", 503);
     }
 
-    await query(
+    const upsertedRows = await query<{ created_at: string }>(
       `INSERT INTO credo_scores (employee_id, cycle, belonging, purpose, transcendence, story, pulse_source, updated_at)
        VALUES ($1, $2, $3, $4, $5, $6, $7, now())
        ON CONFLICT (employee_id, cycle) DO UPDATE SET
@@ -40,7 +40,8 @@ export async function POST(request: Request) {
          transcendence = EXCLUDED.transcendence,
          story         = EXCLUDED.story,
          pulse_source  = EXCLUDED.pulse_source,
-         updated_at    = now()`,
+         updated_at    = now()
+       RETURNING created_at`,
       [employee_id, cycle, belonging, purpose, transcendence, story, pulse_source],
     );
 
@@ -63,7 +64,7 @@ export async function POST(request: Request) {
       story,
       overall,
       pulse_source,
-      created_at: new Date().toISOString(),
+      created_at: upsertedRows[0]?.created_at ?? new Date().toISOString(),
     });
 
     return apiJson({ ok: true, employee_id, cycle, belonging, purpose, transcendence, story, overall, pulse_source });
