@@ -30,7 +30,7 @@ import {
   parseSkills,
   type Skill,
 } from "@/lib/skills-vocab";
-import { squadReadiness, ninjaQuestCode, type ReadinessReport } from "@/lib/squad-readiness";
+import { squadReadiness, type ReadinessReport } from "@/lib/squad-readiness";
 import type { DashboardPayload, Employee } from "../_shared/types";
 import { StandardsWorkshopDrawer } from "../_shared/StandardsWorkshopDrawer";
 import { ReadinessStrip } from "../ninja/ReadinessStrip";
@@ -552,7 +552,7 @@ export function NinjaTab({ dash }: Props) {
     setSavingTeam(team);
     setTeamMessage(team, null);
     try {
-      const code = `${team.toUpperCase()}_${ninjaQuestCode(derivedRequired[team], CURRENT_CYCLE)}`;
+      const code = `NINJA_${team.toUpperCase()}`;
       const slots = partyAllocations[team];
       const res = await fetch("/api/ninja/save-squad", {
         method: "POST",
