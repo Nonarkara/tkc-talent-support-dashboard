@@ -196,7 +196,7 @@ export function NinjaTab({ dash }: Props) {
   useEffect(() => {
     void (async () => {
       try {
-        const res = await fetch("/api/db/quests?cycle=2026-Q2");
+        const res = await fetch(`/api/db/quests?cycle=${CURRENT_CYCLE}`);
         const data = (await res.json()) as {
           quests?: Array<{
             id: string;
@@ -554,6 +554,10 @@ export function NinjaTab({ dash }: Props) {
     setConfigLocked((prev) => ({ ...prev, [team]: true }));
   }
 
+  function handleUnlock(team: TeamKey) {
+    setConfigLocked((prev) => ({ ...prev, [team]: false }));
+  }
+
   function handleSkillsUpdated(empId: string, newSkills: Skill[]) {
     setEmpSkillOverrides((prev) => new Map(prev).set(empId, newSkills));
     void dash.refresh();
@@ -837,6 +841,7 @@ export function NinjaTab({ dash }: Props) {
                   onAddActive={() => setActiveTeam(mission.key)}
                   onRemove={(empId) => removeFromTeam(mission.key, empId)}
                   onSave={() => void handleSaveTeam(mission.key)}
+                  onUnlock={() => handleUnlock(mission.key)}
                 />
               );
             })()}
@@ -902,7 +907,7 @@ export function NinjaTab({ dash }: Props) {
 
 function MissionPartyCard({
   mission, title, active, slots, members, report, saving, message,
-  configLocked, configPanel, onSelect, onDrop, onAddActive, onRemove, onSave,
+  configLocked, configPanel, onSelect, onDrop, onAddActive, onRemove, onSave, onUnlock,
 }: {
   mission: NinjaMission;
   title: string;
@@ -919,6 +924,7 @@ function MissionPartyCard({
   onAddActive: () => void;
   onRemove: (empId: string) => void;
   onSave: () => void;
+  onUnlock: () => void;
 }) {
   const seats = Array.from({ length: MAX_PARTY }, (_, i) => ({
     member: members[i] ?? null,
@@ -953,14 +959,36 @@ function MissionPartyCard({
             </h3>
           </div>
           {configLocked && (
-            <div style={{ textAlign: "right", flexShrink: 0 }}>
-              <div style={{ color: "var(--ink-1)", fontSize: 9, textTransform: "uppercase" }}>Ready</div>
-              <div style={{
-                color: report.overall_pct >= 70 ? "var(--flux-up)" : report.overall_pct >= 45 ? "var(--rpg-yellow)" : "var(--rpg-red)",
-                fontSize: 28, fontWeight: 800, lineHeight: 1,
-              }}>
-                {report.overall_pct}
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6, flexShrink: 0 }}>
+              <div style={{ textAlign: "right" }}>
+                <div style={{ color: "var(--ink-1)", fontSize: 9, textTransform: "uppercase" }}>Ready</div>
+                <div style={{
+                  color: report.overall_pct >= 70 ? "var(--flux-up)" : report.overall_pct >= 45 ? "var(--rpg-yellow)" : "var(--rpg-red)",
+                  fontSize: 28, fontWeight: 800, lineHeight: 1,
+                }}>
+                  {report.overall_pct}
+                </div>
               </div>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); onUnlock(); }}
+                title="Unlock to edit skill requirements"
+                style={{
+                  border: "1px solid rgba(245,240,232,0.22)",
+                  background: "transparent",
+                  color: "var(--ink-1)",
+                  cursor: "pointer",
+                  fontFamily: "inherit",
+                  fontSize: 9,
+                  fontWeight: 700,
+                  padding: "4px 9px",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.07em",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                ⊘ Edit Skills
+              </button>
             </div>
           )}
         </div>
@@ -972,6 +1000,35 @@ function MissionPartyCard({
       {/* Config step OR warrior seats */}
       {configLocked ? (
         <>
+          {/* Required-skill coverage pills — live status of this mission's brief */}
+          {(() => {
+            const requiredSkills = (Object.entries(report.per_skill) as [Skill, { required: boolean; coverage: number }][])
+              .filter(([, s]) => s.required)
+              .map(([skill, s]) => ({ skill, coverage: s.coverage }));
+            if (requiredSkills.length === 0) return null;
+            return (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+                {requiredSkills.map(({ skill, coverage }) => {
+                  const color = coverage === 0 ? "var(--rpg-red)" : coverage === 1 ? "var(--rpg-orange)" : "var(--flux-up)";
+                  return (
+                    <span
+                      key={skill}
+                      title={`${SKILL_LABEL[skill as Skill]}: ${coverage} warrior${coverage !== 1 ? "s" : ""} with this skill`}
+                      style={{
+                        fontSize: 9, fontWeight: 700,
+                        padding: "2px 8px",
+                        border: `1px solid ${color}`,
+                        color, textTransform: "uppercase", letterSpacing: "0.05em",
+                      }}
+                    >
+                      {SKILL_LABEL[skill as Skill]} ×{coverage}
+                    </span>
+                  );
+                })}
+              </div>
+            );
+          })()}
+
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(128px, 1fr))", gap: 7 }}>
             {seats.map(({ member, fte }, i) =>
               member ? (
