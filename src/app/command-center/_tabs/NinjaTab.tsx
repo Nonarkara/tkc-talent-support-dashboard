@@ -758,7 +758,7 @@ export function NinjaTab({ dash }: Props) {
                 gap: 6,
                 flexWrap: "wrap",
                 paddingBottom: 4,
-                borderBottom: "1px solid var(--rpg-blue-deep)",
+                borderBottom: "1px solid rgba(245,240,232,0.08)",
               }}
             >
               {MISSIONS.map((m) => {
@@ -771,41 +771,26 @@ export function NinjaTab({ dash }: Props) {
                     onClick={() => setActiveTeam(m.key)}
                     style={{
                       flex: "0 1 auto",
-                      padding: "6px 12px",
-                      background: isActive ? m.tone : "transparent",
-                      color: isActive ? "var(--ink-4)" : "var(--ink-0)",
-                      border: `1px solid ${m.tone}`,
+                      padding: "5px 14px",
+                      background: isActive ? "rgba(212,168,67,0.10)" : "transparent",
+                      color: isActive ? "#D4A843" : "#8a7a5e",
+                      border: `1px solid ${isActive ? "rgba(212,168,67,0.35)" : "rgba(245,240,232,0.10)"}`,
                       cursor: "pointer",
-                      fontFamily: "inherit",
-                      fontSize: 11,
+                      fontFamily: "var(--font-mono, monospace)",
+                      fontSize: 9,
                       fontWeight: isActive ? 800 : 500,
-                      letterSpacing: "0.06em",
+                      letterSpacing: "0.14em",
                       textTransform: "uppercase",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 8,
-                      transition: "background 80ms",
+                      display: "inline-flex", alignItems: "center", gap: 10,
                     }}
                   >
                     <span>{m.callSign}</span>
-                    <span
-                      style={{
-                        fontSize: 9,
-                        opacity: 0.85,
-                        background: isActive ? "rgba(0,0,0,0.18)" : `${m.tone}22`,
-                        padding: "1px 6px",
-                      }}
-                    >
+                    <span style={{ color: isActive ? "rgba(212,168,67,0.6)" : "rgba(245,240,232,0.25)", fontSize: 8, fontFamily: "var(--font-mono)" }}>
                       {memberCount}/{MAX_PARTY}
                     </span>
                   </button>
                 );
               })}
-            </div>
-            <div style={{ color: "var(--ink-1)", fontSize: 12, lineHeight: 1.55 }}>
-              {configLocked[activeTeam]
-                ? "Drag heroes from the candidate panel into this party, or click ＋ on a candidate row. Heroes can span two missions (directors: up to five)."
-                : "Configure this mission first, then recruit warriors. Switch parties with the chips above."}
             </div>
             {/* Single focused mission card — only the active team is rendered. */}
             {(() => {
@@ -855,17 +840,17 @@ export function NinjaTab({ dash }: Props) {
               <div style={{ display: "grid", gap: 8 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center" }}>
                   <div>
-                    <div style={{ color: activeMission.tone, fontSize: 11, fontWeight: 800, textTransform: "uppercase" }}>
+                    <div style={{ color: "#D4A843", fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.14em", fontFamily: "var(--font-mono)" }}>
                       {activeMission.callSign}
                     </div>
-                    <div style={{ color: "var(--ink-1)", fontSize: 12 }}>
+                    <div style={{ color: "#f5f0e8", fontSize: 13, fontWeight: 700, marginTop: 2 }}>
                       {missionTitles[activeTeam]}
                     </div>
                   </div>
-                  <div style={{ color: "var(--ink-1)", fontSize: 11 }}>
+                  <div style={{ color: "#8a7a5e", fontSize: 9, fontFamily: "var(--font-mono)", letterSpacing: "0.08em" }}>
                     {configLocked[activeTeam]
-                      ? `${MAX_PARTY - partyAllocations[activeTeam].length} seats open`
-                      : "Configure mission first"}
+                      ? `${MAX_PARTY - partyAllocations[activeTeam].length} OPEN`
+                      : "CONFIG FIRST"}
                   </div>
                 </div>
                 <SkillLine
@@ -926,6 +911,7 @@ function MissionPartyCard({
   onSave: () => void;
   onUnlock: () => void;
 }) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const seats = Array.from({ length: MAX_PARTY }, (_, i) => ({
     member: members[i] ?? null,
     fte: slots[i]?.fte ?? 1.0,
@@ -938,150 +924,159 @@ function MissionPartyCard({
       onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = "copy"; }}
       onDrop={onDrop}
       style={{
-        border: `2px solid ${active ? mission.tone : "var(--border-subtle)"}`,
-        background: active ? "rgba(139,111,181,0.12)" : "rgba(0,0,0,0.12)",
-        padding: 12,
+        border: "1px solid rgba(245,240,232,0.10)",
+        borderLeft: "3px solid #D4A843",
+        background: "rgba(15,12,8,0.35)",
+        padding: 14,
         display: "grid",
-        gap: 12,
-        cursor: "pointer",
-        boxShadow: active ? `inset 0 0 0 1px ${mission.tone}` : "none",
+        gap: 14,
       }}
     >
-      {/* Header */}
-      <div style={{ display: "grid", gap: 6 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
-          <div style={{ minWidth: 0 }}>
-            <div style={{ color: mission.tone, fontSize: 11, fontWeight: 800, textTransform: "uppercase" }}>
-              {mission.callSign}
+      {configLocked ? (
+        <>
+          {/* Header — callsign · title · readiness sensor */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div style={{ color: "#D4A843", fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.16em", fontFamily: "var(--font-mono)" }}>
+                {mission.callSign}
+              </div>
+              <h3 style={{ margin: "3px 0 0", color: "#f5f0e8", fontSize: 16, fontWeight: 700, lineHeight: 1.1 }}>
+                {title}
+              </h3>
+              <p style={{ margin: "4px 0 0", color: "#8a7a5e", fontSize: 10, lineHeight: 1.5 }}>
+                {mission.brief}
+              </p>
             </div>
-            <h3 style={{ margin: "3px 0 0", color: "var(--ink-0)", fontSize: 18, lineHeight: 1.05 }}>
-              {title}
-            </h3>
-          </div>
-          {configLocked && (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6, flexShrink: 0 }}>
-              <div style={{ textAlign: "right" }}>
-                <div style={{ color: "var(--ink-1)", fontSize: 9, textTransform: "uppercase" }}>Ready</div>
-                <div style={{
-                  color: report.overall_pct >= 70 ? "var(--flux-up)" : report.overall_pct >= 45 ? "var(--rpg-yellow)" : "var(--rpg-red)",
-                  fontSize: 28, fontWeight: 800, lineHeight: 1,
-                }}>
-                  {report.overall_pct}
-                </div>
+              <div style={{
+                color: report.overall_pct >= 70 ? "#4a8a5a" : report.overall_pct >= 45 ? "#D4A843" : "#C44D3F",
+                fontSize: 44, fontWeight: 800, lineHeight: 1,
+                fontFamily: "var(--font-mono)",
+              }}>
+                {report.overall_pct}
               </div>
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); onUnlock(); }}
                 title="Unlock to edit skill requirements"
                 style={{
-                  border: "1px solid rgba(245,240,232,0.22)",
-                  background: "transparent",
-                  color: "var(--ink-1)",
-                  cursor: "pointer",
-                  fontFamily: "inherit",
-                  fontSize: 9,
-                  fontWeight: 700,
-                  padding: "4px 9px",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.07em",
-                  whiteSpace: "nowrap",
+                  border: "1px solid rgba(212,168,67,0.22)",
+                  background: "transparent", color: "#8a7a5e",
+                  cursor: "pointer", fontFamily: "inherit",
+                  fontSize: 9, fontWeight: 700,
+                  padding: "3px 9px", textTransform: "uppercase",
+                  letterSpacing: "0.08em",
                 }}
               >
                 ⊘ Edit Skills
               </button>
             </div>
-          )}
-        </div>
-        <p style={{ margin: 0, color: "var(--ink-1)", fontSize: 11, lineHeight: 1.5 }}>
-          {mission.brief}
-        </p>
-      </div>
+          </div>
 
-      {/* Config step OR warrior seats */}
-      {configLocked ? (
-        <>
-          {/* Required-skill coverage pills — live status of this mission's brief */}
+          {/* Skill coverage status */}
           {(() => {
             const requiredSkills = (Object.entries(report.per_skill) as [Skill, { required: boolean; coverage: number }][])
               .filter(([, s]) => s.required)
               .map(([skill, s]) => ({ skill, coverage: s.coverage }));
             if (requiredSkills.length === 0) return null;
             return (
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
-                {requiredSkills.map(({ skill, coverage }) => {
-                  const color = coverage === 0 ? "var(--rpg-red)" : coverage === 1 ? "var(--rpg-orange)" : "var(--flux-up)";
-                  return (
-                    <span
-                      key={skill}
-                      title={`${SKILL_LABEL[skill as Skill]}: ${coverage} warrior${coverage !== 1 ? "s" : ""} with this skill`}
-                      style={{
-                        fontSize: 9, fontWeight: 700,
-                        padding: "2px 8px",
-                        border: `1px solid ${color}`,
-                        color, textTransform: "uppercase", letterSpacing: "0.05em",
-                      }}
-                    >
-                      {SKILL_LABEL[skill as Skill]} ×{coverage}
-                    </span>
-                  );
-                })}
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 5, borderTop: "1px solid rgba(245,240,232,0.06)", paddingTop: 10 }}>
+                {requiredSkills.map(({ skill, coverage }) => (
+                  <span
+                    key={skill}
+                    style={{
+                      fontSize: 9, fontWeight: coverage === 0 ? 800 : 600,
+                      padding: "2px 8px",
+                      border: `1px solid ${coverage === 0 ? "rgba(196,77,63,0.5)" : "rgba(245,240,232,0.10)"}`,
+                      color: coverage === 0 ? "#C44D3F" : coverage === 1 ? "#D4A843" : "#8a7a5e",
+                      background: coverage === 0 ? "rgba(196,77,63,0.06)" : "transparent",
+                      textTransform: "uppercase", letterSpacing: "0.06em",
+                      fontFamily: "var(--font-mono)",
+                    }}
+                  >
+                    {SKILL_LABEL[skill as Skill]} ×{coverage}
+                  </span>
+                ))}
               </div>
             );
           })()}
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(128px, 1fr))", gap: 7 }}>
-            {seats.map(({ member, fte }, i) =>
-              member ? (
-                <PartyMemberChip
-                  key={member.id}
-                  member={member}
-                  fte={fte}
-                  tone={mission.tone}
-                  onRemove={() => onRemove(member.id)}
-                />
-              ) : (
-                <button
-                  key={`empty-${mission.key}-${i}`}
-                  type="button"
-                  onClick={(e) => { e.stopPropagation(); onAddActive(); }}
-                  style={{
-                    minHeight: 64,
-                    border: `1px dashed ${mission.tone}`,
-                    background: "rgba(0,0,0,0.16)",
-                    color: "var(--ink-1)",
-                    cursor: "pointer",
-                    fontFamily: "inherit",
-                    fontSize: 10,
-                    textTransform: "uppercase",
-                  }}
-                >
-                  Empty Seat
-                </button>
-              ),
+          {/* Warrior roster — compact list */}
+          <div style={{ display: "grid", gap: 0 }}>
+            {members.map((member, i) => {
+              const slot = slots[i];
+              const fte = slot?.fte ?? 1.0;
+              const archetype = getArchetype(member);
+              return (
+                <div key={member.id} style={{
+                  display: "grid",
+                  gridTemplateColumns: "22px 20px minmax(0,1fr) auto auto",
+                  gap: 8, alignItems: "center",
+                  padding: "7px 0",
+                  borderBottom: "1px solid rgba(245,240,232,0.05)",
+                }}>
+                  <span style={{ color: "#8a7a5e", fontSize: 9, fontFamily: "var(--font-mono)", textAlign: "right" }}>
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <PixelSprite archetype={archetype} gender={inferGender(member.id, member.display_name)} size={18} seed={member.id} />
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ color: "#f5f0e8", fontSize: 11, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {member.display_name}
+                    </div>
+                    <div style={{ color: "#8a7a5e", fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                      {ARCHETYPE_LABEL[archetype]} · {member.dept_code ?? "—"}
+                    </div>
+                  </div>
+                  {fte < 1.0 ? (
+                    <span style={{ fontSize: 9, color: "#D4A843", fontFamily: "var(--font-mono)", whiteSpace: "nowrap" }}>
+                      {fte} FTE
+                    </span>
+                  ) : <span />}
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); onRemove(member.id); }}
+                    title={`Remove ${member.display_name}`}
+                    style={{
+                      border: "1px solid rgba(196,77,63,0.28)",
+                      background: "transparent", color: "#C44D3F",
+                      cursor: "pointer", fontFamily: "inherit",
+                      fontSize: 9, padding: "3px 7px",
+                    }}
+                  >
+                    ✕
+                  </button>
+                </div>
+              );
+            })}
+            {members.length < MAX_PARTY && (
+              <div style={{ padding: "8px 0", color: "#8a7a5e", fontSize: 9, letterSpacing: "0.08em", textTransform: "uppercase", fontFamily: "var(--font-mono)" }}>
+                {MAX_PARTY - members.length} seat{MAX_PARTY - members.length !== 1 ? "s" : ""} open — drag from roster or click ＋
+              </div>
             )}
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8, alignItems: "center" }}>
+          {/* Footer */}
+          <div style={{ borderTop: "1px solid rgba(245,240,232,0.08)", paddingTop: 10, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
             <div style={{
-              color: message?.startsWith("Save failed") ? "var(--rpg-red)" : "var(--ink-1)",
-              fontSize: 10, lineHeight: 1.4,
+              color: message?.startsWith("Save failed") ? "#C44D3F" : message ? "#D4A843" : "#8a7a5e",
+              fontSize: 10, lineHeight: 1.4, fontFamily: "var(--font-mono)",
             }}>
-              {message ?? `${members.length}/${MAX_PARTY} heroes · chemistry ${report.chemistry}`}
+              {message ?? `${members.length}/${MAX_PARTY} · chem ${report.chemistry}`}
             </div>
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); onSave(); }}
               disabled={!canSave}
               style={{
-                border: "none",
-                background: canSave ? mission.tone : "var(--ink-3)",
-                color: canSave ? "var(--ink-4)" : "var(--ink-1)",
+                border: `1px solid ${canSave ? "#D4A843" : "rgba(245,240,232,0.12)"}`,
+                background: canSave ? "#D4A843" : "transparent",
+                color: canSave ? "#0d0d10" : "#8a7a5e",
                 cursor: canSave ? "pointer" : "not-allowed",
-                fontFamily: "inherit", fontSize: 10, fontWeight: 800,
-                padding: "8px 11px", textTransform: "uppercase",
+                fontFamily: "inherit", fontSize: 9, fontWeight: 800,
+                padding: "7px 14px", textTransform: "uppercase", letterSpacing: "0.10em",
               }}
             >
-              {saving ? "Sealing…" : "Seal the Mission"}
+              {saving ? "Sealing…" : "Seal Mission"}
             </button>
           </div>
         </>
@@ -1189,9 +1184,9 @@ function SkillLine({
               onClick={() => onToggle(skill)}
               title={active ? `Remove ${SKILL_LABEL[skill]} filter` : `Filter by ${SKILL_LABEL[skill]}`}
               style={{
-                border: `1px solid ${SKILL_COLOR[skill]}`,
-                background: active ? SKILL_COLOR[skill] : "transparent",
-                color: active ? "var(--ink-4)" : SKILL_COLOR[skill],
+                border: `1px solid ${active ? "#D4A843" : "rgba(212,168,67,0.22)"}`,
+                background: active ? "#D4A843" : "transparent",
+                color: active ? "#0d0d10" : "#b8a88a",
                 fontSize: 9, fontWeight: 800,
                 padding: "3px 8px", textTransform: "uppercase",
                 cursor: "pointer", fontFamily: "inherit", letterSpacing: "0.05em",

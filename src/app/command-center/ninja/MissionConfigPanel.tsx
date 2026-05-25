@@ -50,10 +50,10 @@ export function MissionConfigPanel({
           fontWeight: 800,
           textTransform: "uppercase",
           letterSpacing: "0.12em",
-          color: tone,
+          color: "#D4A843",
         }}
       >
-        Step 1 · Configure {callSign}
+        Mission Brief — {callSign}
       </div>
 
       {/* Mission name input */}
@@ -65,7 +65,7 @@ export function MissionConfigPanel({
           placeholder="Mission name…"
           style={{
             background: "rgba(0,0,0,0.25)",
-            border: `1px solid ${tone}88`,
+            border: "1px solid rgba(212,168,67,0.22)",
             color: "var(--ink-0)",
             fontSize: 13,
             fontWeight: 700,
@@ -80,8 +80,8 @@ export function MissionConfigPanel({
           disabled={savingName || !title.trim()}
           style={{
             border: "none",
-            background: savingName || !title.trim() ? "var(--ink-3)" : tone,
-            color: savingName || !title.trim() ? "var(--ink-1)" : "var(--ink-4)",
+            background: savingName || !title.trim() ? "rgba(245,240,232,0.08)" : "#D4A843",
+            color: savingName || !title.trim() ? "#8a7a5e" : "#0d0d10",
             cursor: savingName || !title.trim() ? "not-allowed" : "pointer",
             fontFamily: "inherit",
             fontSize: 10,
@@ -132,19 +132,16 @@ export function MissionConfigPanel({
                 <div style={{ display: "flex", alignItems: "center", gap: 5, minWidth: 0 }}>
                   <span
                     style={{
-                      width: 7,
-                      height: 7,
-                      borderRadius: "50%",
-                      background: val > 0 ? SKILL_COLOR[skill] : "var(--ink-2)",
-                      flexShrink: 0,
-                      display: "inline-block",
+                      width: 6, height: 6,
+                      background: val > 0 ? "#D4A843" : "rgba(245,240,232,0.15)",
+                      flexShrink: 0, display: "inline-block",
                     }}
                   />
                   <span
                     style={{
                       fontSize: 10,
                       fontWeight: val > 0 ? 700 : 400,
-                      color: val > 0 ? SKILL_COLOR[skill] : "var(--ink-1)",
+                      color: val > 0 ? "#f5f0e8" : "#8a7a5e",
                       textTransform: "uppercase",
                       letterSpacing: "0.04em",
                       whiteSpace: "nowrap",
@@ -165,7 +162,7 @@ export function MissionConfigPanel({
                   value={val}
                   onChange={(e) => onSkillNeedChange(skill, parseInt(e.target.value, 10))}
                   style={{
-                    accentColor: val > 0 ? SKILL_COLOR[skill] : "var(--ink-2)",
+                    accentColor: val > 0 ? "#D4A843" : "rgba(245,240,232,0.2)",
                     cursor: "pointer",
                     width: "100%",
                   }}
@@ -176,7 +173,7 @@ export function MissionConfigPanel({
                   style={{
                     fontSize: 10,
                     fontWeight: 800,
-                    color: val > 0 ? SKILL_COLOR[skill] : "var(--ink-2)",
+                    color: val > 0 ? "#D4A843" : "rgba(245,240,232,0.2)",
                     minWidth: 22,
                     textAlign: "right",
                   }}
@@ -196,8 +193,8 @@ export function MissionConfigPanel({
         disabled={!anyRequired}
         style={{
           border: "none",
-          background: anyRequired ? tone : "var(--ink-3)",
-          color: anyRequired ? "var(--ink-4)" : "var(--ink-1)",
+          background: anyRequired ? "#D4A843" : "rgba(245,240,232,0.06)",
+          color: anyRequired ? "#0d0d10" : "#8a7a5e",
           cursor: anyRequired ? "pointer" : "not-allowed",
           fontFamily: "inherit",
           fontSize: 10,
