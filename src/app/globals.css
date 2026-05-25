@@ -1725,54 +1725,40 @@ button.cc-status:disabled {
 /* Refactored into inline styles + CSS hover on SlotZone parent */
 
 @media (max-width: 1120px) {
-  html:has(.cc-root),
-  body:has(.cc-root) {
-    height: auto !important;
-    min-height: 100%;
-    overflow-x: hidden !important;
-    overflow-y: auto !important;
-  }
-
-  .cc-root {
-    display: block;
-    grid-template-rows: auto auto auto;
-    height: auto !important;
-    min-height: 100svh;
-    overflow: visible !important;
-  }
-
-  .cc-main {
-    display: block;
-    height: auto;
-    min-height: 0;
-    overflow: visible;
-  }
+  /* ── Game-console viewport discipline: the outer page never scrolls at
+     any viewport width. body:has(.cc-root) and .cc-root keep their desktop
+     overflow:hidden / height:100svh locks — this block only adapts layout
+     shapes. .cc-route-stage remains the single scrollable "TV screen". ── */
 
   .cc-console {
-    display: block;
-    width: 100%;
+    /* Remove aspect-ratio lock; keep height:100% + overflow:hidden from desktop */
     aspect-ratio: auto;
     max-height: none;
-    height: auto !important;
-    min-height: calc(100svh - 188px);
-    overflow: visible !important;
   }
 
-  .cc-console-body,
-  .cc-route-stage,
-  .cc-tab-frame {
-    height: auto !important;
-    min-height: 0;
-    overflow: visible !important;
+  /* cc-console-body scrolls on mobile — covers the home screen path
+     where there is no .cc-route-stage wrapper. */
+  .cc-console-body {
+    overflow-y: auto;
   }
 
+  /* Tab frames grow to content height so the scrollable route-stage can
+     reveal tall content. Rows stack vertically on portrait screens. */
   .cc-tab-frame {
+    height: auto;
     grid-template-rows: auto !important;
   }
 
-  .cc-two-pane {
-    height: auto !important;
-    overflow: visible !important;
+  /* Home and route windows grow freely inside the scrollable TV screen */
+  .cc-home-window,
+  .cc-route-window {
+    height: auto;
+    overflow: visible;
+  }
+
+  .cc-home-window .menu-window-body {
+    height: auto;
+    overflow: visible;
   }
 
   .cc-console-header,
@@ -1789,20 +1775,11 @@ button.cc-status:disabled {
   .cc-home-grid,
   .cc-route-layout {
     grid-template-columns: 1fr;
-    height: auto;
   }
 
   .cc-home-center,
   .cc-home-side {
     grid-template-rows: auto;
-  }
-
-  .cc-console-body,
-  .cc-home-window,
-  .cc-route-window,
-  .cc-home-window .menu-window-body {
-    height: auto;
-    overflow: visible;
   }
 
   .roster-card-wall {
@@ -1818,8 +1795,7 @@ button.cc-status:disabled {
 
 @media (max-width: 860px) {
   .cc-main {
-    height: auto;
-    overflow: visible;
+    /* keep overflow:hidden from desktop — outer lock preserved */
     place-items: stretch;
   }
 
