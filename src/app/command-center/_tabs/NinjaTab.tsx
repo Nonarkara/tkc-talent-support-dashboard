@@ -682,11 +682,12 @@ export function NinjaTab({ dash }: Props) {
         </button>
         <span
           style={{
-            color: activeMission.tone,
-            fontSize: 10,
+            color: "#D4A843",
+            fontSize: 9,
             fontWeight: 800,
             textTransform: "uppercase",
-            letterSpacing: "0.06em",
+            letterSpacing: "0.14em",
+            fontFamily: "var(--font-mono)",
             whiteSpace: "nowrap",
           }}
         >
@@ -911,11 +912,6 @@ function MissionPartyCard({
   onSave: () => void;
   onUnlock: () => void;
 }) {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const seats = Array.from({ length: MAX_PARTY }, (_, i) => ({
-    member: members[i] ?? null,
-    fte: slots[i]?.fte ?? 1.0,
-  }));
   const canSave = configLocked && members.length > 0 && !saving;
 
   return (
