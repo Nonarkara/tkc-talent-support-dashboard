@@ -33,7 +33,7 @@ const HARD_CAP = 60;
 
 // ── Local type mirrors (avoids circular import with NinjaTab) ─────────────────
 
-type TeamKey = "alpha" | "beta" | "gamma";
+type TeamKey = "zen" | "kodawari" | "ikigai" | "wabisabi" | "bushido";
 type EmpAssignment = { team: TeamKey; tone: string; label: string; fte: number };
 export type EmpStatus = {
   assignedHere: boolean;   // already in the currently active party

@@ -41,8 +41,8 @@ interface Props {
   dash: DashboardPayload;
 }
 
-type TeamKey = "alpha" | "beta" | "gamma";
-const TEAM_KEYS: TeamKey[] = ["alpha", "beta", "gamma"];
+type TeamKey = "zen" | "kodawari" | "ikigai" | "wabisabi" | "bushido";
+const TEAM_KEYS: TeamKey[] = ["zen", "kodawari", "ikigai", "wabisabi", "bushido"];
 
 /** One seat in a party — who + what fraction of their time. */
 type PartySlot = { empId: string; fte: number };
@@ -71,33 +71,49 @@ const FTE_OPTIONS = [0.3, 0.5, 0.7] as const;
 
 const MISSIONS: NinjaMission[] = [
   {
-    key: "alpha",
-    callSign: "Alpha Party",
+    key: "zen",
+    callSign: "Zen Party",
     brief: "City data platform for Thai municipalities: field surveys, civic data, dashboards, and mayor-ready insight.",
     defaultRequired: ["technical", "data_analysis", "survey", "customer_success"],
-    tone: "var(--rpg-purple)",
+    tone: "var(--rpg-blue)",
   },
   {
-    key: "beta",
-    callSign: "Beta Party",
-    brief: "Talent Support System reborn as a living party ledger: check-ins, growth quests, support missions, and skill memory.",
+    key: "kodawari",
+    callSign: "Kodawari Party",
+    brief: "Pursuit of craft excellence — process standards, delivery ops, and relentless improvement of system quality.",
     defaultRequired: ["technical", "delivery_ops", "data_analysis", "finance_paperwork"],
     tone: "var(--rpg-yellow)",
   },
   {
-    key: "gamma",
-    callSign: "Gamma Party",
-    brief: "A fast-response operating room for city incidents, vendor movement, procurement friction, and recovery actions.",
-    defaultRequired: ["procurement", "delivery_ops", "outsourcing_mgmt", "survey"],
+    key: "ikigai",
+    callSign: "Ikigai Party",
+    brief: "Talent Support System reborn as a living party ledger: check-ins, growth quests, support missions, and skill memory.",
+    defaultRequired: ["customer_success", "survey", "data_analysis", "outsourcing_mgmt"],
+    tone: "var(--rpg-purple)",
+  },
+  {
+    key: "wabisabi",
+    callSign: "Wabisabi Party",
+    brief: "Field-first fieldwork squad: surveys, citizen touchpoints, on-ground intelligence, and real-world validation.",
+    defaultRequired: ["survey", "customer_success", "procurement", "delivery_ops"],
     tone: "var(--rpg-orange)",
+  },
+  {
+    key: "bushido",
+    callSign: "Bushido Party",
+    brief: "A fast-response operating room for city incidents, vendor movement, procurement friction, and recovery actions.",
+    defaultRequired: ["procurement", "delivery_ops", "outsourcing_mgmt", "finance_paperwork"],
+    tone: "var(--rpg-red)",
   },
 ];
 
 /** Tone map for badges (so CandidateList can colour-code assignment chips). */
 const MISSION_TONE: Record<TeamKey, string> = {
-  alpha: "var(--rpg-purple)",
-  beta: "var(--rpg-yellow)",
-  gamma: "var(--rpg-orange)",
+  zen: "var(--rpg-blue)",
+  kodawari: "var(--rpg-yellow)",
+  ikigai: "var(--rpg-purple)",
+  wabisabi: "var(--rpg-orange)",
+  bushido: "var(--rpg-red)",
 };
 
 /** Directors and above can span up to 5 missions; everyone else max 2. */
@@ -130,37 +146,41 @@ function skillsFromRoleSlots(roleSlots: unknown): Skill[] {
   return Array.from(out);
 }
 
-const EMPTY_ALLOCATIONS: PartyAllocations = { alpha: [], beta: [], gamma: [] };
+const EMPTY_ALLOCATIONS: PartyAllocations = { zen: [], kodawari: [], ikigai: [], wabisabi: [], bushido: [] };
 
 export function NinjaTab({ dash }: Props) {
-  const [activeTeam, setActiveTeam] = useState<TeamKey>("alpha");
+  const [activeTeam, setActiveTeam] = useState<TeamKey>("zen");
   const [partyAllocations, setPartyAllocations] = useState<PartyAllocations>(EMPTY_ALLOCATIONS);
   const [search, setSearch] = useState("");
   const [workshopOpen, setWorkshopOpen] = useState(false);
   const [savingTeam, setSavingTeam] = useState<TeamKey | null>(null);
   const [messageByTeam, setMessageByTeam] = useState<Record<TeamKey, string | null>>({
-    alpha: null, beta: null, gamma: null,
+    zen: null, kodawari: null, ikigai: null, wabisabi: null, bushido: null,
   });
 
   // ── Phase 3 state ─────────────────────────────────────────────────────
 
   const [questIds, setQuestIds] = useState<Record<TeamKey, string | null>>({
-    alpha: null, beta: null, gamma: null,
+    zen: null, kodawari: null, ikigai: null, wabisabi: null, bushido: null,
   });
   const [missionTitles, setMissionTitles] = useState<Record<TeamKey, string>>({
-    alpha: "Siam City Signal Atlas",
-    beta: "Hero Loom Talent Engine",
-    gamma: "Civic Shield Response Grid",
+    zen: "Siam City Signal Atlas",
+    kodawari: "Hero Loom Talent Engine",
+    ikigai: "Ikigai Talent Engine",
+    wabisabi: "Field Intelligence Grid",
+    bushido: "Civic Shield Response Grid",
   });
   const [savingTitle, setSavingTitle] = useState<TeamKey | null>(null);
 
   const [skillNeeds, setSkillNeeds] = useState<Record<TeamKey, Record<Skill, number>>>(() => ({
-    alpha: initSkillNeeds(MISSIONS[0].defaultRequired),
-    beta: initSkillNeeds(MISSIONS[1].defaultRequired),
-    gamma: initSkillNeeds(MISSIONS[2].defaultRequired),
+    zen: initSkillNeeds(MISSIONS[0].defaultRequired),
+    kodawari: initSkillNeeds(MISSIONS[1].defaultRequired),
+    ikigai: initSkillNeeds(MISSIONS[2].defaultRequired),
+    wabisabi: initSkillNeeds(MISSIONS[3].defaultRequired),
+    bushido: initSkillNeeds(MISSIONS[4].defaultRequired),
   }));
   const [configLocked, setConfigLocked] = useState<Record<TeamKey, boolean>>({
-    alpha: false, beta: false, gamma: false,
+    zen: false, kodawari: false, ikigai: false, wabisabi: false, bushido: false,
   });
   const [empSkillOverrides, setEmpSkillOverrides] = useState<Map<string, Skill[]>>(new Map());
   const [skillFilter, setSkillFilter] = useState<Set<Skill>>(new Set());
@@ -186,25 +206,30 @@ export function NinjaTab({ dash }: Props) {
           }>;
         };
         const codeMap: Record<string, TeamKey> = {
-          NINJA_ALPHA: "alpha", NINJA_BETA: "beta", NINJA_GAMMA: "gamma",
+          NINJA_ZEN: "zen", NINJA_KODAWARI: "kodawari", NINJA_IKIGAI: "ikigai",
+          NINJA_WABISABI: "wabisabi", NINJA_BUSHIDO: "bushido",
         };
 
         const nextQuestIds: Record<TeamKey, string | null> = {
-          alpha: null, beta: null, gamma: null,
+          zen: null, kodawari: null, ikigai: null, wabisabi: null, bushido: null,
         };
         const nextTitles: Record<TeamKey, string> = {
-          alpha: "Siam City Signal Atlas",
-          beta: "Hero Loom Talent Engine",
-          gamma: "Civic Shield Response Grid",
+          zen: "Siam City Signal Atlas",
+          kodawari: "Hero Loom Talent Engine",
+          ikigai: "Ikigai Talent Engine",
+          wabisabi: "Field Intelligence Grid",
+          bushido: "Civic Shield Response Grid",
         };
-        const nextParty: PartyAllocations = { alpha: [], beta: [], gamma: [] };
+        const nextParty: PartyAllocations = { zen: [], kodawari: [], ikigai: [], wabisabi: [], bushido: [] };
         const nextNeeds: Record<TeamKey, Record<Skill, number>> = {
-          alpha: initSkillNeeds(MISSIONS[0].defaultRequired),
-          beta: initSkillNeeds(MISSIONS[1].defaultRequired),
-          gamma: initSkillNeeds(MISSIONS[2].defaultRequired),
+          zen: initSkillNeeds(MISSIONS[0].defaultRequired),
+          kodawari: initSkillNeeds(MISSIONS[1].defaultRequired),
+          ikigai: initSkillNeeds(MISSIONS[2].defaultRequired),
+          wabisabi: initSkillNeeds(MISSIONS[3].defaultRequired),
+          bushido: initSkillNeeds(MISSIONS[4].defaultRequired),
         };
         const nextLocked: Record<TeamKey, boolean> = {
-          alpha: false, beta: false, gamma: false,
+          zen: false, kodawari: false, ikigai: false, wabisabi: false, bushido: false,
         };
 
         for (const q of data.quests ?? []) {
@@ -260,9 +285,11 @@ export function NinjaTab({ dash }: Props) {
 
   const derivedRequired = useMemo(
     () => ({
-      alpha: SKILLS.filter((s) => (skillNeeds.alpha[s] ?? 0) > 0),
-      beta: SKILLS.filter((s) => (skillNeeds.beta[s] ?? 0) > 0),
-      gamma: SKILLS.filter((s) => (skillNeeds.gamma[s] ?? 0) > 0),
+      zen: SKILLS.filter((s) => (skillNeeds.zen[s] ?? 0) > 0),
+      kodawari: SKILLS.filter((s) => (skillNeeds.kodawari[s] ?? 0) > 0),
+      ikigai: SKILLS.filter((s) => (skillNeeds.ikigai[s] ?? 0) > 0),
+      wabisabi: SKILLS.filter((s) => (skillNeeds.wabisabi[s] ?? 0) > 0),
+      bushido: SKILLS.filter((s) => (skillNeeds.bushido[s] ?? 0) > 0),
     }),
     [skillNeeds],
   );
