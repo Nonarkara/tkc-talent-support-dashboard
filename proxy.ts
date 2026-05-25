@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { updateSession } from "@/lib/supabase/middleware";
 
-const PUBLIC_PATHS = ["/login", "/api/auth", "/_next", "/favicon.ico", "/showcase", "/report-static"];
+const PUBLIC_PATHS = ["/login", "/api/auth", "/_next", "/favicon.ico", "/showcase", "/report-static", "/talent", "/api/db/talent-assessment"];
 
 function isPublicPath(pathname: string) {
   return PUBLIC_PATHS.some((path) => pathname.startsWith(path));
