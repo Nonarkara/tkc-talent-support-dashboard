@@ -32,6 +32,28 @@ When a ROM revision bumps mid-session, note the old → new bump in the entry he
 
 ---
 
+## 2026-05-25 — Matrix org architecture ingested        (v4.8.0 "Crystal" · architecture pivot)
+
+**Shipped**
+- `docs/sources/tkc-new-chapter-matrix-organization.pdf` — canonical source copied into repo
+- `docs/MATRIX-ORGANIZATION.md` — full architecture reference: G/D/U/C outcomes, 10-step value chain, RACI matrix (all 3 process groups + 2.4 drill-down), Soft Side credential map, cassette wiring notes
+
+**On hold pending Dr. Non review**
+- RACI data layer (`process_steps` + `raci_matrix` tables)
+- Matrix-Org overview surface (dept × stage grid)
+- Project stage tracking (`current_step_id` on projects)
+- G/D/U/C KPI strip
+- Soft Side credential tags (`hia_complete`, `lac_complete`, `resilience_retreat_complete`)
+- Game manual update (10 steps replace generic stage names)
+
+**Notes**
+- **4C reconciliation:** the original 4C (Compensation/Cause/Career/Community) and the deck's G/D/U/C are different layers. 4C = individual motivation model. G/D/U/C = org performance KPIs from the matrix transformation. No conflict — they coexist. The 4C feeds morale/retention signals that underpin G, D, and U.
+- **Hard Side scope is explicit:** Dr. Non owns Structure/System/Process. Key Solution owns Mindset/Culture/Leadership. The cassette reads Soft Side completions as credentials on talent profiles; it does not run those programs.
+- **The Lobby view IS the matrix view** — dept × stage intersection, pick a name from a cell. This is what the Social Graph in Lobby should become.
+- **9-Box axis reinterpretation:** Performance = delivery outcomes (UAT pass rate, on-time per steps 3.5 and 3.7). Potential = readiness to take on higher-RACI roles. Current talent data is compatible with this reading once project outcomes feed in.
+
+---
+
 ## 2026-05-16 — Red Dot accessibility + mobile gates closed        (v4.6.5 → v4.6.6 "Red Dot")
 
 Kimi shipped against the seven-point Red Dot blocker list. I verified, wired the build-version, wrote the changelog, and pushed. The cassette now passes the smartphone-first §11.8 floor on every surface that ships.
