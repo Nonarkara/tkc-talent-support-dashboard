@@ -22,6 +22,7 @@
  */
 
 import { isDbConfigured, query } from "./db";
+import { CURRENT_CYCLE } from "@/lib/cycle";
 
 // ─── Types ───────────────────────────────────────────────────────────────
 
@@ -207,7 +208,6 @@ export interface HouseScoreResult {
 /** The cycle that self-report responses are read against. v8.6 will move
  *  this to per-cycle queries; tonight one current-cycle constant matches
  *  the rest of the system. */
-const CURRENT_CYCLE = "2026-Q2";
 
 export async function computeHouseScore(): Promise<HouseScoreResult> {
   const computed_at = new Date().toISOString();

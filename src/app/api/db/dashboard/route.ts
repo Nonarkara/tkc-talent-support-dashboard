@@ -15,6 +15,7 @@ import {
   type SentimentSignal,
 } from "@/lib/sentiment-engine";
 import { sheetsEnabled } from "@/lib/sheets-sync";
+import { CURRENT_CYCLE } from "@/lib/cycle";
 
 interface EmployeeRow {
   id: string;
@@ -260,9 +261,10 @@ async function loadSupportActions() {
         sa.updated_at
       FROM support_actions sa
       LEFT JOIN employees owner ON owner.id = sa.owner_employee_id
-      WHERE sa.cycle = '2026-Q2'
+      WHERE sa.cycle = $1
       ORDER BY sa.updated_at DESC
     `,
+    [CURRENT_CYCLE],
   );
 }
 

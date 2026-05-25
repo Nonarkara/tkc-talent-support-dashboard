@@ -1,6 +1,7 @@
 import { apiError, apiJson, logApiError } from "@/lib/api";
 import { isDbConfigured, query } from "@/lib/db";
 import { mirrorNinjaSquad, mirrorSquadEvent } from "@/lib/sheets-mirror";
+import { CURRENT_CYCLE } from "@/lib/cycle";
 import type { Skill } from "@/lib/skills-vocab";
 
 interface QuestRow {
@@ -24,7 +25,7 @@ export async function GET(request: Request) {
     return apiJson({ error: "Database not configured", quests: [] }, { status: 503 });
   }
   const url = new URL(request.url);
-  const cycle = url.searchParams.get("cycle") ?? "2026-Q2";
+  const cycle = url.searchParams.get("cycle") ?? CURRENT_CYCLE;
   const status = url.searchParams.get("status");
 
   try {
@@ -114,7 +115,7 @@ export async function POST(request: Request) {
         body.title,
         body.description ?? "",
         body.dept_code ?? null,
-        body.cycle ?? "2026-Q2",
+        body.cycle ?? CURRENT_CYCLE,
         body.status ?? "scouting",
         body.revenue_m ?? null,
         body.target_date ?? null,

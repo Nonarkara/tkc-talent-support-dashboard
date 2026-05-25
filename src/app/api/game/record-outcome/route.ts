@@ -29,6 +29,7 @@ import { apiJson, apiError } from "@/lib/api";
 import { isDbConfigured, query } from "@/lib/db";
 import { simulateMatch, type MatchReport } from "@/lib/match-engine";
 import { TKC_REAL_PROJECTS } from "@/lib/tkc-org";
+import { CURRENT_CYCLE } from "@/lib/cycle";
 
 interface RecordOutcomeBody {
   project_id: string;
@@ -206,7 +207,7 @@ export async function POST(request: Request) {
         budgetStatus,
         directorId: dbProject.director_id ?? "",
         directorName: directorRow[0]?.nickname ?? "Unknown",
-        cycle: "2026-Q2",
+        cycle: CURRENT_CYCLE,
       });
     } else {
       // ─── MANUAL ENTRY ────────────────────────────────────
@@ -225,7 +226,7 @@ export async function POST(request: Request) {
         client: dbProject.client_name ?? "",
         directorId: dbProject.director_id ?? "",
         directorName: directorRow[0]?.nickname ?? "Unknown",
-        cycle: "2026-Q2",
+        cycle: CURRENT_CYCLE,
         predicted: {
           fitPct: snapshot?.fit_pct ?? 50,
           chemistryScore: snapshot?.chemistry_score ?? 50,

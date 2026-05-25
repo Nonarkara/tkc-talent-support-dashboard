@@ -20,6 +20,7 @@ import {
   TKC_REAL_PROJECTS,
 } from "@/lib/tkc-org";
 import { DEFAULT_COMPETENCY_STANDARDS } from "@/lib/matrix-workshop-defaults";
+import { CURRENT_CYCLE } from "@/lib/cycle";
 import type {
   CompetencyStandard,
   DashboardPayload,
@@ -173,7 +174,7 @@ function seededKpis(): DeptKpi[] {
     target_value: 100,
     actual_value: 62 + index * 4,
     status: index % 3 === 0 ? "watch" : "on_track",
-    cycle: "2026-Q2",
+    cycle: CURRENT_CYCLE,
   }));
 }
 

@@ -55,6 +55,7 @@ import type {
   Project,
   SupportActionRecord,
 } from "../_shared/types";
+import { CURRENT_CYCLE } from "@/lib/cycle";
 
 const ASSIGN_PREFIX = "BOARD::ASSIGN:";
 const START_PREFIX = "BOARD::START:";
@@ -130,7 +131,6 @@ interface SupportRecommendation {
   reason: string;
 }
 
-const CURRENT_CYCLE = "2026-Q2";
 
 const SOURCE_LABEL: Record<LogSource, string> = {
   director: "Director",

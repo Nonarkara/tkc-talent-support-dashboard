@@ -31,6 +31,7 @@ import {
   type Skill,
 } from "@/lib/skills-vocab";
 import { squadReadiness, type ReadinessReport } from "@/lib/squad-readiness";
+import { CURRENT_CYCLE } from "@/lib/cycle";
 import type { DashboardPayload, Employee } from "../_shared/types";
 import { StandardsWorkshopDrawer } from "../_shared/StandardsWorkshopDrawer";
 import { ReadinessStrip } from "../ninja/ReadinessStrip";
@@ -66,7 +67,6 @@ interface NinjaMission {
 }
 
 const MAX_PARTY = 6;
-const CURRENT_CYCLE = "2026-Q2";
 const FTE_OPTIONS = [0.3, 0.5, 0.7] as const;
 
 const MISSIONS: NinjaMission[] = [
@@ -725,111 +725,6 @@ export function NinjaTab({ dash }: Props) {
         </span>
       </div>
 
-      {/* Original verbose Workshop Controls preserved below as no-op for code
-          archaeology; visually replaced by the strip above. */}
-      {false && (
-      <MenuWindow title="Workshop Controls">
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 240px), 1fr))",
-            gap: 12,
-          }}
-        >
-          <div style={{ display: "grid", gap: 8 }}>
-            <div style={{ color: "var(--ink-0)", fontSize: 14, fontWeight: 700 }}>
-              Standards Workshop
-            </div>
-            <div style={{ color: "var(--ink-1)", fontSize: 11, lineHeight: 1.55 }}>
-              Tune Aisha-aligned expected levels, weights, and freshness windows before you recruit. Candidate ranking and gap reasons will reflow from the saved standard set.
-            </div>
-            <button
-              type="button"
-              onClick={() => setWorkshopOpen(true)}
-              style={{
-                width: "fit-content",
-                border: "none",
-                background: "var(--rpg-yellow)",
-                color: "var(--ink-4)",
-                cursor: "pointer",
-                fontFamily: "inherit",
-                fontSize: 10,
-                fontWeight: 800,
-                padding: "9px 12px",
-                textTransform: "uppercase",
-                letterSpacing: "0.08em",
-              }}
-            >
-              Open Standards Workshop
-            </button>
-          </div>
-
-          <div style={{ display: "grid", gap: 8 }}>
-            <div style={{ color: activeMission.tone, fontSize: 11, fontWeight: 800, textTransform: "uppercase" }}>
-              {activeMission.callSign} Economics
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 8 }}>
-              <MetricRail
-                label="Planned FTE"
-                value={partyEconomics[activeTeam].plannedFte.toFixed(1)}
-                tone="var(--rpg-purple)"
-              />
-              <MetricRail
-                label="Planned Cost"
-                value={`฿${partyEconomics[activeTeam].plannedCostThb.toLocaleString()}`}
-                tone="var(--rpg-yellow)"
-              />
-              <MetricRail
-                label="Overloaded"
-                value={partyEconomics[activeTeam].overloaded}
-                tone={partyEconomics[activeTeam].overloaded > 0 ? "var(--rpg-red)" : "var(--flux-up)"}
-              />
-            </div>
-          </div>
-
-          <div style={{ display: "grid", gap: 8 }}>
-            <div style={{ color: "var(--ink-0)", fontSize: 14, fontWeight: 700 }}>
-              Integration Hooks
-            </div>
-            <div style={{ display: "grid", gap: 6 }}>
-              {dash.integration_status.map((item) => (
-                <div
-                  key={item.key}
-                  style={{
-                    border: "1px solid var(--border-subtle)",
-                    background: "rgba(0,0,0,0.14)",
-                    padding: "8px 10px",
-                    display: "grid",
-                    gap: 3,
-                  }}
-                >
-                  <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
-                    <span style={{ color: "var(--ink-0)", fontSize: 11, fontWeight: 700 }}>{item.label}</span>
-                    <span
-                      style={{
-                        color:
-                          item.status === "connected"
-                            ? "var(--flux-up)"
-                            : item.status === "ready_for_import"
-                              ? "var(--rpg-yellow)"
-                              : "var(--ink-1)",
-                        fontSize: 9,
-                        textTransform: "uppercase",
-                        letterSpacing: "0.08em",
-                      }}
-                    >
-                      {item.status.replaceAll("_", " ")}
-                    </span>
-                  </div>
-                  <div style={{ color: "var(--ink-1)", fontSize: 10 }}>{item.source}</div>
-                  <div style={{ color: "var(--ink-1)", fontSize: 10, lineHeight: 1.45 }}>{item.note}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </MenuWindow>
-      )}
       </div>
 
       <div
@@ -1283,40 +1178,6 @@ function SkillLine({
 
 // Re-export FTE_OPTIONS so CandidateList can use the same values
 export { FTE_OPTIONS };
-
-function MetricRail({
-  label,
-  value,
-  tone,
-}: {
-  label: string;
-  value: string | number;
-  tone: string;
-}) {
-  return (
-    <div
-      style={{
-        border: "1px solid var(--border-subtle)",
-        background: "rgba(0,0,0,0.14)",
-        padding: "10px 11px",
-        display: "grid",
-        gap: 4,
-      }}
-    >
-      <div
-        style={{
-          color: "var(--ink-1)",
-          fontSize: 9,
-          letterSpacing: "0.1em",
-          textTransform: "uppercase",
-        }}
-      >
-        {label}
-      </div>
-      <div style={{ color: tone, fontSize: 16, fontWeight: 800 }}>{value}</div>
-    </div>
-  );
-}
 
 // ─── v4.7 · Talent Pipeline thin strip ────────────────────────────────
 //

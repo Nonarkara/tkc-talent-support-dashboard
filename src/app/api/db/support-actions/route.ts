@@ -1,4 +1,5 @@
 import { apiError, apiJson, logApiError, parseJsonBody } from "@/lib/api";
+import { CURRENT_CYCLE } from "@/lib/cycle";
 import {
   supportActionCreatePayloadSchema,
   supportActionUpdatePayloadSchema,
@@ -154,7 +155,7 @@ export async function POST(request: Request) {
        RETURNING id`,
       [
         payload.employee_id,
-        payload.cycle ?? "2026-Q2",
+        payload.cycle ?? CURRENT_CYCLE,
         payload.action_type,
         payload.target_pillar ?? null,
         payload.title,
@@ -166,7 +167,7 @@ export async function POST(request: Request) {
 
     const createdId = rows[0]?.id;
     const supportActions = createdId
-      ? await fetchSupportActions(payload.employee_id, payload.cycle ?? "2026-Q2")
+      ? await fetchSupportActions(payload.employee_id, payload.cycle ?? CURRENT_CYCLE)
       : [];
     mirrorSupportActionRow(
       supportActions.find((action) => action.id === createdId) ?? null,

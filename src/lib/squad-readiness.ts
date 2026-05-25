@@ -142,18 +142,3 @@ function toRPGAttrs(members: Employee[]): RPGAttributes[] {
   }));
 }
 
-/**
- * Build a Ninja quest code from the dominant skill set. Used by the
- * save path to produce a human-readable `quests.code`.
- *
- *   ["technical","sales","procurement"] → "NINJA_TECH_SALES_PROCURE_26Q2"
- */
-export function ninjaQuestCode(required: Skill[], cycle: string): string {
-  const cycleToken = cycle.replace(/[^0-9A-Z]/gi, "").toUpperCase();
-  const skillToken = required
-    .slice(0, 3) // keep the code readable
-    .map((s) => s.split("_")[0].toUpperCase().slice(0, 6))
-    .join("_");
-  const stamp = Date.now().toString(36).toUpperCase().slice(-4);
-  return `NINJA_${skillToken || "SQUAD"}_${cycleToken}_${stamp}`;
-}

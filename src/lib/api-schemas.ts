@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { CURRENT_CYCLE } from "@/lib/cycle";
 
 const MAX_TEXT = 500;
 const MAX_LONG_TEXT = 4_000;
@@ -284,7 +285,7 @@ export const supportActionUpdatePayloadSchema = z.object({
 
 export const fourPillarResponsePayloadSchema = z.object({
   employee_id: z.string().uuid(),
-  cycle: z.string().trim().min(1).max(32).default("2026-Q2"),
+  cycle: z.string().trim().min(1).max(32).default(CURRENT_CYCLE),
   compensation: boundedNumber(0, 100).default(50),
   purpose: boundedNumber(0, 100).default(50),
   career: boundedNumber(0, 100).default(50),
@@ -294,7 +295,7 @@ export const fourPillarResponsePayloadSchema = z.object({
 
 export const credoResponsePayloadSchema = z.object({
   employee_id: z.string().uuid(),
-  cycle: z.string().trim().min(1).max(32).default("2026-Q2"),
+  cycle: z.string().trim().min(1).max(32).default(CURRENT_CYCLE),
   belonging: boundedNumber(0, 100).default(50),
   purpose: boundedNumber(0, 100).default(50),
   transcendence: boundedNumber(0, 100).default(50),
