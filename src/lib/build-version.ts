@@ -181,9 +181,27 @@
  *                             Mobile: funnel collapses 4→2→1 col,
  *                             9-Box collapses to 1-col at ≤520px,
  *                             drawer takes 100vw on phones.
+ *   v4.9.0 · Battery          Ninja Board trust + affordance + game-feel
+ *                             sweep. Save Name placebo fixed (now reads
+ *                             res.ok). New POST /api/ninja/upsert-member
+ *                             for single-warrior persistence; sliders /
+ *                             drag-add / drag-remove all auto-persist via
+ *                             debounce + Sheets mirror. Empty party slots
+ *                             render as visible drop zones with dashed
+ *                             amber outline + glow loop. "Seal Mission"
+ *                             becomes "Mark Ready for Deploy"; DRAFT
+ *                             badge surfaces draft state. Snap-lock /
+ *                             amber pulse / red flash + shake / press
+ *                             states / sprite-breathing animations.
+ *                             Readiness number now tweens (300ms RAF)
+ *                             instead of snapping. Larger game pieces
+ *                             (52px readiness, 40px sprites). Cooler
+ *                             canvas tint inside the geometric §14
+ *                             single-amber palette — no second hue
+ *                             introduced. Demo-hardened.
  *
  * Bump both fields together. Codename stays one or two words.
  */
 
-export const BUILD_VERSION = "v4.8.0";
-export const BUILD_CODENAME = "Crystal";
+export const BUILD_VERSION = "v4.9.0";
+export const BUILD_CODENAME = "Battery";
