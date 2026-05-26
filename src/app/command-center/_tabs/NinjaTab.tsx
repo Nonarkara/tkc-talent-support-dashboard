@@ -12,7 +12,7 @@
  *     show a checkmark.
  */
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MenuWindow } from "@/components/MenuWindow";
 import { PixelSprite } from "@/components/PixelSprite";
 import { capabilityFit } from "@/lib/capability-fit";
@@ -184,6 +184,17 @@ export function NinjaTab({ dash }: Props) {
   });
   const [empSkillOverrides, setEmpSkillOverrides] = useState<Map<string, Skill[]>>(new Map());
   const [skillFilter, setSkillFilter] = useState<Set<Skill>>(new Set());
+
+  // Per-team auto-save status — shown next to the skill slider grid.
+  //   null     → idle (no recent activity)
+  //   "saving" → request in flight
+  //   string   → "saved · HH:MM" once committed
+  const [skillSaveStatus, setSkillSaveStatus] = useState<Record<TeamKey, string | null>>({
+    zen: null, kodawari: null, ikigai: null, wabisabi: null, bushido: null,
+  });
+  const skillSaveTimers = useRef<Record<TeamKey, ReturnType<typeof setTimeout> | null>>({
+    zen: null, kodawari: null, ikigai: null, wabisabi: null, bushido: null,
+  });
 
   // Reset skill filter when switching teams
   useEffect(() => { setSkillFilter(new Set()); }, [activeTeam]);
@@ -465,6 +476,81 @@ export function NinjaTab({ dash }: Props) {
     setMessageByTeam((prev) => ({ ...prev, [team]: msg }));
   }
 
+  /** Fire-and-forget persistence to the upsert-member route.
+   *  Optimistic: state has already been updated by the caller. If the
+   *  server rejects, we surface the error in the team message strip
+   *  but do not roll back — the next user action will reconcile. */
+  function persistMember(
+    team: TeamKey,
+    verb: "add" | "remove" | "fte",
+    employee_id: string,
+    extra: { slot_key?: string; fte?: number } = {},
+  ) {
+    const questId = questIds[team];
+    if (!questId) return; // Cartridge slot empty — nothing to write yet.
+    void (async () => {
+      try {
+        const res = await fetch("/api/ninja/upsert-member", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ verb, quest_id: questId, employee_id, ...extra }),
+        });
+        const json = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+        if (!res.ok || json.ok === false) {
+          throw new Error(json.error ?? `HTTP ${res.status}`);
+        }
+      } catch (err) {
+        setTeamMessage(
+          team,
+          `Save failed (${verb}): ${err instanceof Error ? err.message : String(err)}`,
+        );
+      }
+    })();
+  }
+
+  /** Debounced auto-save for skill slider edits.
+   *  Encodes the current skillNeeds for the team as a role_slots JSONB
+   *  payload and PATCHes the quest. Status pill animates beside the grid. */
+  function scheduleSkillSlotsPersist(team: TeamKey) {
+    const questId = questIds[team];
+    if (!questId) return;
+    const existing = skillSaveTimers.current[team];
+    if (existing) clearTimeout(existing);
+    skillSaveTimers.current[team] = setTimeout(() => {
+      void (async () => {
+        setSkillSaveStatus((prev) => ({ ...prev, [team]: "saving" }));
+        try {
+          const needs = skillNeeds[team];
+          const role_slots = SKILLS
+            .filter((s) => (needs[s] ?? 0) > 0)
+            .map((skill, idx) => ({
+              key: `ninja_skill_${idx + 1}`,
+              label: SKILL_LABEL[skill] ?? skill,
+              priority_dims: [skill],
+              min_score: Math.max(0, Math.min(5, Math.round(needs[skill] ?? 0))),
+            }));
+          const res = await fetch("/api/db/quests", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: questId, role_slots }),
+          });
+          const json = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+          if (!res.ok || json.ok === false) {
+            throw new Error(json.error ?? `HTTP ${res.status}`);
+          }
+          const now = new Date();
+          const stamp = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+          setSkillSaveStatus((prev) => ({ ...prev, [team]: `saved · ${stamp}` }));
+        } catch (err) {
+          setSkillSaveStatus((prev) => ({
+            ...prev,
+            [team]: `save failed: ${err instanceof Error ? err.message : String(err)}`,
+          }));
+        }
+      })();
+    }, 600);
+  }
+
   function addToTeam(team: TeamKey, emp: Employee, fte: number = 1.0) {
     const mission = missionByKey.get(team);
     if (!mission) return;
@@ -488,12 +574,17 @@ export function NinjaTab({ dash }: Props) {
       return;
     }
 
+    // Compute slot_key BEFORE the optimistic update so the API call
+    // doesn't race with React state.
+    const nextSlotKey = `ninja_${partyAllocations[team].length + 1}`;
+
     setPartyAllocations((prev) => ({
       ...prev,
       [team]: [...prev[team], { empId: emp.id, fte }],
     }));
     const fteLabel = fte < 1.0 ? ` · ${fte} FTE` : "";
     setTeamMessage(team, `${emp.display_name} joined ${mission.callSign}${fteLabel}.`);
+    persistMember(team, "add", emp.id, { slot_key: nextSlotKey, fte });
   }
 
   function removeFromTeam(team: TeamKey, empId: string) {
@@ -504,6 +595,7 @@ export function NinjaTab({ dash }: Props) {
       [team]: prev[team].filter((slot) => slot.empId !== empId),
     }));
     setTeamMessage(team, `${emp?.display_name ?? "Hero"} left ${mission?.callSign ?? "party"}.`);
+    persistMember(team, "remove", empId);
   }
 
   function handleCandidateDragStart(emp: Employee, event: React.DragEvent<HTMLDivElement>) {
@@ -530,14 +622,22 @@ export function NinjaTab({ dash }: Props) {
     }
     setSavingTitle(team);
     try {
-      await fetch("/api/db/quests", {
+      const res = await fetch("/api/db/quests", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: questId, title: missionTitles[team] }),
       });
+      // Battery save honesty: only confirm if the write actually committed.
+      const json = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+      if (!res.ok || json.ok === false) {
+        throw new Error(json.error ?? `HTTP ${res.status}`);
+      }
       setTeamMessage(team, "✓ Mission name saved.");
-    } catch {
-      setTeamMessage(team, "Failed to save name.");
+    } catch (err) {
+      setTeamMessage(
+        team,
+        `Save failed: ${err instanceof Error ? err.message : String(err)}`,
+      );
     } finally {
       setSavingTitle(null);
     }
@@ -548,6 +648,8 @@ export function NinjaTab({ dash }: Props) {
       ...prev,
       [team]: { ...prev[team], [skill]: value },
     }));
+    // Battery-save: debounced auto-persist to /api/db/quests.role_slots
+    scheduleSkillSlotsPersist(team);
   }
 
   function handleLockIn(team: TeamKey) {
@@ -632,7 +734,7 @@ export function NinjaTab({ dash }: Props) {
 
   return (
     <div
-      className="cc-tab-frame"
+      className="cc-tab-frame ninja-scope"
       style={{
         gridTemplateRows: "auto auto auto 1fr",
         gap: 12,
@@ -754,11 +856,13 @@ export function NinjaTab({ dash }: Props) {
                 for one squad at a time, so only one squad gets the
                 spotlight; the others sit as quick-switch chips above. */}
             <div
+              role="tablist"
+              aria-label="Ninja parties"
               style={{
                 display: "flex",
-                gap: 6,
+                gap: 8,
                 flexWrap: "wrap",
-                paddingBottom: 4,
+                paddingBottom: 8,
                 borderBottom: "1px solid rgba(245,240,232,0.08)",
               }}
             >
@@ -769,24 +873,43 @@ export function NinjaTab({ dash }: Props) {
                   <button
                     key={m.key}
                     type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    aria-label={`Switch to ${m.callSign}, ${memberCount} of ${MAX_PARTY} warriors`}
                     onClick={() => setActiveTeam(m.key)}
                     style={{
                       flex: "0 1 auto",
-                      padding: "5px 14px",
-                      background: isActive ? "rgba(212,168,67,0.10)" : "transparent",
-                      color: isActive ? "#D4A843" : "#8a7a5e",
-                      border: `1px solid ${isActive ? "rgba(212,168,67,0.35)" : "rgba(245,240,232,0.10)"}`,
+                      padding: "8px 14px",
+                      minHeight: 44,
+                      background: isActive ? "#D4A843" : "transparent",
+                      color: isActive ? "#0d0d10" : "#b8a88a",
+                      border: `1px solid ${isActive ? "#B88C2C" : "rgba(212,168,67,0.20)"}`,
+                      borderBottom: isActive ? "3px solid #8C6A21" : "1px solid rgba(212,168,67,0.20)",
                       cursor: "pointer",
                       fontFamily: "var(--font-mono, monospace)",
-                      fontSize: 9,
-                      fontWeight: isActive ? 800 : 500,
-                      letterSpacing: "0.14em",
+                      fontSize: 11,
+                      fontWeight: isActive ? 800 : 600,
+                      letterSpacing: "0.10em",
                       textTransform: "uppercase",
                       display: "inline-flex", alignItems: "center", gap: 10,
+                      transition: "background 100ms ease, color 100ms ease",
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isActive) e.currentTarget.style.color = "#D4A843";
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isActive) e.currentTarget.style.color = "#b8a88a";
                     }}
                   >
                     <span>{m.callSign}</span>
-                    <span style={{ color: isActive ? "rgba(212,168,67,0.6)" : "rgba(245,240,232,0.25)", fontSize: 8, fontFamily: "var(--font-mono)" }}>
+                    <span
+                      style={{
+                        color: isActive ? "rgba(13,13,16,0.65)" : "rgba(184,168,138,0.55)",
+                        fontSize: 9,
+                        fontFamily: "var(--font-mono)",
+                        fontWeight: 700,
+                      }}
+                    >
                       {memberCount}/{MAX_PARTY}
                     </span>
                   </button>
@@ -816,6 +939,7 @@ export function NinjaTab({ dash }: Props) {
                       title={missionTitles[mission.key]}
                       skillNeeds={skillNeeds[mission.key]}
                       savingName={savingTitle === mission.key}
+                      saveStatus={skillSaveStatus[mission.key]}
                       onTitleChange={(t) => setMissionTitles((prev) => ({ ...prev, [mission.key]: t }))}
                       onSaveName={() => void handleSaveTitle(mission.key)}
                       onSkillNeedChange={(skill, val) => handleSkillNeedChange(mission.key, skill, val)}
@@ -841,19 +965,49 @@ export function NinjaTab({ dash }: Props) {
               <div style={{ display: "grid", gap: 8 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center" }}>
                   <div>
-                    <div style={{ color: "#D4A843", fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.14em", fontFamily: "var(--font-mono)" }}>
+                    <div style={{ color: "#D4A843", fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.14em", fontFamily: "var(--font-mono)" }}>
                       {activeMission.callSign}
                     </div>
-                    <div style={{ color: "#f5f0e8", fontSize: 13, fontWeight: 700, marginTop: 2 }}>
+                    <div style={{ color: "#f5f0e8", fontSize: 14, fontWeight: 700, marginTop: 3 }}>
                       {missionTitles[activeTeam]}
                     </div>
                   </div>
-                  <div style={{ color: "#8a7a5e", fontSize: 9, fontFamily: "var(--font-mono)", letterSpacing: "0.08em" }}>
+                  <div
+                    style={{
+                      color: configLocked[activeTeam] ? "#D4A843" : "#7a6a4e",
+                      fontSize: 10,
+                      fontFamily: "var(--font-mono)",
+                      letterSpacing: "0.10em",
+                      fontWeight: 800,
+                      textTransform: "uppercase",
+                    }}
+                  >
                     {configLocked[activeTeam]
                       ? `${MAX_PARTY - partyAllocations[activeTeam].length} OPEN`
-                      : "CONFIG FIRST"}
+                      : "🔒 LOCK CONFIG"}
                   </div>
                 </div>
+
+                {/* Drag-disabled banner — visible when boss has not locked the config */}
+                {!configLocked[activeTeam] && (
+                  <div
+                    role="status"
+                    aria-live="polite"
+                    style={{
+                      border: "1px dashed rgba(212,168,67,0.40)",
+                      background: "rgba(212,168,67,0.06)",
+                      color: "#D4A843",
+                      padding: "8px 11px",
+                      fontSize: 11,
+                      fontFamily: "var(--font-mono)",
+                      letterSpacing: "0.04em",
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    🔒 Drag is disabled. Set skill needs in the left panel and click <b>Open the Mission · Recruit</b> first.
+                  </div>
+                )}
+
                 <SkillLine
                   skills={activeRequired}
                   activeFilter={skillFilter}
@@ -889,11 +1043,52 @@ export function NinjaTab({ dash }: Props) {
   );
 }
 
+// ── AnimatedNumber ──────────────────────────────────────────────────────────
+// Tweens between values over 300ms via requestAnimationFrame.
+// Track C.5 — readiness number stops snapping, starts rolling.
+
+function AnimatedNumber({ value, color, size }: { value: number; color: string; size: number }) {
+  const [display, setDisplay] = useState(value);
+  const lastValue = useRef(value);
+  useEffect(() => {
+    const start = lastValue.current;
+    const end = value;
+    if (start === end) return;
+    const duration = 300;
+    const startTime = performance.now();
+    let raf = 0;
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - startTime) / duration);
+      const eased = 1 - Math.pow(1 - t, 3); // ease-out cubic
+      setDisplay(Math.round(start + (end - start) * eased));
+      if (t < 1) raf = requestAnimationFrame(tick);
+      else lastValue.current = end;
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [value]);
+  return (
+    <div
+      style={{
+        color,
+        fontSize: size,
+        fontWeight: 800,
+        lineHeight: 1,
+        fontFamily: "var(--font-mono)",
+        letterSpacing: "-0.02em",
+      }}
+      aria-label={`Readiness ${value} percent`}
+    >
+      {display}
+    </div>
+  );
+}
+
 // ── MissionPartyCard ─────────────────────────────────────────────────────────
 
 function MissionPartyCard({
-  mission, title, active, slots, members, report, saving, message,
-  configLocked, configPanel, onSelect, onDrop, onAddActive, onRemove, onSave, onUnlock,
+  mission, title, slots, members, report, saving, message,
+  configLocked, configPanel, onSelect, onDrop, onRemove, onSave, onUnlock,
 }: {
   mission: NinjaMission;
   title: string;
@@ -906,62 +1101,135 @@ function MissionPartyCard({
   configLocked: boolean;
   configPanel: React.ReactNode;
   onSelect: () => void;
-  onDrop: (e: React.DragEvent<HTMLDivElement>) => void;
+  onDrop: (e: React.DragEvent) => void;
   onAddActive: () => void;
   onRemove: (empId: string) => void;
   onSave: () => void;
   onUnlock: () => void;
 }) {
   const canSave = configLocked && members.length > 0 && !saving;
+  const requiredCount = Object.values(report.per_skill ?? {}).filter((s) => s.required).length;
+  // DRAFT = no members yet OR no skills configured. A live mission has both.
+  const isDraft = members.length === 0 || requiredCount === 0;
+
+  // Drop-zone & rejection feedback
+  const [dragOverSlot, setDragOverSlot] = useState<number | null>(null);
+  const [rejectKey, setRejectKey] = useState(0); // bumps to trigger CSS animation
+  const [savedFlashKey, setSavedFlashKey] = useState(0);
+  // Watch for save-success messages to trigger the amber border pulse.
+  // Synchronising derived UI animation key with external message stream —
+  // setState in effect is intentional here (no infinite loop: deps are external).
+  const messageRef = useRef(message);
+  useEffect(() => {
+    if (message && message !== messageRef.current) {
+      if (message.startsWith("Saved ") || message.startsWith("✓")) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setSavedFlashKey((k) => k + 1);
+      }
+    }
+    messageRef.current = message;
+  }, [message]);
+
+  function handleDropAt(slotIdx: number, e: React.DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOverSlot(null);
+    // If trying to drop on an occupied slot, reject visibly
+    if (slotIdx < members.length) {
+      setRejectKey((k) => k + 1);
+      return;
+    }
+    onDrop(e);
+  }
+
+  // Compose ALL seats: occupied first, empty drop zones after
+  const totalSeats = MAX_PARTY;
 
   return (
     <section
       onClick={onSelect}
       onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = "copy"; }}
-      onDrop={onDrop}
+      onDrop={(e) => handleDropAt(members.length, e)}
+      className={savedFlashKey ? "ninja-saved-pulse" : ""}
+      key={`partycard-${savedFlashKey}`}
       style={{
-        border: "1px solid rgba(245,240,232,0.10)",
+        border: "1px solid rgba(212,168,67,0.18)",
         borderLeft: "3px solid #D4A843",
-        background: "rgba(15,12,8,0.35)",
-        padding: 14,
+        background: "rgba(10,14,20,0.45)",
+        padding: 16,
         display: "grid",
-        gap: 14,
+        gap: 16,
+        position: "relative",
       }}
     >
+      {/* DRAFT badge — top-right, only when draft */}
+      {isDraft && configLocked && (
+        <div
+          style={{
+            position: "absolute",
+            top: 12, right: 14,
+            border: "1px solid #D4A843",
+            background: "rgba(212,168,67,0.10)",
+            color: "#D4A843",
+            fontSize: 9,
+            fontWeight: 800,
+            padding: "3px 9px",
+            textTransform: "uppercase",
+            letterSpacing: "0.16em",
+            fontFamily: "var(--font-mono)",
+            pointerEvents: "none",
+          }}
+          aria-label="Mission is in draft state"
+        >
+          DRAFT
+        </div>
+      )}
+
       {configLocked ? (
         <>
           {/* Header — callsign · title · readiness sensor */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
-            <div style={{ minWidth: 0, flex: 1 }}>
-              <div style={{ color: "#D4A843", fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.16em", fontFamily: "var(--font-mono)" }}>
+            <div style={{ minWidth: 0, flex: 1, paddingRight: isDraft ? 72 : 0 }}>
+              <div style={{ color: "#D4A843", fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.16em", fontFamily: "var(--font-mono)" }}>
                 {mission.callSign}
               </div>
-              <h3 style={{ margin: "3px 0 0", color: "#f5f0e8", fontSize: 16, fontWeight: 700, lineHeight: 1.1 }}>
+              <h3 style={{ margin: "4px 0 0", color: "#f5f0e8", fontSize: 17, fontWeight: 700, lineHeight: 1.15 }}>
                 {title}
               </h3>
-              <p style={{ margin: "4px 0 0", color: "#8a7a5e", fontSize: 10, lineHeight: 1.5 }}>
+              <p style={{ margin: "5px 0 0", color: "#8a7a5e", fontSize: 11, lineHeight: 1.5 }}>
                 {mission.brief}
               </p>
             </div>
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6, flexShrink: 0 }}>
-              <div style={{
-                color: report.overall_pct >= 70 ? "#4a8a5a" : report.overall_pct >= 45 ? "#D4A843" : "#C44D3F",
-                fontSize: 44, fontWeight: 800, lineHeight: 1,
-                fontFamily: "var(--font-mono)",
-              }}>
-                {report.overall_pct}
-              </div>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8, flexShrink: 0 }}>
+              <AnimatedNumber
+                value={report.overall_pct}
+                size={52}
+                color={
+                  report.overall_pct >= 70
+                    ? "#4a8a5a"
+                    : report.overall_pct >= 45
+                      ? "#D4A843"
+                      : "#C44D3F"
+                }
+              />
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); onUnlock(); }}
                 title="Unlock to edit skill requirements"
+                aria-label="Unlock and edit skill requirements"
                 style={{
-                  border: "1px solid rgba(212,168,67,0.22)",
-                  background: "transparent", color: "#8a7a5e",
-                  cursor: "pointer", fontFamily: "inherit",
-                  fontSize: 9, fontWeight: 700,
-                  padding: "3px 9px", textTransform: "uppercase",
+                  border: "1px solid rgba(212,168,67,0.40)",
+                  background: "transparent",
+                  color: "#D4A843",
+                  cursor: "pointer",
+                  fontFamily: "inherit",
+                  fontSize: 10,
+                  fontWeight: 800,
+                  padding: "8px 12px",
+                  minHeight: 36,
+                  textTransform: "uppercase",
                   letterSpacing: "0.08em",
+                  whiteSpace: "nowrap",
                 }}
               >
                 ⊘ Edit Skills
@@ -976,15 +1244,15 @@ function MissionPartyCard({
               .map(([skill, s]) => ({ skill, coverage: s.coverage }));
             if (requiredSkills.length === 0) return null;
             return (
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 5, borderTop: "1px solid rgba(245,240,232,0.06)", paddingTop: 10 }}>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, borderTop: "1px solid rgba(245,240,232,0.06)", paddingTop: 12 }}>
                 {requiredSkills.map(({ skill, coverage }) => (
                   <span
                     key={skill}
                     style={{
-                      fontSize: 9, fontWeight: coverage === 0 ? 800 : 600,
-                      padding: "2px 8px",
-                      border: `1px solid ${coverage === 0 ? "rgba(196,77,63,0.5)" : "rgba(245,240,232,0.10)"}`,
-                      color: coverage === 0 ? "#C44D3F" : coverage === 1 ? "#D4A843" : "#8a7a5e",
+                      fontSize: 10, fontWeight: coverage === 0 ? 800 : 600,
+                      padding: "3px 9px",
+                      border: `1px solid ${coverage === 0 ? "rgba(196,77,63,0.5)" : "rgba(245,240,232,0.12)"}`,
+                      color: coverage === 0 ? "#C44D3F" : coverage === 1 ? "#D4A843" : "#b8a88a",
                       background: coverage === 0 ? "rgba(196,77,63,0.06)" : "transparent",
                       textTransform: "uppercase", letterSpacing: "0.06em",
                       fontFamily: "var(--font-mono)",
@@ -997,34 +1265,46 @@ function MissionPartyCard({
             );
           })()}
 
-          {/* Warrior roster — compact list */}
+          {/* Warrior roster — occupied slots first, then visible empty drop zones */}
           <div style={{ display: "grid", gap: 0 }}>
             {members.map((member, i) => {
               const slot = slots[i];
               const fte = slot?.fte ?? 1.0;
               const archetype = getArchetype(member);
               return (
-                <div key={member.id} style={{
-                  display: "grid",
-                  gridTemplateColumns: "22px 20px minmax(0,1fr) auto auto",
-                  gap: 8, alignItems: "center",
-                  padding: "7px 0",
-                  borderBottom: "1px solid rgba(245,240,232,0.05)",
-                }}>
-                  <span style={{ color: "#8a7a5e", fontSize: 9, fontFamily: "var(--font-mono)", textAlign: "right" }}>
+                <div
+                  key={member.id}
+                  className="anim-snap-lock"
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "26px 44px minmax(0,1fr) auto auto",
+                    gap: 10, alignItems: "center",
+                    padding: "10px 4px",
+                    borderBottom: "1px solid rgba(245,240,232,0.05)",
+                    minHeight: 56,
+                  }}
+                >
+                  <span style={{ color: "#8a7a5e", fontSize: 11, fontFamily: "var(--font-mono)", textAlign: "right" }}>
                     {String(i + 1).padStart(2, "0")}
                   </span>
-                  <PixelSprite archetype={archetype} gender={inferGender(member.id, member.display_name)} size={18} seed={member.id} />
+                  <div className="ninja-sprite-breathe" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+                    <PixelSprite
+                      archetype={archetype}
+                      gender={inferGender(member.id, member.display_name)}
+                      size={40}
+                      seed={member.id}
+                    />
+                  </div>
                   <div style={{ minWidth: 0 }}>
-                    <div style={{ color: "#f5f0e8", fontSize: 11, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <div style={{ color: "#f5f0e8", fontSize: 15, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", lineHeight: 1.2 }}>
                       {member.display_name}
                     </div>
-                    <div style={{ color: "#8a7a5e", fontSize: 9, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                    <div style={{ color: "#8a7a5e", fontSize: 10, textTransform: "uppercase", letterSpacing: "0.05em", marginTop: 2 }}>
                       {ARCHETYPE_LABEL[archetype]} · {member.dept_code ?? "—"}
                     </div>
                   </div>
                   {fte < 1.0 ? (
-                    <span style={{ fontSize: 9, color: "#D4A843", fontFamily: "var(--font-mono)", whiteSpace: "nowrap" }}>
+                    <span style={{ fontSize: 10, color: "#D4A843", fontFamily: "var(--font-mono)", whiteSpace: "nowrap", letterSpacing: "0.04em" }}>
                       {fte} FTE
                     </span>
                   ) : <span />}
@@ -1032,11 +1312,14 @@ function MissionPartyCard({
                     type="button"
                     onClick={(e) => { e.stopPropagation(); onRemove(member.id); }}
                     title={`Remove ${member.display_name}`}
+                    aria-label={`Remove ${member.display_name} from party`}
                     style={{
-                      border: "1px solid rgba(196,77,63,0.28)",
+                      border: "1px solid rgba(196,77,63,0.40)",
                       background: "transparent", color: "#C44D3F",
                       cursor: "pointer", fontFamily: "inherit",
-                      fontSize: 9, padding: "3px 7px",
+                      fontSize: 11, fontWeight: 700,
+                      minWidth: 44, minHeight: 44,
+                      display: "inline-flex", alignItems: "center", justifyContent: "center",
                     }}
                   >
                     ✕
@@ -1044,18 +1327,85 @@ function MissionPartyCard({
                 </div>
               );
             })}
-            {members.length < MAX_PARTY && (
-              <div style={{ padding: "8px 0", color: "#8a7a5e", fontSize: 9, letterSpacing: "0.08em", textTransform: "uppercase", fontFamily: "var(--font-mono)" }}>
-                {MAX_PARTY - members.length} seat{MAX_PARTY - members.length !== 1 ? "s" : ""} open — drag from roster or click ＋
-              </div>
-            )}
+
+            {/* Visible empty drop zones — replace plain text "N seats open" */}
+            {Array.from({ length: totalSeats - members.length }, (_, j) => {
+              const slotIdx = members.length + j;
+              const isDragOver = dragOverSlot === slotIdx;
+              const isRejected = false; // (rejection always renders on the section root, not per slot)
+              return (
+                <div
+                  key={`empty-${slotIdx}`}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.dataTransfer.dropEffect = "copy";
+                    if (slotIdx === members.length && dragOverSlot !== slotIdx) {
+                      setDragOverSlot(slotIdx);
+                    }
+                  }}
+                  onDragLeave={() => { if (dragOverSlot === slotIdx) setDragOverSlot(null); }}
+                  onDrop={(e) => handleDropAt(slotIdx, e)}
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "26px 44px 1fr",
+                    gap: 10, alignItems: "center",
+                    padding: "10px 4px",
+                    minHeight: 56,
+                    border: isDragOver
+                      ? "2px solid #D4A843"
+                      : isRejected
+                        ? "2px solid #C44D3F"
+                        : "1px dashed rgba(212,168,67,0.30)",
+                    background: isDragOver ? "rgba(212,168,67,0.15)" : "transparent",
+                    marginBottom: 2,
+                    transform: isDragOver ? "scale(1.01)" : "scale(1)",
+                    transition: "background 80ms ease, transform 80ms ease, border-color 80ms ease",
+                    animation: slotIdx === members.length ? "ninja-drop-zone-glow 2.4s ease-in-out infinite" : "none",
+                  }}
+                  aria-label={`Empty seat ${slotIdx + 1} of ${totalSeats}, drop a warrior here`}
+                >
+                  <span style={{ color: "rgba(212,168,67,0.45)", fontSize: 11, fontFamily: "var(--font-mono)", textAlign: "right" }}>
+                    {String(slotIdx + 1).padStart(2, "0")}
+                  </span>
+                  <div
+                    style={{
+                      width: 36, height: 36,
+                      border: "1px dashed rgba(212,168,67,0.40)",
+                      display: "inline-flex", alignItems: "center", justifyContent: "center",
+                      color: "rgba(212,168,67,0.40)", fontSize: 18,
+                      fontFamily: "var(--font-mono)", margin: "0 auto",
+                    }}
+                  >
+                    +
+                  </div>
+                  <div style={{ color: "#D4A843", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.10em", fontFamily: "var(--font-mono)" }}>
+                    Drop a warrior here
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
+          {/* Rejection-flash overlay — keyed by rejectKey to retrigger animation */}
+          {rejectKey > 0 && (
+            <div
+              key={`reject-${rejectKey}`}
+              className="ninja-reject"
+              style={{
+                position: "absolute",
+                inset: 0,
+                pointerEvents: "none",
+                border: "2px solid rgba(196,77,63,0.30)",
+              }}
+            />
+          )}
+
           {/* Footer */}
-          <div style={{ borderTop: "1px solid rgba(245,240,232,0.08)", paddingTop: 10, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+          <div style={{ borderTop: "1px solid rgba(245,240,232,0.08)", paddingTop: 12, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
             <div style={{
               color: message?.startsWith("Save failed") ? "#C44D3F" : message ? "#D4A843" : "#8a7a5e",
-              fontSize: 10, lineHeight: 1.4, fontFamily: "var(--font-mono)",
+              fontSize: 11, lineHeight: 1.4, fontFamily: "var(--font-mono)", flex: "1 1 200px",
             }}>
               {message ?? `${members.length}/${MAX_PARTY} · chem ${report.chemistry}`}
             </div>
@@ -1063,16 +1413,22 @@ function MissionPartyCard({
               type="button"
               onClick={(e) => { e.stopPropagation(); onSave(); }}
               disabled={!canSave}
+              title={canSave ? "Mark this mission ready for deploy" : "Add at least one warrior first"}
+              aria-label={canSave ? "Mark ready for deploy" : "Add a warrior to enable Mark Ready"}
               style={{
-                border: `1px solid ${canSave ? "#D4A843" : "rgba(245,240,232,0.12)"}`,
-                background: canSave ? "#D4A843" : "transparent",
-                color: canSave ? "#0d0d10" : "#8a7a5e",
+                border: canSave ? "1px solid #F5C04A" : "1px dashed rgba(212,168,67,0.30)",
+                background: canSave ? "#F5C04A" : "rgba(212,168,67,0.06)",
+                color: canSave ? "#0d0d10" : "#7a6a4e",
                 cursor: canSave ? "pointer" : "not-allowed",
-                fontFamily: "inherit", fontSize: 9, fontWeight: 800,
-                padding: "7px 14px", textTransform: "uppercase", letterSpacing: "0.10em",
+                fontFamily: "inherit", fontSize: 11, fontWeight: 800,
+                padding: "0 18px", minHeight: 44,
+                textTransform: "uppercase", letterSpacing: "0.10em",
+                transition: "background 120ms ease",
               }}
+              onMouseEnter={(e) => { if (canSave) e.currentTarget.style.background = "#FFD66B"; }}
+              onMouseLeave={(e) => { if (canSave) e.currentTarget.style.background = "#F5C04A"; }}
             >
-              {saving ? "Sealing…" : "Seal Mission"}
+              {saving ? "Saving…" : "Mark Ready for Deploy →"}
             </button>
           </div>
         </>
