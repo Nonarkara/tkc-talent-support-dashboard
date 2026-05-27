@@ -734,6 +734,8 @@ export function NinjaTab({ dash }: Props) {
 
   return (
     <div
+      role="region"
+      aria-label="Ninja Squad Builder"
       className="cc-tab-frame ninja-scope"
       style={{
         gridTemplateRows: "auto auto auto 1fr",
@@ -741,6 +743,7 @@ export function NinjaTab({ dash }: Props) {
       }}
     >
       <NinjaTalentStrip />
+      <NinjaMissionStrip />
       <ReadinessStrip
         report={reportsByTeam[activeTeam]}
         memberCount={membersByTeam[activeTeam].length}
@@ -1403,7 +1406,10 @@ function MissionPartyCard({
 
           {/* Footer */}
           <div style={{ borderTop: "1px solid rgba(245,240,232,0.08)", paddingTop: 12, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-            <div style={{
+            <div
+              role="status"
+              aria-live="polite"
+              style={{
               color: message?.startsWith("Save failed") ? "#C44D3F" : message ? "#D4A843" : "#8a7a5e",
               fontSize: 11, lineHeight: 1.4, fontFamily: "var(--font-mono)", flex: "1 1 200px",
             }}>
@@ -1535,6 +1541,8 @@ function SkillLine({
               type="button"
               onClick={() => onToggle(skill)}
               title={active ? `Remove ${SKILL_LABEL[skill]} filter` : `Filter by ${SKILL_LABEL[skill]}`}
+              aria-label={active ? `Remove ${SKILL_LABEL[skill]} filter` : `Filter by ${SKILL_LABEL[skill]}`}
+              aria-pressed={active}
               style={{
                 border: `1px solid ${active ? "#D4A843" : "rgba(212,168,67,0.22)"}`,
                 background: active ? "#D4A843" : "transparent",
@@ -1566,6 +1574,7 @@ function SkillLine({
         <button
           type="button"
           onClick={() => skills.forEach((s) => activeFilter.has(s) && onToggle(s))}
+          aria-label="Clear all skill filters"
           style={{
             border: "1px solid var(--ink-2)", background: "transparent",
             color: "var(--ink-1)", fontSize: 9, fontWeight: 700,
@@ -1584,6 +1593,75 @@ function SkillLine({
 export { FTE_OPTIONS };
 
 // ─── v4.7 · Talent Pipeline thin strip ────────────────────────────────
+// ---------------------------------------------------------------------------
+// NinjaMissionStrip — one-row link to the /missions sprint tracker.
+// Shows live counts fetched from /api/db/missions. Fires once on mount,
+// no polling (missions don't change fast enough to warrant it).
+// ---------------------------------------------------------------------------
+
+function NinjaMissionStrip() {
+  const [data, setData] = useState<{
+    total: number;
+    building: number;
+    demoReady: number;
+    deployed: number;
+    daysLeft: number;
+  } | null>(null);
+
+  useEffect(() => {
+    fetch("/api/db/missions", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((body: { missions: Array<{ status: string; deadline: string }> }) => {
+        const missions = body.missions ?? [];
+        const deadline = new Date("2026-06-27T23:59:59+07:00");
+        const daysLeft = Math.max(0, Math.ceil((deadline.getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
+        setData({
+          total: missions.length,
+          building: missions.filter((m) => m.status === "BUILDING").length,
+          demoReady: missions.filter((m) => m.status === "DEMO_READY").length,
+          deployed: missions.filter((m) => m.status === "DEPLOYED").length,
+          daysLeft,
+        });
+      })
+      .catch(() => {});
+  }, []);
+
+  return (
+    <a
+      href="/missions"
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 14,
+        padding: "8px 12px",
+        border: "1px solid rgba(212,168,67,0.18)",
+        background: "rgba(212,168,67,0.02)",
+        color: "var(--ink-0)",
+        textDecoration: "none",
+        fontSize: 11,
+        letterSpacing: "0.04em",
+      }}
+    >
+      <span style={{ color: "#D4A843", fontWeight: 700, letterSpacing: "0.14em" }}>
+        MISSION BOARD · 2026-H1
+      </span>
+      <span style={{ color: "#8a7a5e" }}>·</span>
+      <NinjaTalentMetric label="Missions" value={data?.total ?? "—"} />
+      <NinjaTalentMetric label="Building" value={data?.building ?? "—"} />
+      <NinjaTalentMetric label="Demo Ready" value={data?.demoReady ?? "—"} accent />
+      <NinjaTalentMetric label="Deployed" value={data?.deployed ?? "—"} accent />
+      {data && (
+        <NinjaTalentMetric
+          label="Days Left"
+          value={data.daysLeft}
+          accent={data.daysLeft <= 14}
+        />
+      )}
+      <span style={{ marginLeft: "auto", color: "#D4A843" }}>open board →</span>
+    </a>
+  );
+}
+
 //
 // One-row ticker that surfaces the live Talent Pool counts in the
 // staffing surface without disrupting the project-staffing flow.
