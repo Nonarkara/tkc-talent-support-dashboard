@@ -181,6 +181,20 @@
  *                             Mobile: funnel collapses 4→2→1 col,
  *                             9-Box collapses to 1-col at ≤520px,
  *                             drawer takes 100vw on phones.
+ *   v4.9.2 · Scroll           Doc layer + workshop ingestion. docs/workshops/
+ *                             directory with 2026-05-27 transcript + summary.
+ *                             WORKSHOPS-INDEX.md. MATRIX-ORGANIZATION.md
+ *                             expanded: three-framework table (4C/G/D/U/C/4P),
+ *                             Section 10 game manual context — 4P failure-mode
+ *                             table, NST/Chonburi/Chula case studies, no-
+ *                             localhost rule, SLIC vs depa vehicles.
+ *   v4.9.1 · Battery+         Live browser audit fixes. aria-labels on all
+ *                             icon buttons (✏/+/skill filters/Clear).
+ *                             role="region" on ninja-scope so AT tree
+ *                             reaches all 138 controls. aria-live="polite"
+ *                             on party-card message footer. Hide 0.0 FTE
+ *                             from roster cards. ⚠ stale freshness with
+ *                             hover tooltip.
  *   v4.9.0 · Battery          Ninja Board trust + affordance + game-feel
  *                             sweep. Save Name placebo fixed (now reads
  *                             res.ok). New POST /api/ninja/upsert-member
@@ -203,5 +217,5 @@
  * Bump both fields together. Codename stays one or two words.
  */
 
-export const BUILD_VERSION = "v4.9.0";
-export const BUILD_CODENAME = "Battery";
+export const BUILD_VERSION = "v4.9.2";
+export const BUILD_CODENAME = "Scroll";

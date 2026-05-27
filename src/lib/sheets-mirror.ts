@@ -1442,3 +1442,44 @@ export async function mirrorSupportAction(data: SupportActionMirrorPayload): Pro
     console.error("[sheets-mirror] mirrorSupportAction failed:", err);
   }
 }
+
+// ---------------------------------------------------------------------------
+// Missions — team prototype sprint tracker (one-month deadline 2026-06-27)
+// ---------------------------------------------------------------------------
+
+export interface MissionMirrorPayload {
+  id: number;
+  team_name: string;
+  department: string | null;
+  brief: string | null;
+  owner_name: string | null;
+  deadline: string;
+  demo_url: string | null;
+  tech_stack: string | null;
+  status: string;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export async function mirrorMission(data: MissionMirrorPayload): Promise<void> {
+  try {
+    await upsertRow("Missions", {
+      id: data.id,
+      team_name: data.team_name,
+      department: data.department ?? "",
+      brief: data.brief ?? "",
+      owner_name: data.owner_name ?? "",
+      deadline: data.deadline,
+      demo_url: data.demo_url ?? "",
+      tech_stack: data.tech_stack ?? "",
+      status: data.status,
+      notes: data.notes ?? "",
+      created_at: data.created_at,
+      updated_at: data.updated_at,
+    });
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error("[sheets-mirror] mirrorMission failed:", err);
+  }
+}

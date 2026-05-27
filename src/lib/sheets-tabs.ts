@@ -521,6 +521,25 @@ export const TABS: readonly TabConfig[] = [
       "owner_name",
     ],
   },
+  {
+    name: "Missions",
+    strategy: "upsert",
+    description: "One-month prototype sprint missions — each team's commitment (deadline 2026-06-27).",
+    headers: [
+      "id",
+      "team_name",
+      "department",
+      "brief",
+      "owner_name",
+      "deadline",
+      "demo_url",
+      "tech_stack",
+      "status",
+      "notes",
+      "created_at",
+      "updated_at",
+    ],
+  },
 ] as const;
 
 /** Lookup a tab by name. Throws if missing — fail loud on typos. */

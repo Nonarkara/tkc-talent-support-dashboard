@@ -32,6 +32,40 @@ When a ROM revision bumps mid-session, note the old → new bump in the entry he
 
 ---
 
+## 2026-05-27 — Live browser audit + workshop ingestion        (v4.9.1 → v4.9.2 "Scroll")
+
+**Shipped**
+
+- **v4.9.1 "Battery+" — live DOM audit and accessibility sweep.** Full Chrome MCP audit of `https://tkc-digital-twin.fly.dev/command-center?screen=ninja`. Seven bugs found and fixed:
+  - `role="region"` + `aria-label="Ninja Squad Builder"` added to `.cc-tab-frame` root — makes all 138 Ninja Board buttons reachable in the AT tree.
+  - `role="status"` + `aria-live="polite"` added to MissionPartyCard footer message div.
+  - `aria-label` + `aria-pressed` added to skill filter buttons; `aria-label="Clear all skill filters"` on the Clear button.
+  - ✏ and + icon buttons in CandidateList gained `aria-label` (dynamic Edit/Close) and `aria-expanded`.
+  - Freshness label: "unknown" hidden; "stale" replaced with "⚠ stale" + hover tooltip.
+  - FTE: conditional render — only shows when `availability_fte > 0`; hides "0.0 FTE" from all roster candidate cards.
+  - Sheets bootstrap fixed — 5 missing tabs identified and recreated via `POST /api/sync/sheets-bootstrap`.
+
+- **v4.9.2 "Scroll" — doc layer + workshop ingestion:**
+  - `docs/workshops/` directory created.
+  - `2026-05-27-tkc-workshop-transcript-raw.txt` and `2026-05-27-tkc-workshop-summary.md` copied from `100daysofnon/diary/day-071/artifacts/` into `docs/workshops/` — canonical TKC copies.
+  - `docs/WORKSHOPS-INDEX.md` created — index of all workshops with key moments table and TKC project implications per entry.
+  - `docs/MATRIX-ORGANIZATION.md` expanded:
+    - Section 2 reconciliation replaced with the full three-framework table (4C / G/D/U/C / 4P) and one substantive paragraph per frame.
+    - Section 10 added: game manual context from three live engagements — 4P framework with failure-mode table, three case studies (NST/Chonburi/Chula) with root cause column, no-localhost rule verbatim, SLIC vs depa contracting vehicle comparison.
+
+**Next**
+- `/missions` surface — team prototype tracker (brief, owner, deadline 2026-06-27, build status, demo URL required)
+- S-curve executive widget — revenue by source (operations vs investments) + new-S-curve candidates linked to missions
+- Game manual update — 10-step value chain replaces generic stage names; Ninja Squad section adds no-localhost rule on page 1
+- RACI data layer build (still on hold pending Dr Non review of MATRIX-ORGANIZATION.md)
+
+**Notes**
+- The Sheets bootstrap was failing silently — header showed "Sheets sync has errors" but the route was `POST /api/sync/sheets-bootstrap`, not `POST /api/sheets/bootstrap`. The correct path is in `src/app/api/sync/sheets-bootstrap/route.ts`. Fixed by finding the actual file.
+- `role="region"` on `.cc-tab-frame` is the structural fix that makes all 138 Ninja Board buttons reachable. The AT tree traversal was hitting depth limits on the nested component tree; the region anchor short-circuits the traversal. Worth applying to other deeply-nested tab frames if similar issues emerge.
+- One-month mission deadline: **2026-06-27**. Each TKC team produces one working prototype. Non provides API credits + coaching. This is an active commitment made on stage at the 2026-05-27 workshop — the `/missions` surface tracks delivery.
+
+---
+
 ## 2026-05-25 — Matrix org architecture ingested        (v4.8.0 "Crystal" · architecture pivot)
 
 **Shipped**
