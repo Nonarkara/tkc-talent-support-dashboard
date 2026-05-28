@@ -435,7 +435,7 @@ export function TalentPoolPanel({
                 <td style={{ ...tdRight, color: d.pipeline > 0 ? "#D4A843" : "#8a7a5e" }}>
                   {d.pipeline}
                 </td>
-                <td style={tdRight}>{d.avg_score?.toFixed(1) ?? "—"}</td>
+                <td style={tdRight}>{d.avg_score != null ? Number(d.avg_score).toFixed(1) : "—"}</td>
               </tr>
             ))}
           </tbody>
@@ -531,8 +531,8 @@ function RankingTable({
               <td style={tdLeftMuted}>{r.department ?? "—"}</td>
               <td style={tdLeftMuted}>{r.position ?? "—"}</td>
               <td style={tdRight}>{r.job_grade ?? "—"}</td>
-              <td style={tdRight}>{r.performance_score?.toFixed(1) ?? "—"}</td>
-              <td style={tdRight}>{r.potential_score?.toFixed(1) ?? "—"}</td>
+              <td style={tdRight}>{r.performance_score != null ? Number(r.performance_score).toFixed(1) : "—"}</td>
+              <td style={tdRight}>{r.potential_score != null ? Number(r.potential_score).toFixed(1) : "—"}</td>
               <td
                 style={{
                   ...tdRight,
@@ -540,7 +540,7 @@ function RankingTable({
                   fontWeight: isEmerging ? 500 : 700,
                 }}
               >
-                {r.avg_score?.toFixed(1) ?? "—"}
+                {r.avg_score != null ? Number(r.avg_score).toFixed(1) : "—"}
               </td>
               <td style={tdLeftMuted}>
                 <span style={{ color: BOX_ACCENT[r.box_id ?? 0] ?? "#8a7a5e" }}>
@@ -633,9 +633,12 @@ function BoxCell({
   compact?: boolean;
   onPick: (n: BoxNominee) => void;
 }) {
+  const [expanded, setExpanded] = useState(false);
   const accent = BOX_ACCENT[box.id] ?? "#8a7a5e";
   return (
     <div
+      onMouseEnter={() => setExpanded(true)}
+      onMouseLeave={() => setExpanded(false)}
       style={{
         border: `1px solid ${accent}`,
         background: "rgba(255,255,255,0.02)",
@@ -644,6 +647,7 @@ function BoxCell({
         display: "flex",
         flexDirection: "column",
         gap: 6,
+        position: "relative",
       }}
     >
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
@@ -672,7 +676,7 @@ function BoxCell({
             key={(n.employee_code ?? "") + n.display_name}
             onClick={() => onPick(n)}
             type="button"
-            title={`${n.position ?? ""} · ${n.department ?? ""} · avg ${n.avg_score?.toFixed(1) ?? "—"} · click to drill down`}
+            title={`${n.position ?? ""} · ${n.department ?? ""} · avg ${n.avg_score != null ? Number(n.avg_score).toFixed(1) : "—"} · click to drill down`}
             style={{
               fontSize: 10,
               color: n.in_talent_pool ? "#f5f0e8" : "#8a7a5e",
@@ -695,16 +699,90 @@ function BoxCell({
               {n.display_name}
             </span>
             <span style={{ fontFamily: "var(--font-mono, monospace)", color: "#8a7a5e", fontSize: 9 }}>
-              {n.avg_score?.toFixed(1) ?? ""}
+              {n.avg_score != null ? Number(n.avg_score).toFixed(1) : ""}
             </span>
           </button>
         ))}
         {box.nominees.length > (compact ? 4 : 8) && (
           <div style={{ fontSize: 9, color: "#8a7a5e", marginTop: 2 }}>
-            + {box.nominees.length - (compact ? 4 : 8)} more
+            + {box.nominees.length - (compact ? 4 : 8)} more (hover to expand)
           </div>
         )}
       </div>
+
+      {expanded && box.nominees.length > (compact ? 4 : 8) && (
+        <div
+          style={{
+            position: "absolute",
+            top: -1,
+            left: -1,
+            right: -1,
+            background: "#0c0c0c",
+            border: `1px solid ${accent}`,
+            padding: compact ? "8px 10px" : "10px 12px",
+            zIndex: 10,
+            display: "flex",
+            flexDirection: "column",
+            gap: 6,
+            maxHeight: 300,
+            boxShadow: "0 8px 32px rgba(0,0,0,0.8)",
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
+            <span style={{ fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: accent, fontWeight: 700 }}>
+              Box {box.id}
+            </span>
+            <span style={{ fontSize: 9, color: "#8a7a5e" }}>
+              {box.headcount} · {box.final_cut} cut
+            </span>
+          </div>
+          <div style={{ fontSize: 10, color: "#b8a88a" }}>{box.label_en}</div>
+          <div
+            className="cc-scroll"
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 2,
+              marginTop: 2,
+              overflowY: "auto",
+              paddingRight: 4,
+            }}
+          >
+            {box.nominees.map((n) => (
+              <button
+                key={(n.employee_code ?? "") + n.display_name}
+                onClick={() => onPick(n)}
+                type="button"
+                style={{
+                  fontSize: 10,
+                  color: n.in_talent_pool ? "#f5f0e8" : "#8a7a5e",
+                  fontWeight: n.in_talent_pool ? 600 : 400,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: 6,
+                  background: "transparent",
+                  border: 0,
+                  padding: "4px 0",
+                  cursor: "pointer",
+                  fontFamily: "inherit",
+                  textAlign: "left",
+                  width: "100%",
+                  borderBottom: "1px dashed rgba(255,255,255,0.05)",
+                }}
+                className="talent-nominee-btn"
+              >
+                <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {n.in_talent_pool ? "★ " : "  "}
+                  {n.display_name}
+                </span>
+                <span style={{ fontFamily: "var(--font-mono, monospace)", color: "#8a7a5e", fontSize: 9 }}>
+                  {n.avg_score != null ? Number(n.avg_score).toFixed(1) : ""}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

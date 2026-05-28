@@ -478,20 +478,42 @@ const td: React.CSSProperties = { padding: "4px 6px", verticalAlign: "middle" };
 
 function DataPendingBand({ source }: { source: string }) {
   return (
-    <div
-      style={{
-        marginTop: 6,
-        padding: "6px 8px",
-        border: "1px dashed var(--rpg-yellow)",
-        background: "rgba(243,182,31,0.06)",
-        fontSize: 9,
-        color: "var(--rpg-yellow)",
-        letterSpacing: "0.10em",
-        textTransform: "uppercase",
-      }}
-      aria-live="polite"
-    >
-      DATA PENDING · waiting on {source} feed
-    </div>
+    <>
+      <style>{`
+        @keyframes pendingPulse {
+          0%, 100% { background-color: rgba(243,182,31,0.02); border-color: rgba(243,182,31,0.8); }
+          50% { background-color: rgba(243,182,31,0.08); border-color: rgba(243,182,31,0.3); }
+        }
+        @keyframes blinkCursor {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0; }
+        }
+        .data-pending-band {
+          animation: pendingPulse 2.5s ease-in-out infinite;
+        }
+        .blinking-cursor {
+          display: inline-block;
+          width: 6px;
+          animation: blinkCursor 1s step-end infinite;
+          vertical-align: text-bottom;
+        }
+      `}</style>
+      <div
+        className="data-pending-band"
+        style={{
+          marginTop: 6,
+          padding: "6px 8px",
+          border: "1px dashed var(--rpg-yellow)",
+          fontSize: 9,
+          color: "var(--rpg-yellow)",
+          letterSpacing: "0.10em",
+          textTransform: "uppercase",
+          fontFamily: "var(--font-mono, monospace)",
+        }}
+        aria-live="polite"
+      >
+        DATA PENDING · waiting on {source} feed <span className="blinking-cursor">_</span>
+      </div>
+    </>
   );
 }

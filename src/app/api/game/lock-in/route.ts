@@ -69,6 +69,9 @@ export async function POST(request: Request) {
       return apiError("Project not found", 404);
     }
     const project = projectRows[0];
+    if (project.status === "active") {
+      return apiError("Project already has a locked active team", 409);
+    }
     if (project.status === "completed" || project.status === "on_hold") {
       return apiError(`Cannot lock team for project with status: ${project.status}`, 400);
     }

@@ -81,6 +81,13 @@ export async function POST(request: Request) {
       return apiError("Project not found", 404);
     }
     const dbProject = projectRows[0];
+    const now = new Date();
+    const projectEndDate = dbProject.end_date ? new Date(dbProject.end_date) : null;
+    const projectHasEnded = Boolean(projectEndDate && projectEndDate.getTime() <= now.getTime());
+
+    if (dbProject.status !== "completed" && !projectHasEnded) {
+      return apiError("Cannot record outcome before the project has reached its end date", 409);
+    }
 
     // 2. Fetch team allocations
     const allocRows = await query<{

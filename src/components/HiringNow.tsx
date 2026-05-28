@@ -145,7 +145,7 @@ export function HiringNow() {
             key={o.filename}
             style={{
               border: `1px solid ${GAUGE_COLOR[o.gauge]}`,
-              background: "rgba(0,0,0,0.18)",
+              background: "rgba(0,0,0,0.4)",
               display: "flex",
               flexDirection: "column",
               overflow: "hidden",
@@ -159,10 +159,20 @@ export function HiringNow() {
             <div
               style={{
                 aspectRatio: "1 / 1",
-                background: `#000 url(${o.banner_url}) center / cover no-repeat`,
                 position: "relative",
+                background: "#0c0c0c",
+                borderBottom: `1px solid ${GAUGE_COLOR[o.gauge]}`,
               }}
             >
+              <div 
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  background: `url(${o.banner_url}) center / cover no-repeat`,
+                  filter: "grayscale(1) sepia(1) hue-rotate(30deg) opacity(0.8) contrast(1.2)",
+                  mixBlendMode: "screen",
+                }}
+              />
               {/* Gauge badge */}
               <div
                 style={{
@@ -197,11 +207,12 @@ export function HiringNow() {
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   whiteSpace: "nowrap",
+                  fontFamily: "var(--font-mono)",
                 }}
               >
                 {o.label}
               </strong>
-              <span style={{ fontSize: 9, color: GAUGE_COLOR[o.gauge], fontWeight: 600 }}>
+              <span style={{ fontSize: 9, color: GAUGE_COLOR[o.gauge], fontWeight: 600, fontFamily: "var(--font-mono)" }}>
                 {GAUGE_LABEL[o.gauge]}
                 {o.gauge !== "UNKNOWN" && ` · ${o.matched_count} match${o.matched_count === 1 ? "" : "es"}`}
               </span>

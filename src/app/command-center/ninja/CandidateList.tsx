@@ -333,12 +333,19 @@ function CandidateRow({
                 >
                   Fit {fit.score}
                 </span>
-                <span style={{ color: "var(--ink-1)", textTransform: "uppercase" }}>
-                  {fit.freshness}
-                </span>
-                <span style={{ color: "var(--ink-1)", textTransform: "uppercase" }}>
-                  {Number(fit.availability_fte).toFixed(1)}FTE
-                </span>
+                {fit.freshness && fit.freshness !== "unknown" && (
+                  <span
+                    style={{ color: fit.freshness === "stale" ? "var(--rpg-orange)" : "var(--ink-1)", textTransform: "uppercase" }}
+                    title={fit.freshness === "stale" ? "Fit score is older than 7 days — skills may have changed" : undefined}
+                  >
+                    {fit.freshness === "stale" ? "⚠ stale" : fit.freshness}
+                  </span>
+                )}
+                {Number(fit.availability_fte) > 0 && (
+                  <span style={{ color: "var(--ink-1)", textTransform: "uppercase" }}>
+                    {Number(fit.availability_fte).toFixed(1)}FTE
+                  </span>
+                )}
               </>
             ) : null}
 
@@ -426,7 +433,9 @@ function CandidateRow({
                 setSaveMsg(null);
                 setFtePicking(false);
               }}
-              title="Edit this hero's skills"
+              title={expanded ? `Close skill editor for ${emp.display_name}` : `Edit ${emp.display_name}'s skills`}
+              aria-label={expanded ? `Close skill editor for ${emp.display_name}` : `Edit ${emp.display_name}'s skills`}
+              aria-expanded={expanded}
               style={{
                 width: 28,
                 height: 28,
@@ -558,6 +567,13 @@ function CandidateRow({
                   : hasAssignmentsElsewhere
                     ? "Pick FTE split (hero already on another mission)"
                     : addTitle
+              }
+              aria-label={
+                !recruitingEnabled
+                  ? `${emp.display_name} — open the mission first`
+                  : hasAssignmentsElsewhere
+                    ? `Add ${emp.display_name} at partial FTE (already on another mission)`
+                    : `Add ${emp.display_name} to ${addTitle}`
               }
               style={{
                 width: 28,
