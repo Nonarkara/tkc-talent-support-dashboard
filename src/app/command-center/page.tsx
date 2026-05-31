@@ -16,6 +16,8 @@ import type { CSSProperties } from "react";
 import { startTransition, useEffect, useMemo, useRef, useState } from "react";
 import { BookOpen, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { MenuWindow } from "@/components/MenuWindow";
+import { analytics } from "@/lib/firebase/config";
+import { logEvent } from "firebase/analytics";
 import dynamic from "next/dynamic";
 
 const CockpitTab = dynamic(() => import("./_tabs/CockpitTab").then((mod) => mod.CockpitTab));
@@ -462,6 +464,12 @@ export default function CommandCenterPage() {
       setHistory((prev) => [...prev, screen]);
       setScreen(next);
       setMenuOpen(false);
+      if (analytics) {
+        logEvent(analytics, "dashboard_tab_switch", {
+          to_tab: next,
+          from_tab: screen,
+        });
+      }
     });
   }
 
@@ -475,6 +483,12 @@ export default function CommandCenterPage() {
       setHistory((prev) => [...prev, screen]);
       setScreen("home");
       setMenuOpen(false);
+      if (analytics) {
+        logEvent(analytics, "dashboard_tab_switch", {
+          to_tab: "home",
+          from_tab: screen,
+        });
+      }
     });
   }
 

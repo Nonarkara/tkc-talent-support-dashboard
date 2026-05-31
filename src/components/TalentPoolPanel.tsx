@@ -21,6 +21,8 @@
 
 import { useEffect, useState } from "react";
 import { TalentDrillDownDrawer, type NomineeDetail } from "./TalentDrillDownDrawer";
+import { analytics } from "@/lib/firebase/config";
+import { logEvent } from "firebase/analytics";
 
 interface BoxNominee {
   employee_id: string;
@@ -112,6 +114,16 @@ export function TalentPoolPanel({
   const [data, setData] = useState<TalentPayload | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [drillDown, setDrillDown] = useState<NomineeDetail | null>(null);
+
+  const handlePick = (n: NomineeDetail) => {
+    setDrillDown(n);
+    if (analytics) {
+      logEvent(analytics, "select_candidate", {
+        candidate_name: n.display_name,
+        candidate_dept: n.department || "Unknown",
+      });
+    }
+  };
 
   // ── Filter state ──────────────────────────────────────────────────
   // Sticky search + dept multi-select + Final Cut toggle. Closes the
@@ -401,7 +413,7 @@ export function TalentPoolPanel({
                 key={boxId}
                 box={b}
                 compact={compact}
-                onPick={(n) => setDrillDown(lookup(n))}
+                onPick={(n) => handlePick(lookup(n))}
               />
             );
           })}
@@ -455,7 +467,7 @@ export function TalentPoolPanel({
           No Final Cut nominees match the current sieve.
         </div>
       ) : (
-        <RankingTable rows={ranking} onPick={(n) => setDrillDown(lookup(n))} tone="pool" />
+        <RankingTable rows={ranking} onPick={(n) => handlePick(lookup(n))} tone="pool" />
       )}
 
       {emerging.length > 0 && (
@@ -469,7 +481,7 @@ export function TalentPoolPanel({
           />
           <RankingTable
             rows={emerging}
-            onPick={(n) => setDrillDown(lookup(n))}
+            onPick={(n) => handlePick(lookup(n))}
             tone="emerging"
           />
         </>

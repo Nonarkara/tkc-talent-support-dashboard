@@ -3,6 +3,7 @@ import { IBM_Plex_Sans_Thai, Noto_Sans_Thai, Press_Start_2P, JetBrains_Mono } fr
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { LocaleProvider } from "@/lib/i18n";
+import { FirebaseAnalytics } from "@/components/FirebaseAnalytics";
 import "./globals.css";
 
 // Thai typography — non-looped only (CLAUDE.md §0). IBM Plex Sans Thai is
@@ -57,6 +58,7 @@ export default function RootLayout({
       className={`${plexThai.variable} ${notoThai.variable} ${mono.variable} ${pressStart.variable} dark h-full antialiased`}
     >
       <body className="tabletop min-h-full text-[var(--text-primary)]">
+        <FirebaseAnalytics />
         <LocaleProvider>
           <TooltipProvider>
             {children}
