@@ -188,6 +188,16 @@
  *                             Section 10 game manual context — 4P failure-mode
  *                             table, NST/Chonburi/Chula case studies, no-
  *                             localhost rule, SLIC vs depa vehicles.
+ *   v4.9.3 · Gate             Release-readiness gate. `npm run
+ *                             verify:readiness` now lints within the current
+ *                             warning budget, builds, boots the command center,
+ *                             probes Sheets + dashboard JSON health, and drives
+ *                             the browser shell through Boss Room → Route Menu
+ *                             → Formation Board → Home. DQ3 smoke-test doc now
+ *                             names what automation covers vs what remains a
+ *                             human visual-canon pass. Firebase Analytics is
+ *                             optional in local/demo envs, so missing public
+ *                             config no longer trips the Next error overlay.
  *   v4.9.1 · Battery+         Live browser audit fixes. aria-labels on all
  *                             icon buttons (✏/+/skill filters/Clear).
  *                             role="region" on ninja-scope so AT tree
@@ -217,5 +227,5 @@
  * Bump both fields together. Codename stays one or two words.
  */
 
-export const BUILD_VERSION = "v4.9.2";
-export const BUILD_CODENAME = "Scroll";
+export const BUILD_VERSION = "v4.9.3";
+export const BUILD_CODENAME = "Gate";

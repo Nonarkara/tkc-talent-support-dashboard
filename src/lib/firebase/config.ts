@@ -1,5 +1,5 @@
-import { initializeApp, getApps } from "firebase/app";
-import { getAnalytics, isSupported, Analytics } from "firebase/analytics";
+import { initializeApp, getApps, type FirebaseApp } from "firebase/app";
+import { getAnalytics, isSupported, type Analytics } from "firebase/analytics";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -11,16 +11,27 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-// Initialize Firebase only once
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+const hasFirebaseConfig =
+  Boolean(firebaseConfig.apiKey) &&
+  Boolean(firebaseConfig.authDomain) &&
+  Boolean(firebaseConfig.projectId) &&
+  Boolean(firebaseConfig.appId) &&
+  Boolean(firebaseConfig.measurementId);
+
+// Initialize Firebase only when the public config is complete. Local demo
+// environments often omit it; analytics must disappear, not crash the app.
+const app: FirebaseApp | null =
+  getApps()[0] ?? (hasFirebaseConfig ? initializeApp(firebaseConfig) : null);
 
 // Initialize Analytics if supported (browser only)
 let analytics: Analytics | null = null;
-if (typeof window !== "undefined") {
-  isSupported().then((yes) => {
+if (typeof window !== "undefined" && app) {
+  void isSupported().then((yes) => {
     if (yes) {
       analytics = getAnalytics(app);
     }
+  }).catch(() => {
+    analytics = null;
   });
 }
 

@@ -32,6 +32,42 @@ When a ROM revision bumps mid-session, note the old → new bump in the entry he
 
 ---
 
+## 2026-06-01 — Release gate ships        (v4.9.2 "Scroll" → v4.9.3 "Gate")
+
+**Shipped**
+
+- `npm run verify:readiness` added as the cassette's demo/deploy gate.
+- `scripts/verify-readiness.mjs` runs four checks in order:
+  - ESLint must exit cleanly and stay within the current warning budget (`TKC_LINT_WARNING_BUDGET`, default 120; current baseline is 79 warnings).
+  - `next build` must produce the production bundle.
+  - A local Next dev server boots on `127.0.0.1:3217` unless `TKC_BASE_URL` points at an existing target.
+  - JSON health probes confirm `/api/sheets/health` and `/api/db/dashboard` return shaped, intentional responses; DB-less local mode is accepted only as the explicit `503 Database not configured` state.
+  - Playwright drives the command-center shell: Boss Room → Route Menu → Formation Board → Home, with no Next error overlay and no browser console/page errors.
+- `docs/DQ3_SMOKE_TEST.md` now separates the automated gate from the manual visual-canon pass. Automation proves boot/navigation/health. Humans still check pixel timing, typography, corners, and feel.
+- `README.md` now lists the readiness command in the local runbook.
+- ROM badge bumped to `v4.9.3 · Gate`.
+- The first gate run caught a real browser-fatal bug: placeholder Firebase
+  env made Analytics throw `installations/missing-app-config-values` and
+  trigger the Next overlay. `src/lib/firebase/config.ts` now treats Firebase
+  as optional and disables analytics unless the public config is complete.
+
+**Next**
+
+- Reduce the warning budget toward zero. The current 79-warning baseline is documented so the gate catches regression without pretending the historical lint debt disappeared overnight.
+- Add a CI wrapper once the deployment target is finalized: `TKC_BASE_URL=https://... npm run verify:readiness`.
+- Extend browser smoke to one mobile viewport after the command-center shell stabilizes under DB-less mode.
+
+**Open questions**
+
+- Should DB-less local command-center render a seeded non-sensitive playtest mode again, or is the current explicit `Database not configured` message the safer truth for a client-facing system?
+- Should the gate eventually require Sheets credentials for staging, while keeping DB-only mode acceptable for local development?
+
+**Notes**
+
+- This was chosen as the "one important thing" because the project has become too consequential to rely on vibes before a demo. The readiness gate gives every future collaborator a clean sentence: "the cassette boots, builds, probes, and navigates."
+
+---
+
 ## 2026-05-27 — Live browser audit + workshop ingestion        (v4.9.1 → v4.9.2 "Scroll")
 
 **Shipped**

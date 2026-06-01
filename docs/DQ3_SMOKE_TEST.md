@@ -4,8 +4,18 @@
 honours the Dragon Quest III canon after any change to shell, tabs, or
 global styles. Takes under 3 minutes. Run before every demo.
 
-**How to run:** `npm run dev`, open http://localhost:3000/command-center
+**Automated gate:** run `npm run verify:readiness` before every demo or
+deploy. It lints within the current warning budget, builds the production
+bundle, boots a local command center, probes `/api/sheets/health` and
+`/api/db/dashboard`, then drives a browser through Boss Room → Route Menu →
+Formation Board → Home.
+
+**Manual visual pass:** `npm run dev`, open http://localhost:3000/command-center
 in a 16:10 or larger browser window.
+
+The automated gate proves the cassette boots and the shell loop works. The
+manual checklist below still matters for visual canon: pixel timing, chrome
+feel, corner discipline, and typography are human-reviewed.
 
 ---
 

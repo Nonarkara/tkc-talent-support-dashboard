@@ -21,8 +21,7 @@
 
 import { useEffect, useState } from "react";
 import { TalentDrillDownDrawer, type NomineeDetail } from "./TalentDrillDownDrawer";
-import { analytics } from "@/lib/firebase/config";
-import { logEvent } from "firebase/analytics";
+import { trackEvent } from "@/lib/firebase/analytics";
 
 interface BoxNominee {
   employee_id: string;
@@ -117,12 +116,10 @@ export function TalentPoolPanel({
 
   const handlePick = (n: NomineeDetail) => {
     setDrillDown(n);
-    if (analytics) {
-      logEvent(analytics, "select_candidate", {
-        candidate_name: n.display_name,
-        candidate_dept: n.department || "Unknown",
-      });
-    }
+    void trackEvent("select_candidate", {
+      candidate_name: n.display_name,
+      candidate_dept: n.department || "Unknown",
+    });
   };
 
   // ── Filter state ──────────────────────────────────────────────────

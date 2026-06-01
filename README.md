@@ -188,6 +188,11 @@ DATABASE_URL="..." npx tsx db/migrate.ts
 # Start dev server
 npm run dev
 # → http://localhost:3000
+
+# Demo/deploy readiness gate
+npm run verify:readiness
+# → lint within current warning budget, production build, local boot,
+#    JSON health probes, and browser smoke through the command shell
 ```
 
 ### Environment Variables
