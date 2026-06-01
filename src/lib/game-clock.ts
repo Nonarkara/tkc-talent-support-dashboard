@@ -12,6 +12,7 @@
  */
 
 import { query } from "./db";
+import { CURRENT_CYCLE } from "@/lib/cycle";
 
 // ─── TYPES ─────────────────────────────────────────────────
 
@@ -109,7 +110,7 @@ export interface WorldState {
 // ─── CONFIG ────────────────────────────────────────────────
 
 const RECOVERY_DAYS_AFTER_PROJECT = 3; // days before employee is "available" again
-const DEFAULT_CYCLE = "2026-Q2";
+const DEFAULT_CYCLE = CURRENT_CYCLE;
 
 // ─── HELPERS ───────────────────────────────────────────────
 

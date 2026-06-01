@@ -16,6 +16,7 @@
 import type { Employee } from '@/app/command-center/_shared/types';
 import { coeReadiness, functionUtilization, type CoeReadinessReport, type FunctionUtilizationReport } from './coe-readiness';
 import { SKILLS, type Skill } from './skills-vocab';
+import { CURRENT_CYCLE } from './cycle';
 
 export const DEFAULT_FUNCTIONS = ['SALES', 'ENTERPRISE', 'FINANCE', 'HR_ADMIN'];
 export const DEFAULT_COES = [
@@ -54,7 +55,7 @@ export interface MatrixMetrics {
 /**
  * Create a blank scenario with the default TOM structure.
  */
-export function createBlankScenario(name: string, cycle: string = '2026-Q2'): MatrixScenario {
+export function createBlankScenario(name: string, cycle: string = CURRENT_CYCLE): MatrixScenario {
   return {
     name,
     cycle,

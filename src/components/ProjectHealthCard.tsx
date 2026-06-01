@@ -146,7 +146,7 @@ export function ProjectHealthPage() {
         </div>
         <div style={{ fontSize: 11, color: "var(--ink-1)", lineHeight: 1.5 }}>
           Mirrors the PMO Portfolio Dashboard page-5 layout. Five metric strips per project,
-          each fed from the cassette's source-of-truth tables. Sections labelled
+          each fed from the cassette&apos;s source-of-truth tables. Sections labelled
           <span style={{ color: "var(--rpg-yellow)", margin: "0 6px" }}>DATA PENDING</span>
           require a feed the PMO must provide (Timesheet for actuals, ERP for billing). See
           <span style={{ fontFamily: "var(--font-mono)", color: "var(--ink-0)", margin: "0 6px" }}>
@@ -355,6 +355,7 @@ function Timeline({ start, end }: { start: string | null; end: string | null }) 
   }
   const startMs = new Date(start).getTime();
   const endMs = new Date(end).getTime();
+  // eslint-disable-next-line react-hooks/purity -- Timeline progress is a display-only wall-clock read.
   const now = Date.now();
   const total = endMs - startMs;
   let pct = 0;
@@ -477,20 +478,42 @@ const td: React.CSSProperties = { padding: "4px 6px", verticalAlign: "middle" };
 
 function DataPendingBand({ source }: { source: string }) {
   return (
-    <div
-      style={{
-        marginTop: 6,
-        padding: "6px 8px",
-        border: "1px dashed var(--rpg-yellow)",
-        background: "rgba(243,182,31,0.06)",
-        fontSize: 9,
-        color: "var(--rpg-yellow)",
-        letterSpacing: "0.10em",
-        textTransform: "uppercase",
-      }}
-      aria-live="polite"
-    >
-      DATA PENDING · waiting on {source} feed
-    </div>
+    <>
+      <style>{`
+        @keyframes pendingPulse {
+          0%, 100% { background-color: rgba(243,182,31,0.02); border-color: rgba(243,182,31,0.8); }
+          50% { background-color: rgba(243,182,31,0.08); border-color: rgba(243,182,31,0.3); }
+        }
+        @keyframes blinkCursor {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0; }
+        }
+        .data-pending-band {
+          animation: pendingPulse 2.5s ease-in-out infinite;
+        }
+        .blinking-cursor {
+          display: inline-block;
+          width: 6px;
+          animation: blinkCursor 1s step-end infinite;
+          vertical-align: text-bottom;
+        }
+      `}</style>
+      <div
+        className="data-pending-band"
+        style={{
+          marginTop: 6,
+          padding: "6px 8px",
+          border: "1px dashed var(--rpg-yellow)",
+          fontSize: 9,
+          color: "var(--rpg-yellow)",
+          letterSpacing: "0.10em",
+          textTransform: "uppercase",
+          fontFamily: "var(--font-mono, monospace)",
+        }}
+        aria-live="polite"
+      >
+        DATA PENDING · waiting on {source} feed <span className="blinking-cursor">_</span>
+      </div>
+    </>
   );
 }

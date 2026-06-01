@@ -1,6 +1,7 @@
 import { apiError, apiJson, logApiError } from "@/lib/api";
 import { isDbConfigured, query } from "@/lib/db";
 import { mirrorNinjaSquad, mirrorSquadEvent } from "@/lib/sheets-mirror";
+import { CURRENT_CYCLE } from "@/lib/cycle";
 import type { Skill } from "@/lib/skills-vocab";
 
 interface QuestRow {
@@ -24,7 +25,7 @@ export async function GET(request: Request) {
     return apiJson({ error: "Database not configured", quests: [] }, { status: 503 });
   }
   const url = new URL(request.url);
-  const cycle = url.searchParams.get("cycle") ?? "2026-Q2";
+  const cycle = url.searchParams.get("cycle") ?? CURRENT_CYCLE;
   const status = url.searchParams.get("status");
 
   try {
@@ -114,7 +115,7 @@ export async function POST(request: Request) {
         body.title,
         body.description ?? "",
         body.dept_code ?? null,
-        body.cycle ?? "2026-Q2",
+        body.cycle ?? CURRENT_CYCLE,
         body.status ?? "scouting",
         body.revenue_m ?? null,
         body.target_date ?? null,
@@ -182,6 +183,9 @@ export async function PATCH(request: Request) {
       notes?: string;
       revenue_m?: number | null;
       target_date?: string | null;
+      /** Optional partial-save channel for the Ninja Tab skill sliders.
+       *  When present, replaces the quest's role_slots JSONB column. */
+      role_slots?: unknown;
     };
     if (!body.id) return apiError("Missing quest id", 400);
 
@@ -193,10 +197,12 @@ export async function PATCH(request: Request) {
         notes       = COALESCE($5, notes),
         revenue_m   = COALESCE($6, revenue_m),
         target_date = COALESCE($7::date, target_date),
+        role_slots  = COALESCE($8::jsonb, role_slots),
         updated_at  = now()
        WHERE id = $1`,
       [body.id, body.title ?? null, body.description ?? null, body.status ?? null,
-       body.notes ?? null, body.revenue_m ?? null, body.target_date ?? null]
+       body.notes ?? null, body.revenue_m ?? null, body.target_date ?? null,
+       body.role_slots !== undefined ? JSON.stringify(body.role_slots) : null]
     );
 
     // Mirror PATCH so any metadata change reaches the ledger.

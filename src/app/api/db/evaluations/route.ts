@@ -1,5 +1,6 @@
 import { apiError, apiJson, logApiError } from "@/lib/api";
 import { isDbConfigured, query } from "@/lib/db";
+import { CURRENT_CYCLE } from "@/lib/cycle";
 
 interface EvaluationRow {
   id: string;
@@ -21,7 +22,7 @@ export async function GET(request: Request) {
   }
   const url = new URL(request.url);
   const employeeId = url.searchParams.get("employee_id");
-  const cycle = url.searchParams.get("cycle") ?? "2026-Q2";
+  const cycle = url.searchParams.get("cycle") ?? CURRENT_CYCLE;
 
   if (!employeeId) {
     return apiError("Missing employee_id", 400);
@@ -63,7 +64,7 @@ export async function POST(request: Request) {
     const score = Math.max(0, Math.min(100, Number(body.score)));
     if (!Number.isFinite(score)) return apiError("Invalid score", 400);
 
-    const cycle = body.cycle ?? "2026-Q2";
+    const cycle = body.cycle ?? CURRENT_CYCLE;
 
     await query(
       `INSERT INTO evaluations (employee_id, dimension_key, rater_type, cycle, score, notes)

@@ -118,6 +118,24 @@
  *                             Aligned with the framework in
  *                             `TKC Talent rev.4.pdf` (HR Strategy
  *                             Map Y2026, Danang management meeting).
+ *   v4.8.0 · Crystal          Four C Framework + drag-drop perfection.
+ *                             Migration 032 creates four_pillar_responses,
+ *                             credo_scores, and house_score_history tables.
+ *                             POST /api/four-pillars/respond and
+ *                             POST /api/credo/respond let employees and
+ *                             managers self-report Community, Career, Cause,
+ *                             and Compensation scores. Sheets tabs
+ *                             FourPillarResponses, CredoScores,
+ *                             HouseScoreHistory, and SupportActions mirror
+ *                             the new data. Formation Board drag-drop:
+ *                             dragLeave flicker fixed with ref counter,
+ *                             custom dark drag image, opacity 0.3→0.5 +
+ *                             scale(0.97), cursor grabbing on all sources,
+ *                             preemptive "Slot full" red warning on hover,
+ *                             persistent Return-to-Pool strip, aria-grabbed
+ *                             + aria-label on all drag sources and drop
+ *                             zones. Dead .drop-zone CSS removed from
+ *                             globals.css.
  *   v4.7.2 · Sieve            Filter strip on the Talent Pool surface.
  *                             Sticky-on-scroll row with text search
  *                             (name + dept substring), department
@@ -163,9 +181,51 @@
  *                             Mobile: funnel collapses 4→2→1 col,
  *                             9-Box collapses to 1-col at ≤520px,
  *                             drawer takes 100vw on phones.
+ *   v4.9.2 · Scroll           Doc layer + workshop ingestion. docs/workshops/
+ *                             directory with 2026-05-27 transcript + summary.
+ *                             WORKSHOPS-INDEX.md. MATRIX-ORGANIZATION.md
+ *                             expanded: three-framework table (4C/G/D/U/C/4P),
+ *                             Section 10 game manual context — 4P failure-mode
+ *                             table, NST/Chonburi/Chula case studies, no-
+ *                             localhost rule, SLIC vs depa vehicles.
+ *   v4.9.3 · Gate             Release-readiness gate. `npm run
+ *                             verify:readiness` now lints within the current
+ *                             warning budget, builds, boots the command center,
+ *                             probes Sheets + dashboard JSON health, and drives
+ *                             the browser shell through Boss Room → Route Menu
+ *                             → Formation Board → Home. DQ3 smoke-test doc now
+ *                             names what automation covers vs what remains a
+ *                             human visual-canon pass. Firebase Analytics is
+ *                             optional in local/demo envs, so missing public
+ *                             config no longer trips the Next error overlay.
+ *   v4.9.1 · Battery+         Live browser audit fixes. aria-labels on all
+ *                             icon buttons (✏/+/skill filters/Clear).
+ *                             role="region" on ninja-scope so AT tree
+ *                             reaches all 138 controls. aria-live="polite"
+ *                             on party-card message footer. Hide 0.0 FTE
+ *                             from roster cards. ⚠ stale freshness with
+ *                             hover tooltip.
+ *   v4.9.0 · Battery          Ninja Board trust + affordance + game-feel
+ *                             sweep. Save Name placebo fixed (now reads
+ *                             res.ok). New POST /api/ninja/upsert-member
+ *                             for single-warrior persistence; sliders /
+ *                             drag-add / drag-remove all auto-persist via
+ *                             debounce + Sheets mirror. Empty party slots
+ *                             render as visible drop zones with dashed
+ *                             amber outline + glow loop. "Seal Mission"
+ *                             becomes "Mark Ready for Deploy"; DRAFT
+ *                             badge surfaces draft state. Snap-lock /
+ *                             amber pulse / red flash + shake / press
+ *                             states / sprite-breathing animations.
+ *                             Readiness number now tweens (300ms RAF)
+ *                             instead of snapping. Larger game pieces
+ *                             (52px readiness, 40px sprites). Cooler
+ *                             canvas tint inside the geometric §14
+ *                             single-amber palette — no second hue
+ *                             introduced. Demo-hardened.
  *
  * Bump both fields together. Codename stays one or two words.
  */
 
-export const BUILD_VERSION = "v4.7.2";
-export const BUILD_CODENAME = "Sieve";
+export const BUILD_VERSION = "v4.9.3";
+export const BUILD_CODENAME = "Gate";

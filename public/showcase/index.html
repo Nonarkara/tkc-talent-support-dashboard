@@ -1073,7 +1073,7 @@ main {
     <div class="title-mission">◉ SYSTEM ONLINE ◉</div>
     <div class="title-meta">
       ระบบสนับสนุนทรัพยากรมนุษย์ TKC · บันทึกการพัฒนาแบบเรียลไทม์
-      <span class="title-meta-byline">by นน อัครประเสริฐกุล · เริ่ม 6 พฤษภาคม 2569 · อัปเดตล่าสุด 12 พฤษภาคม 2569</span>
+      <span class="title-meta-byline">by นน อัครประเสริฐกุล · เริ่ม 6 พฤษภาคม 2569 · อัปเดตล่าสุด 25 พฤษภาคม 2569</span>
     </div>
   </div>
   <div class="title-press">▶ PRESS ANY KEY TO START ◀</div>
@@ -1104,9 +1104,9 @@ main {
   <div class="hero">
     <div class="hero-sprite">★</div>
     <div class="hero-text">
-      <div class="hero-kicker">◉ SYSTEM ONLINE ◉ &nbsp;·&nbsp; BUILD v4.6 · PULSE</div>
+      <div class="hero-kicker">◉ SYSTEM ONLINE ◉ &nbsp;·&nbsp; BUILD v4.8.0 · CRYSTAL</div>
       <h1 class="hero-title">ระบบสนับสนุนทรัพยากรมนุษย์ TKC · บันทึกการพัฒนา</h1>
-      <p class="hero-byline">by นน อัครประเสริฐกุล · อัปเดตล่าสุด 12 พฤษภาคม 2569</p>
+      <p class="hero-byline">by นน อัครประเสริฐกุล · อัปเดตล่าสุด 25 พฤษภาคม 2569</p>
     </div>
   </div>
 
@@ -1193,7 +1193,7 @@ main {
         <div class="score-grid">
           <div class="score-cell"><div class="score-num" data-count="348">0</div><div class="score-label">HEROES</div></div>
           <div class="score-cell"><div class="score-num" data-count="8">0</div><div class="score-label">PROJECTS</div></div>
-          <div class="score-cell"><div class="score-num" data-count="28">0</div><div class="score-label">TABLES</div></div>
+          <div class="score-cell"><div class="score-num" data-count="32">0</div><div class="score-label">TABLES</div></div>
           <div class="score-cell"><div class="score-num" data-count="6000">0</div><div class="score-label">EXP</div></div>
         </div>
       </div>
@@ -1237,10 +1237,10 @@ main {
             </div>
             <div class="sheet-info-cell">
               <div class="sheet-info-label">TABS</div>
-              <div class="sheet-info-val">20 ACTIVE</div>
+              <div class="sheet-info-val">25 ACTIVE</div>
             </div>
           </div>
-          <div class="sheet-tabs-label">THE 20 TABS</div>
+          <div class="sheet-tabs-label">THE 25 TABS</div>
           <div class="sheet-tabs-list" id="sheet-tabs-list"></div>
           <a class="btn-magic" href="https://docs.google.com/spreadsheets/d/1LR8t7QxccwL1d5NBbQ9d_ZDy-T4qvxwUTi-3PJYuttE/edit" target="_blank" rel="noopener">
             ▶ OPEN THE MAGIC SHEET
@@ -1269,7 +1269,7 @@ main {
           <div class="meter-row">
             <div class="meter-head">
               <span class="meter-label">DB TABLES</span>
-              <span class="meter-val">28</span>
+              <span class="meter-val">32</span>
             </div>
             <div class="meter-track"><div class="meter-fill" style="--target: 93%;"></div></div>
           </div>
@@ -1801,6 +1801,7 @@ const SHEET_TABS = [
   "DeptHeat", "AttrHistory", "NinjaSquads", "SkillCatalog", "MatrixScenarios",
   "Formation", "FormationEvents", "Resources", "Attendance", "Interactions",
   "VocationChanges", "Outcomes", "Allocations", "Ledger",
+  "TalentAssessment", "FourPillarResponses", "CredoScores", "HouseScoreHistory", "SupportActions",
 ];
 
 const ROADMAP = [
@@ -2623,6 +2624,30 @@ if (canonHost) {
 
 // ── Changelog ──
 const CHANGELOG = [
+  {
+    version: "v4.8.0", codename: "CRYSTAL", date: "25 พ.ค. 2569", accent: "#D4A843", major: true,
+    title: "Four C Framework + Formation Drag-Drop · ข้อมูล 4C ลงฐาน + กระดานฟอร์เมชั่นแม่นยำ",
+    desc: "<strong>Four C Framework</strong> ลงฐานข้อมูลจริง · Migration 032 สร้าง <code>four_pillar_responses</code>, <code>credo_scores</code>, <code>house_score_history</code> tables เป็นรากฐานวัด Compensation × Purpose × Career × Community ต่อพนักงาน · <code>POST /api/four-pillars/respond</code> และ <code>POST /api/credo/respond</code> ให้พนักงานและผู้จัดการ self-report ได้ · Sheets tabs ใหม่ 4 แท็บ (FourPillarResponses, CredoScores, HouseScoreHistory, SupportActions) mirror data ทันที · <strong>Formation Board drag-drop</strong> ปรับ 10 จุดในรอบเดียว: flicker fix ด้วย <code>dragCounter</code> ref, custom dark drag image 160×40 px ชื่อฮีโร่ + archetype, opacity 0.3→0.5 + <code>scale(0.97)</code>, cursor <code>grabbing</code>, preemptive \"Slot full\" ขอบสีแดงก่อนวาง, persistent Return-to-Pool strip ขณะลาก, <code>aria-grabbed</code> + <code>aria-label</code> บน drop zones ทุกจุด · Step legend 4 ขั้นตอนบน FormationTab",
+    tags: ["four-c", "credo", "drag-drop", "aria", "migration", "sheets-mirror"]
+  },
+  {
+    version: "v4.7.2", codename: "SIEVE", date: "22 พ.ค. 2569", accent: "#8B6FB5",
+    title: "Talent Pool Filter Strip · กรอง, ค้น, toggle Final Cut",
+    desc: "<strong>Filter strip</strong> แบบ sticky-on-scroll บน Talent Pool surface · Text search (ชื่อ + dept substring), department multi-select chips, และ \"Final Cut only\" toggle · Filters scope ทุก surface พร้อมกัน — 9-Box grid rebalance ตาม nominees ที่กรอง, ranking + emerging tables ย่อเหลือเฉพาะที่ match · Counter แสดง \"filtered X / Y\" · Clear-button ปรากฏเมื่อ filter active · Empty-state placeholder เมื่อ sieve ไม่พบอะไร · <strong>Scout-rank stars</strong> (★/★★/★★★) บน drawer header: Box 9 = ★★★, Box 8 = ★★, Box 7 = ★ · Mobile: dept chips scroll horizontal ที่ ≤520px, search input เต็ม row width",
+    tags: ["talent", "filter", "search", "scout-stars", "mobile"]
+  },
+  {
+    version: "v4.7.1", codename: "SCOUT", date: "21 พ.ค. 2569", accent: "#4A9BA8",
+    title: "Talent Drill-Down Drawer · คลิกชื่อแล้วเห็นทุกอย่าง",
+    desc: "Talent surface กลายเป็น <strong>working tool ไม่ใช่แค่ dashboard</strong> · คลิกชื่อใดก็ได้ใน 9-Box หรือ ranking — drawer เปิดแสดง Performance × Potential breakdown (weight 40/60 และ 50/50 ทั้งคู่), grade history pills 2 ปี, provenance (referrence + remark), และ computed \"Next step\" hint ตาม box ที่นั่งอยู่ (Project Assignment สำหรับ Box 9, Development Plan สำหรับ Box 8 ฯลฯ) · Box-cell rows เป็น real buttons (Enter/Space + hover/focus rings) · <strong>65/80 axis-cut thresholds</strong> แสดงบน 9-Box header · <strong>Emerging Group</strong> section: Box 4/5 bench (~23 คน ที่ framework เรียกว่า next-cycle pipeline) — tier กลางที่เคยมองไม่เห็น · Mobile: funnel 4→2→1 col, 9-Box 1 col ที่ ≤520px, drawer 100vw บนมือถือ",
+    tags: ["talent", "drawer", "9-box", "emerging", "keyboard", "mobile"]
+  },
+  {
+    version: "v4.7", codename: "NINJA", date: "19 พ.ค. 2569", accent: "#C44D3F", major: true,
+    title: "Talent Management Program · ระบบ Ninja Squad เชื่อมต่อ end-to-end",
+    desc: "<strong>v4.7 Ninja</strong> นำ Talent Management Program (Phase 1) ลงจริง · Migration 031 เพิ่ม 9-Box columns ใน <code>employees</code> + <code>talent_assessments</code> history table keyed บน (employee_id, cycle) · <strong>48 nominees</strong> จาก CSV ของคุณจัน import เข้า Postgres + mirror ไป Sheets tab <code>TalentAssessment</code> ใหม่ · <code>/api/db/talent-assessment</code> คืน snapshot ครบ: funnel, 9-Box buckets, dept roll-up, Final Cut ranking · Route <code>/talent</code> standalone แสดง 9-Box grid + ranking + emerging group · <strong>NinjaTab</strong> ได้ Talent-Pool strip ด้านบนพร้อม headline counts + link ไป /talent · Aligned กับ framework ใน TKC Talent rev.4.pdf (HR Strategy Map Y2026, Danang management meeting)",
+    tags: ["ninja", "talent", "9-box", "csv-import", "sheets-mirror", "danang"]
+  },
   {
     version: "v4.6.6", codename: "RED DOT", date: "16 พ.ค. 2569", accent: "#15803d", major: true,
     title: "Red Dot Gates · ปิดเจ็ดประตูการเข้าถึง + มือถือ + ร่างสิทธิบัตร",

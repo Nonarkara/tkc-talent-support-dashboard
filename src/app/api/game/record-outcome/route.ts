@@ -29,6 +29,7 @@ import { apiJson, apiError } from "@/lib/api";
 import { isDbConfigured, query } from "@/lib/db";
 import { simulateMatch, type MatchReport } from "@/lib/match-engine";
 import { TKC_REAL_PROJECTS } from "@/lib/tkc-org";
+import { CURRENT_CYCLE } from "@/lib/cycle";
 
 interface RecordOutcomeBody {
   project_id: string;
@@ -80,6 +81,13 @@ export async function POST(request: Request) {
       return apiError("Project not found", 404);
     }
     const dbProject = projectRows[0];
+    const now = new Date();
+    const projectEndDate = dbProject.end_date ? new Date(dbProject.end_date) : null;
+    const projectHasEnded = Boolean(projectEndDate && projectEndDate.getTime() <= now.getTime());
+
+    if (dbProject.status !== "completed" && !projectHasEnded) {
+      return apiError("Cannot record outcome before the project has reached its end date", 409);
+    }
 
     // 2. Fetch team allocations
     const allocRows = await query<{
@@ -206,7 +214,7 @@ export async function POST(request: Request) {
         budgetStatus,
         directorId: dbProject.director_id ?? "",
         directorName: directorRow[0]?.nickname ?? "Unknown",
-        cycle: "2026-Q2",
+        cycle: CURRENT_CYCLE,
       });
     } else {
       // ─── MANUAL ENTRY ────────────────────────────────────
@@ -225,7 +233,7 @@ export async function POST(request: Request) {
         client: dbProject.client_name ?? "",
         directorId: dbProject.director_id ?? "",
         directorName: directorRow[0]?.nickname ?? "Unknown",
-        cycle: "2026-Q2",
+        cycle: CURRENT_CYCLE,
         predicted: {
           fitPct: snapshot?.fit_pct ?? 50,
           chemistryScore: snapshot?.chemistry_score ?? 50,

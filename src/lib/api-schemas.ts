@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { CURRENT_CYCLE } from "@/lib/cycle";
 
 const MAX_TEXT = 500;
 const MAX_LONG_TEXT = 4_000;
@@ -46,6 +47,15 @@ const supportNoteSchema = z.preprocess(
   (value) => (typeof value === "string" ? value.trim() : value),
   z.string().max(MAX_LONG_TEXT),
 );
+const supportTargetPillarSchema = z.enum([
+  "compensation",
+  "purpose",
+  "career",
+  "community",
+  "belonging",
+  "transcendence",
+  "story",
+]);
 
 const jsonRecordSchema = z.record(z.string(), z.unknown());
 const stringListSchema = z
@@ -257,6 +267,7 @@ export const supportActionCreatePayloadSchema = z.object({
   employee_id: z.string().uuid(),
   cycle: z.string().trim().min(1).max(32).optional(),
   action_type: supportActionTypeSchema,
+  target_pillar: supportTargetPillarSchema.nullable().optional(),
   title: nameSchema,
   note: supportNoteSchema.optional(),
   status: supportActionStatusSchema.optional(),
@@ -268,7 +279,28 @@ export const supportActionUpdatePayloadSchema = z.object({
   title: nameSchema.optional(),
   note: supportNoteSchema.optional(),
   status: supportActionStatusSchema.optional(),
+  target_pillar: supportTargetPillarSchema.nullable().optional(),
   owner_employee_id: z.string().uuid().nullable().optional(),
+});
+
+export const fourPillarResponsePayloadSchema = z.object({
+  employee_id: z.string().uuid(),
+  cycle: z.string().trim().min(1).max(32).default(CURRENT_CYCLE),
+  compensation: boundedNumber(0, 100).default(50),
+  purpose: boundedNumber(0, 100).default(50),
+  career: boundedNumber(0, 100).default(50),
+  community: boundedNumber(0, 100).default(50),
+  source: z.enum(["self_report", "manager", "system", "ai_derived"]).default("self_report"),
+});
+
+export const credoResponsePayloadSchema = z.object({
+  employee_id: z.string().uuid(),
+  cycle: z.string().trim().min(1).max(32).default(CURRENT_CYCLE),
+  belonging: boundedNumber(0, 100).default(50),
+  purpose: boundedNumber(0, 100).default(50),
+  transcendence: boundedNumber(0, 100).default(50),
+  story: boundedNumber(0, 100).default(50),
+  pulse_source: z.enum(["survey", "derived", "blended", "manager"]).default("survey"),
 });
 
 export const competencyStandardSchema = z.object({

@@ -243,6 +243,7 @@ export interface SupportActionRecord {
   employee_id: string;
   cycle: string;
   action_type: string;
+  target_pillar?: string | null;
   title: string;
   note?: string | null;
   status: string;

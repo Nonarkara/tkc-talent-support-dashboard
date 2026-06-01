@@ -400,7 +400,7 @@ function CandidateRow({
         padding: "6px 10px",
         border: "1px solid var(--border-subtle)",
         background: "rgba(0,0,0,0.18)",
-        cursor: "pointer",
+        cursor: "grab",
         transition: "background 100ms ease, border-color 100ms ease",
       }}
       onMouseEnter={(event) => {
@@ -410,6 +410,12 @@ function CandidateRow({
       onMouseLeave={(event) => {
         event.currentTarget.style.background = "rgba(0,0,0,0.18)";
         event.currentTarget.style.borderColor = "var(--border-subtle)";
+      }}
+      onMouseDown={(event) => {
+        event.currentTarget.style.cursor = "grabbing";
+      }}
+      onMouseUp={(event) => {
+        event.currentTarget.style.cursor = "grab";
       }}
     >
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>

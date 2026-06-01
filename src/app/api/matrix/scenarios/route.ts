@@ -2,6 +2,7 @@ import { neon } from '@neondatabase/serverless';
 import { NextRequest, NextResponse } from 'next/server';
 import { scenarioToSheets, type MatrixScenario } from '@/lib/matrix-scenarios';
 import { mirrorMatrixScenario } from '@/lib/sheets-mirror';
+import { CURRENT_CYCLE } from '@/lib/cycle';
 
 const sql = neon(process.env.DATABASE_URL!);
 
@@ -11,7 +12,7 @@ const sql = neon(process.env.DATABASE_URL!);
  */
 export async function GET(req: NextRequest) {
   try {
-    const cycle = req.nextUrl.searchParams.get('cycle') || '2026-Q2';
+    const cycle = req.nextUrl.searchParams.get('cycle') || CURRENT_CYCLE;
 
     const rows = await sql`
       SELECT
@@ -47,7 +48,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'name is required' }, { status: 400 });
     }
 
-    const cycle = body.cycle || '2026-Q2';
+    const cycle = body.cycle || CURRENT_CYCLE;
 
     const result = await sql`
       INSERT INTO matrix_scenarios

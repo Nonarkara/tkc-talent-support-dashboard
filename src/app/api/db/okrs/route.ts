@@ -1,5 +1,6 @@
 import { apiError, apiJson, logApiError } from "@/lib/api";
 import { isDbConfigured, query } from "@/lib/db";
+import { CURRENT_CYCLE } from "@/lib/cycle";
 
 interface OkrRow {
   id: string;
@@ -18,7 +19,7 @@ export async function GET(request: Request) {
   }
   const url = new URL(request.url);
   const employeeId = url.searchParams.get("employee_id");
-  const cycle = url.searchParams.get("cycle") ?? "2026-Q2";
+  const cycle = url.searchParams.get("cycle") ?? CURRENT_CYCLE;
   if (!employeeId) return apiError("Missing employee_id", 400);
 
   try {
@@ -48,7 +49,7 @@ export async function POST(request: Request) {
     if (!body.employee_id || !body.objective) {
       return apiError("Missing employee_id or objective", 400);
     }
-    const cycle = body.cycle ?? "2026-Q2";
+    const cycle = body.cycle ?? CURRENT_CYCLE;
     const krs = JSON.stringify(body.key_results ?? []);
 
     const rows = await query<{ id: string }>(

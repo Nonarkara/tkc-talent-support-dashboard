@@ -435,7 +435,6 @@ function ArchetypeMix({ employees }: { employees: Employee[] }) {
   const total = data.reduce((s, [, n]) => s + n, 0) || 1;
   const COLORS = [C.gold, C.purple, C.cyan, C.green, C.blue, C.red, "#E07A5F", "#81B29A"];
 
-  let acc = 0;
   const W = 420, H = 220, R = 72, CX = 108, CY = H / 2;
 
   return (
@@ -448,9 +447,11 @@ function ArchetypeMix({ employees }: { employees: Employee[] }) {
       <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto", display: "block" }}>
         {/* Donut */}
         {data.map(([name, n], i) => {
-          const start = (acc / total) * Math.PI * 2 - Math.PI / 2;
-          const end = ((acc + n) / total) * Math.PI * 2 - Math.PI / 2;
-          acc += n;
+          const prior = data
+            .slice(0, i)
+            .reduce((sum, [, count]) => sum + count, 0);
+          const start = (prior / total) * Math.PI * 2 - Math.PI / 2;
+          const end = ((prior + n) / total) * Math.PI * 2 - Math.PI / 2;
           const x1 = CX + Math.cos(start) * R;
           const y1 = CY + Math.sin(start) * R;
           const x2 = CX + Math.cos(end) * R;

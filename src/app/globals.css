@@ -372,6 +372,66 @@
   animation: snap-bounce 200ms ease-out;
 }
 
+/* ─── Ninja Tab — battery-save honesty + game-feel feedback ─── */
+@keyframes ninja-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+@keyframes ninja-amber-pulse {
+  0%, 100% { border-color: rgba(245,240,232,0.10); }
+  50% { border-color: #D4A843; }
+}
+
+@keyframes ninja-reject-flash {
+  0%, 100% {
+    border-color: rgba(196,77,63,0.30);
+    background-color: transparent;
+  }
+  50% {
+    border-color: #C44D3F;
+    background-color: rgba(196,77,63,0.18);
+  }
+}
+
+@keyframes ninja-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.015); }
+}
+
+@keyframes ninja-drop-zone-glow {
+  0%, 100% { border-color: rgba(212,168,67,0.30); }
+  50% { border-color: rgba(212,168,67,0.55); }
+}
+
+/* Focus rings — applied to every interactive element on the Ninja tab */
+.ninja-scope *:focus-visible {
+  outline: 2px solid #D4A843;
+  outline-offset: 2px;
+}
+
+.ninja-scope button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+/* Sprite breathing — subtle, almost subliminal life sign */
+.ninja-sprite-breathe {
+  animation: ninja-breathe 4s ease-in-out infinite;
+  transform-origin: center bottom;
+}
+
+/* Save-success amber pulse — 1.5s once */
+.ninja-saved-pulse {
+  animation: ninja-amber-pulse 1.5s ease-in-out 1;
+}
+
+/* Rejection flash + shake — fires together for ~400ms */
+.ninja-reject {
+  animation:
+    ninja-reject-flash 400ms ease-out 1,
+    fail-shake 400ms ease-out 1;
+}
+
 /* ─── Card flip (forecast → reality) ─── */
 @keyframes card-flip-out { from { transform: rotateY(0deg); } to { transform: rotateY(90deg); } }
 @keyframes card-flip-in { from { transform: rotateY(-90deg); } to { transform: rotateY(0deg); } }
@@ -669,6 +729,29 @@ button.cc-status:disabled {
   justify-content: flex-end;
 }
 
+.cc-control-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  min-height: 38px;
+}
+
+.cc-control-group + .cc-control-group {
+  padding-left: 10px;
+  border-left: 1px solid rgba(245,240,232,0.16);
+}
+
+.cc-control-group-secondary .cc-nav-button,
+.cc-control-group-secondary .cc-sync-dot,
+.cc-control-group-secondary .cc-status {
+  opacity: 0.92;
+}
+
+.cc-control-group-session {
+  margin-left: 2px;
+}
+
 .cc-nav-button {
   border: 1px solid rgba(245,240,232,0.18);
   background: rgba(255,255,255,0.03);
@@ -684,6 +767,17 @@ button.cc-status:disabled {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   cursor: pointer;
+}
+
+.cc-nav-button-primary {
+  border-color: var(--rpg-yellow);
+  background: var(--rpg-yellow);
+  color: var(--ink-4);
+}
+
+.cc-nav-button-danger {
+  border-color: var(--rpg-red);
+  color: var(--rpg-red);
 }
 
 .cc-nav-button:disabled {
@@ -843,6 +937,37 @@ button.cc-status:disabled {
 .cc-sync-dot[data-state="error"] .cc-sync-dot-led {
   background: #d85252;
   box-shadow: 0 0 6px rgba(216,82,82,0.6);
+}
+
+.cc-locale-toggle {
+  display: inline-flex;
+  min-height: 34px;
+  border: 2px solid var(--sub-paper, #f5f1e8);
+  background: transparent;
+  font-family: var(--mono, monospace);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.cc-locale-toggle button {
+  min-width: 42px;
+  padding: 0 10px;
+  border: 0;
+  background: transparent;
+  color: var(--sub-paper, #f5f1e8);
+  cursor: pointer;
+}
+
+.cc-locale-toggle button[data-active="true"] {
+  background: var(--sub-paper, #f5f1e8);
+  color: var(--sub-ink, #0c0c0c);
+}
+
+.cc-locale-toggle button:hover {
+  background: var(--sub-signal, #f3b61f);
+  color: var(--sub-ink, #0c0c0c);
 }
 
 .cc-sync-popup {
@@ -1030,13 +1155,32 @@ button.cc-status:disabled {
 .cc-command-button[data-active="true"],
 .cc-overlay-button[data-active="true"] {
   border-color: var(--route-accent, var(--rpg-yellow));
-  background: rgba(255,255,255,0.05);
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--route-accent, var(--rpg-yellow)) 20%, transparent), rgba(255,255,255,0.04));
   transform: translateX(2px);
+}
+
+.cc-command-button[data-active="true"] .cc-command-label,
+.cc-overlay-button[data-active="true"] strong {
+  color: var(--route-accent, var(--rpg-yellow));
 }
 
 .cc-command-shortcut {
   color: var(--route-accent, var(--rpg-yellow));
   font-size: 9px;
+}
+
+.cc-command-route-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+  color: var(--ink-2);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .cc-command-label {
@@ -1051,7 +1195,7 @@ button.cc-status:disabled {
   font-size: 10px;
   line-height: 1.35;
   display: -webkit-box;
-  -webkit-line-clamp: 1;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -1060,6 +1204,27 @@ button.cc-status:disabled {
   grid-template-columns: auto 1fr;
   align-items: start;
   gap: 10px;
+}
+
+.cc-overlay-shortcut {
+  display: inline-grid;
+  place-items: center;
+  min-width: 28px;
+  min-height: 28px;
+  padding: 0 6px;
+  border: 1px solid var(--route-accent, var(--rpg-yellow));
+  color: var(--route-accent, var(--rpg-yellow));
+  font-size: 11px;
+}
+
+.cc-overlay-kicker {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--route-accent, var(--rpg-yellow));
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
 
 .cc-overlay-button strong {
@@ -1141,6 +1306,11 @@ button.cc-status:disabled {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   cursor: pointer;
+}
+
+.cc-primary-action:hover,
+.cc-rail-button:hover {
+  filter: brightness(1.08);
 }
 
 .cc-linkage-list,
@@ -1541,6 +1711,7 @@ button.cc-status:disabled {
 
 .cc-metric-pill {
   min-width: 112px;
+  max-width: 168px;
   padding: 10px 12px;
   border: 1px solid rgba(245,240,232,0.16);
   border-left: 3px solid var(--route-accent);
@@ -1553,6 +1724,7 @@ button.cc-status:disabled {
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
+  overflow-wrap: anywhere;
 }
 
 .cc-metric-pill strong {
@@ -1722,71 +1894,111 @@ button.cc-status:disabled {
 }
 
 /* ─── Drop zone affordance for Formation drag-drop ─── */
-.drop-zone {
-  border: 2px dashed var(--ink-2);
-  background: rgba(43,95,160,0.08);
-  transition: background 120ms ease, border-color 120ms ease;
-}
-.drop-zone[data-hover="true"] {
-  border-color: var(--rpg-yellow);
-  background: rgba(232,197,71,0.18);
-}
+/* Refactored into inline styles + CSS hover on SlotZone parent */
 
 @media (max-width: 1120px) {
-  html:has(.cc-root),
-  body:has(.cc-root) {
-    height: auto !important;
-    min-height: 100%;
-    overflow-x: hidden !important;
-    overflow-y: auto !important;
-  }
-
-  .cc-root {
-    display: block;
-    grid-template-rows: auto auto auto;
-    height: auto !important;
-    min-height: 100svh;
-    overflow: visible !important;
-  }
-
-  .cc-main {
-    display: block;
-    height: auto;
-    min-height: 0;
-    overflow: visible;
-  }
+  /* ── Game-console viewport discipline: the outer page never scrolls at
+     any viewport width. body:has(.cc-root) and .cc-root keep their desktop
+     overflow:hidden / height:100svh locks — this block only adapts layout
+     shapes. .cc-route-stage remains the single scrollable "TV screen". ── */
 
   .cc-console {
-    display: block;
-    width: 100%;
+    /* Remove aspect-ratio lock; keep height:100% + overflow:hidden from desktop */
     aspect-ratio: auto;
     max-height: none;
-    height: auto !important;
-    min-height: calc(100svh - 188px);
-    overflow: visible !important;
   }
 
-  .cc-console-body,
-  .cc-route-stage,
-  .cc-tab-frame {
-    height: auto !important;
-    min-height: 0;
-    overflow: visible !important;
+  /* cc-console-body scrolls on mobile — covers the home screen path
+     where there is no .cc-route-stage wrapper. */
+  .cc-console-body {
+    overflow-y: auto;
   }
 
+  /* Tab frames grow to content height so the scrollable route-stage can
+     reveal tall content. Rows stack vertically on portrait screens. */
   .cc-tab-frame {
+    height: auto;
     grid-template-rows: auto !important;
   }
 
-  .cc-two-pane {
-    height: auto !important;
-    overflow: visible !important;
+  /* Home and route windows grow freely inside the scrollable TV screen */
+  .cc-home-window,
+  .cc-route-window {
+    height: auto;
+    overflow: visible;
+  }
+
+  .cc-home-window .menu-window-body {
+    height: auto;
+    overflow: visible;
   }
 
   .cc-console-header,
   .cc-screen-brief {
     grid-template-columns: 1fr;
     align-items: start;
+  }
+
+  .cc-console-title h1 {
+    max-width: 100%;
+    font-size: clamp(30px, 9vw, 44px);
+    line-height: 1.05;
+    overflow-wrap: break-word;
+    word-break: normal;
+  }
+
+  .cc-brand-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .cc-top-controls {
+    width: 100%;
+    max-width: 100%;
+    display: grid;
+    grid-template-columns: 1fr;
+    justify-content: flex-start;
+    overflow: hidden;
+  }
+
+  .cc-control-group {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .cc-control-group + .cc-control-group {
+    padding-left: 0;
+    padding-top: 8px;
+    border-left: 0;
+    border-top: 1px solid rgba(245,240,232,0.16);
+  }
+
+  .cc-nav-button,
+  .cc-sync-dot,
+  .cc-status,
+  .cc-locale-toggle {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .cc-nav-button,
+  .cc-sync-dot,
+  .cc-status {
+    padding-inline: 8px !important;
+    justify-self: stretch;
+    overflow: hidden;
+  }
+
+  .cc-locale-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .cc-control-group-session {
+    grid-template-columns: 1fr;
   }
 
   .cc-console-metrics,
@@ -1797,20 +2009,11 @@ button.cc-status:disabled {
   .cc-home-grid,
   .cc-route-layout {
     grid-template-columns: 1fr;
-    height: auto;
   }
 
   .cc-home-center,
   .cc-home-side {
     grid-template-rows: auto;
-  }
-
-  .cc-console-body,
-  .cc-home-window,
-  .cc-route-window,
-  .cc-home-window .menu-window-body {
-    height: auto;
-    overflow: visible;
   }
 
   .roster-card-wall {
@@ -1825,9 +2028,66 @@ button.cc-status:disabled {
 }
 
 @media (max-width: 860px) {
+  .cc-brand-row {
+    align-items: flex-start;
+    flex-direction: column;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .cc-top-controls {
+    width: min(100%, calc(100vw - 28px));
+    max-width: 100%;
+    display: grid;
+    grid-template-columns: 1fr;
+    justify-content: flex-start;
+    gap: 6px;
+    overflow: hidden;
+  }
+
+  .cc-control-group {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .cc-control-group + .cc-control-group {
+    padding-left: 0;
+    padding-top: 8px;
+    border-left: 0;
+    border-top: 1px solid rgba(245,240,232,0.16);
+  }
+
+  .cc-nav-button,
+  .cc-sync-dot,
+  .cc-status,
+  .cc-locale-toggle {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .cc-nav-button,
+  .cc-sync-dot,
+  .cc-status {
+    padding-inline: 8px !important;
+    justify-self: stretch;
+    overflow: hidden;
+  }
+
+  .cc-locale-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .cc-control-group-session {
+    grid-template-columns: 1fr;
+  }
+
   .cc-main {
-    height: auto;
-    overflow: visible;
+    /* keep overflow:hidden from desktop — outer lock preserved */
     place-items: stretch;
   }
 
@@ -1909,6 +2169,14 @@ button.cc-status:disabled {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .cc-console-title h1 {
+    max-width: 100%;
+    font-size: clamp(30px, 10vw, 38px);
+    line-height: 1.05;
+    overflow-wrap: break-word;
+    word-break: normal;
+  }
+
   .cc-rail-actions {
     grid-template-columns: 1fr;
   }
@@ -1940,12 +2208,59 @@ button.cc-status:disabled {
     align-items: flex-start;
     flex-direction: column;
     gap: 10px;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
   }
 
   .cc-top-controls {
-    width: 100%;
+    width: calc(100vw - 28px);
+    max-width: 100%;
+    display: grid;
+    grid-template-columns: 1fr;
     justify-content: flex-start;
     gap: 6px;
+    overflow: hidden;
+  }
+
+  .cc-control-group {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .cc-control-group + .cc-control-group {
+    padding-left: 0;
+    padding-top: 8px;
+    border-left: 0;
+    border-top: 1px solid rgba(245,240,232,0.16);
+  }
+
+  .cc-nav-button,
+  .cc-sync-dot,
+  .cc-status,
+  .cc-locale-toggle {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .cc-nav-button,
+  .cc-sync-dot,
+  .cc-status {
+    padding-inline: 8px !important;
+    justify-self: stretch;
+    overflow: hidden;
+  }
+
+  .cc-locale-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .cc-control-group-session {
+    grid-template-columns: 1fr;
   }
 
   .cc-brand-lockup {
@@ -1973,9 +2288,11 @@ button.cc-status:disabled {
   }
 
   .cc-console-title h1 {
-    font-size: clamp(36px, 13vw, 46px);
+    max-width: 100%;
+    font-size: clamp(30px, 10vw, 38px);
     line-height: 1.05;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
+    word-break: normal;
   }
 
   .cc-console-title p {
@@ -1993,7 +2310,8 @@ button.cc-status:disabled {
   }
 
   .cc-metric-pill {
-    min-width: calc(50% - 4px);
+    min-width: 0;
+    max-width: none;
     flex: 1 1 calc(50% - 4px);
   }
 
@@ -2166,19 +2484,41 @@ button.cc-status:disabled {
   letter-spacing: 0.06em !important;
   text-transform: uppercase;
 }
+.cc-nav-button-primary {
+  background: var(--sub-signal) !important;
+  color: var(--sub-ink) !important;
+  border-color: var(--sub-signal) !important;
+}
+.cc-nav-button-danger {
+  background: transparent !important;
+  color: #ff8f7f !important;
+  border-color: #ff8f7f !important;
+}
 .cc-nav-button:hover:not(:disabled) {
   background: var(--sub-signal) !important;
+  color: var(--sub-ink) !important;
+}
+.cc-nav-button-danger:hover:not(:disabled) {
+  background: #ff8f7f !important;
   color: var(--sub-ink) !important;
 }
 .cc-nav-button:disabled {
   opacity: 0.4 !important;
 }
 .cc-status {
-  background: var(--sub-signal) !important;
-  color: var(--sub-ink) !important;
+  background: transparent !important;
+  color: var(--sub-paper) !important;
   font-weight: 700;
   letter-spacing: 0.08em;
-  border: 0 !important;
+  border: 2px solid rgba(245,241,232,0.42) !important;
+  min-height: 34px;
+  padding: 0 10px !important;
+}
+.cc-status-prefix {
+  opacity: 0.66;
+}
+.cc-status-label {
+  color: var(--sub-signal);
 }
 .tkc-ticker {
   background: var(--sub-ink) !important;

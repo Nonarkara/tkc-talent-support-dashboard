@@ -32,6 +32,98 @@ When a ROM revision bumps mid-session, note the old → new bump in the entry he
 
 ---
 
+## 2026-06-01 — Release gate ships        (v4.9.2 "Scroll" → v4.9.3 "Gate")
+
+**Shipped**
+
+- `npm run verify:readiness` added as the cassette's demo/deploy gate.
+- `scripts/verify-readiness.mjs` runs four checks in order:
+  - ESLint must exit cleanly and stay within the current warning budget (`TKC_LINT_WARNING_BUDGET`, default 120; current baseline is 79 warnings).
+  - `next build` must produce the production bundle.
+  - A local Next dev server boots on `127.0.0.1:3217` unless `TKC_BASE_URL` points at an existing target.
+  - JSON health probes confirm `/api/sheets/health` and `/api/db/dashboard` return shaped, intentional responses; DB-less local mode is accepted only as the explicit `503 Database not configured` state.
+  - Playwright drives the command-center shell: Boss Room → Route Menu → Formation Board → Home, with no Next error overlay and no browser console/page errors.
+- `docs/DQ3_SMOKE_TEST.md` now separates the automated gate from the manual visual-canon pass. Automation proves boot/navigation/health. Humans still check pixel timing, typography, corners, and feel.
+- `README.md` now lists the readiness command in the local runbook.
+- ROM badge bumped to `v4.9.3 · Gate`.
+- The first gate run caught a real browser-fatal bug: placeholder Firebase
+  env made Analytics throw `installations/missing-app-config-values` and
+  trigger the Next overlay. `src/lib/firebase/config.ts` now treats Firebase
+  as optional and disables analytics unless the public config is complete.
+
+**Next**
+
+- Reduce the warning budget toward zero. The current 79-warning baseline is documented so the gate catches regression without pretending the historical lint debt disappeared overnight.
+- Add a CI wrapper once the deployment target is finalized: `TKC_BASE_URL=https://... npm run verify:readiness`.
+- Extend browser smoke to one mobile viewport after the command-center shell stabilizes under DB-less mode.
+
+**Open questions**
+
+- Should DB-less local command-center render a seeded non-sensitive playtest mode again, or is the current explicit `Database not configured` message the safer truth for a client-facing system?
+- Should the gate eventually require Sheets credentials for staging, while keeping DB-only mode acceptable for local development?
+
+**Notes**
+
+- This was chosen as the "one important thing" because the project has become too consequential to rely on vibes before a demo. The readiness gate gives every future collaborator a clean sentence: "the cassette boots, builds, probes, and navigates."
+
+---
+
+## 2026-05-27 — Live browser audit + workshop ingestion        (v4.9.1 → v4.9.2 "Scroll")
+
+**Shipped**
+
+- **v4.9.1 "Battery+" — live DOM audit and accessibility sweep.** Full Chrome MCP audit of `https://tkc-digital-twin.fly.dev/command-center?screen=ninja`. Seven bugs found and fixed:
+  - `role="region"` + `aria-label="Ninja Squad Builder"` added to `.cc-tab-frame` root — makes all 138 Ninja Board buttons reachable in the AT tree.
+  - `role="status"` + `aria-live="polite"` added to MissionPartyCard footer message div.
+  - `aria-label` + `aria-pressed` added to skill filter buttons; `aria-label="Clear all skill filters"` on the Clear button.
+  - ✏ and + icon buttons in CandidateList gained `aria-label` (dynamic Edit/Close) and `aria-expanded`.
+  - Freshness label: "unknown" hidden; "stale" replaced with "⚠ stale" + hover tooltip.
+  - FTE: conditional render — only shows when `availability_fte > 0`; hides "0.0 FTE" from all roster candidate cards.
+  - Sheets bootstrap fixed — 5 missing tabs identified and recreated via `POST /api/sync/sheets-bootstrap`.
+
+- **v4.9.2 "Scroll" — doc layer + workshop ingestion:**
+  - `docs/workshops/` directory created.
+  - `2026-05-27-tkc-workshop-transcript-raw.txt` and `2026-05-27-tkc-workshop-summary.md` copied from `100daysofnon/diary/day-071/artifacts/` into `docs/workshops/` — canonical TKC copies.
+  - `docs/WORKSHOPS-INDEX.md` created — index of all workshops with key moments table and TKC project implications per entry.
+  - `docs/MATRIX-ORGANIZATION.md` expanded:
+    - Section 2 reconciliation replaced with the full three-framework table (4C / G/D/U/C / 4P) and one substantive paragraph per frame.
+    - Section 10 added: game manual context from three live engagements — 4P framework with failure-mode table, three case studies (NST/Chonburi/Chula) with root cause column, no-localhost rule verbatim, SLIC vs depa contracting vehicle comparison.
+
+**Next**
+- `/missions` surface — team prototype tracker (brief, owner, deadline 2026-06-27, build status, demo URL required)
+- S-curve executive widget — revenue by source (operations vs investments) + new-S-curve candidates linked to missions
+- Game manual update — 10-step value chain replaces generic stage names; Ninja Squad section adds no-localhost rule on page 1
+- RACI data layer build (still on hold pending Dr Non review of MATRIX-ORGANIZATION.md)
+
+**Notes**
+- The Sheets bootstrap was failing silently — header showed "Sheets sync has errors" but the route was `POST /api/sync/sheets-bootstrap`, not `POST /api/sheets/bootstrap`. The correct path is in `src/app/api/sync/sheets-bootstrap/route.ts`. Fixed by finding the actual file.
+- `role="region"` on `.cc-tab-frame` is the structural fix that makes all 138 Ninja Board buttons reachable. The AT tree traversal was hitting depth limits on the nested component tree; the region anchor short-circuits the traversal. Worth applying to other deeply-nested tab frames if similar issues emerge.
+- One-month mission deadline: **2026-06-27**. Each TKC team produces one working prototype. Non provides API credits + coaching. This is an active commitment made on stage at the 2026-05-27 workshop — the `/missions` surface tracks delivery.
+
+---
+
+## 2026-05-25 — Matrix org architecture ingested        (v4.8.0 "Crystal" · architecture pivot)
+
+**Shipped**
+- `docs/sources/tkc-new-chapter-matrix-organization.pdf` — canonical source copied into repo
+- `docs/MATRIX-ORGANIZATION.md` — full architecture reference: G/D/U/C outcomes, 10-step value chain, RACI matrix (all 3 process groups + 2.4 drill-down), Soft Side credential map, cassette wiring notes
+
+**On hold pending Dr. Non review**
+- RACI data layer (`process_steps` + `raci_matrix` tables)
+- Matrix-Org overview surface (dept × stage grid)
+- Project stage tracking (`current_step_id` on projects)
+- G/D/U/C KPI strip
+- Soft Side credential tags (`hia_complete`, `lac_complete`, `resilience_retreat_complete`)
+- Game manual update (10 steps replace generic stage names)
+
+**Notes**
+- **4C reconciliation:** the original 4C (Compensation/Cause/Career/Community) and the deck's G/D/U/C are different layers. 4C = individual motivation model. G/D/U/C = org performance KPIs from the matrix transformation. No conflict — they coexist. The 4C feeds morale/retention signals that underpin G, D, and U.
+- **Hard Side scope is explicit:** Dr. Non owns Structure/System/Process. Key Solution owns Mindset/Culture/Leadership. The cassette reads Soft Side completions as credentials on talent profiles; it does not run those programs.
+- **The Lobby view IS the matrix view** — dept × stage intersection, pick a name from a cell. This is what the Social Graph in Lobby should become.
+- **9-Box axis reinterpretation:** Performance = delivery outcomes (UAT pass rate, on-time per steps 3.5 and 3.7). Potential = readiness to take on higher-RACI roles. Current talent data is compatible with this reading once project outcomes feed in.
+
+---
+
 ## 2026-05-16 — Red Dot accessibility + mobile gates closed        (v4.6.5 → v4.6.6 "Red Dot")
 
 Kimi shipped against the seven-point Red Dot blocker list. I verified, wired the build-version, wrote the changelog, and pushed. The cassette now passes the smartphone-first §11.8 floor on every surface that ships.

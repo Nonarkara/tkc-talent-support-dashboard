@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
 
+const isProduction = process.env.NODE_ENV === "production";
+
 const nextConfig: NextConfig = {
   output: "standalone",
 
@@ -17,17 +19,23 @@ const nextConfig: NextConfig = {
           },
         ],
       },
-      {
-        // Static assets (JS/CSS with hashed filenames) can still be cached
-        // long-term because the hash changes on every build.
-        source: "/_next/static/:path*",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=31536000, immutable",
-          },
-        ],
-      },
+      ...(isProduction
+        ? [
+            {
+              // Static assets (JS/CSS with hashed filenames) can still be
+              // cached long-term in production because the hash changes on
+              // every build. In dev, this breaks visual QA by serving stale
+              // client bundles after source edits.
+              source: "/_next/static/:path*",
+              headers: [
+                {
+                  key: "Cache-Control",
+                  value: "public, max-age=31536000, immutable",
+                },
+              ],
+            },
+          ]
+        : []),
     ];
   },
 };

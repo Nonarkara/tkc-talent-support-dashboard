@@ -16,17 +16,20 @@ import type { CSSProperties } from "react";
 import { startTransition, useEffect, useMemo, useRef, useState } from "react";
 import { BookOpen, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { MenuWindow } from "@/components/MenuWindow";
-import { CockpitTab } from "./_tabs/CockpitTab";
-import { FixtureTab } from "./_tabs/FixtureTab";
-import { FormationTab } from "./_tabs/FormationTab";
-import { RosterTab } from "./_tabs/RosterTab";
-import { SignalsTab } from "./_tabs/SignalsTab";
-import { NinjaTab } from "./_tabs/NinjaTab";
-import { MatrixTab } from "./_tabs/MatrixTab";
-import { LobbyTab } from "./_tabs/LobbyTab";
-import { LedgerTab } from "./_tabs/LedgerTab";
-import { InsightsTab } from "./_tabs/InsightsTab";
-import { ProjectHealthPage } from "@/components/ProjectHealthCard";
+import { trackEvent } from "@/lib/firebase/analytics";
+import dynamic from "next/dynamic";
+
+const CockpitTab = dynamic(() => import("./_tabs/CockpitTab").then((mod) => mod.CockpitTab));
+const FixtureTab = dynamic(() => import("./_tabs/FixtureTab").then((mod) => mod.FixtureTab));
+const FormationTab = dynamic(() => import("./_tabs/FormationTab").then((mod) => mod.FormationTab));
+const RosterTab = dynamic(() => import("./_tabs/RosterTab").then((mod) => mod.RosterTab));
+const SignalsTab = dynamic(() => import("./_tabs/SignalsTab").then((mod) => mod.SignalsTab));
+const NinjaTab = dynamic(() => import("./_tabs/NinjaTab").then((mod) => mod.NinjaTab));
+const MatrixTab = dynamic(() => import("./_tabs/MatrixTab").then((mod) => mod.MatrixTab));
+const LobbyTab = dynamic(() => import("./_tabs/LobbyTab").then((mod) => mod.LobbyTab));
+const LedgerTab = dynamic(() => import("./_tabs/LedgerTab").then((mod) => mod.LedgerTab));
+const InsightsTab = dynamic(() => import("./_tabs/InsightsTab").then((mod) => mod.InsightsTab));
+const ProjectHealthPage = dynamic(() => import("@/components/ProjectHealthCard").then((mod) => mod.ProjectHealthPage));
 import { useDashboard } from "./_shared/useDashboard";
 import type { DashboardPayload, RouteScreen, Screen } from "./_shared/types";
 import { tkcTicker, TKC_ANNUAL, isAnchor } from "@/lib/company-pulse";
@@ -336,10 +339,9 @@ export default function CommandCenterPage() {
         return;
       }
 
-      // Numeric 1-6 jumps to ROUTES[index].
-      const idx = Number.parseInt(e.key, 10);
-      if (!Number.isNaN(idx) && idx >= 1 && idx <= ROUTES.length) {
-        navigateTo(ROUTES[idx - 1].key);
+      const shortcutRoute = ROUTES.find((route) => route.shortcut.toLowerCase() === k);
+      if (shortcutRoute) {
+        navigateTo(shortcutRoute.key);
         e.preventDefault();
       }
     }
@@ -461,6 +463,10 @@ export default function CommandCenterPage() {
       setHistory((prev) => [...prev, screen]);
       setScreen(next);
       setMenuOpen(false);
+      void trackEvent("dashboard_tab_switch", {
+        to_tab: next,
+        from_tab: screen,
+      });
     });
   }
 
@@ -474,6 +480,10 @@ export default function CommandCenterPage() {
       setHistory((prev) => [...prev, screen]);
       setScreen("home");
       setMenuOpen(false);
+      void trackEvent("dashboard_tab_switch", {
+        to_tab: "home",
+        from_tab: screen,
+      });
     });
   }
 
@@ -508,74 +518,85 @@ export default function CommandCenterPage() {
             </span>
           </div>
 
-          <div className="cc-top-controls">
-            <button
-              type="button"
-              className="cc-nav-button"
-              onClick={handleBack}
-              disabled={history.length === 0}
-            >
-              {translate(loc, NAV.back)}
-            </button>
-            <button
-              type="button"
-              className="cc-nav-button"
-              onClick={handleGoHome}
-              disabled={screen === "home"}
-            >
-              {translate(loc, NAV.home)}
-            </button>
-            <button
-              type="button"
-              className="cc-nav-button"
-              onClick={() => setMenuOpen(true)}
-            >
-              {translate(loc, NAV.menu)}
-            </button>
-            <button
-              type="button"
-              className="cc-nav-button"
-              onClick={() => setManualOpen(true)}
-              title="Open the player manual"
-            >
-              <BookOpen size={14} aria-hidden="true" />
-              {translate(loc, { en: "Manual", th: "คู่มือ" })}
-            </button>
-            <button
-              type="button"
-              className="cc-nav-button"
-              onClick={() => navigateTo("ledger")}
-              title="Open the in-app company ledger and sync status"
-            >
-              {translate(loc, NAV.ledger)}
-            </button>
-            <LocaleToggle />
-            <SyncDot
-              health={sheetsHealth}
-              onClick={() => setSyncOpen((prev) => !prev)}
-            />
-            <button
-              type="button"
-              className="cc-status"
-              data-state={statusText.toLowerCase()}
-              onClick={() => void dash.refresh()}
-              disabled={dash.loading}
-              title={dash.live ? "Live data from Neon DB — click to resync" : "Demo mode — click to retry live DB connection"}
-            >
-              <span className="cc-status-label">{statusText}</span>
-            </button>
-            <button
-              type="button"
-              className="cc-nav-button"
-              onClick={async () => {
-                await fetch("/api/auth/logout", { method: "POST" });
-                window.location.href = "/login";
-              }}
-              title="Sign out — clears your access cookie immediately"
-              style={{ borderColor: "var(--rpg-red, #d45e4e)", color: "var(--rpg-red, #d45e4e)" }}
-            >
-              {translate(loc, { en: "Sign Out", th: "ออก" })}
-            </button>
+          <div className="cc-top-controls" aria-label="Command center controls">
+            <div className="cc-control-group" aria-label="Navigation controls">
+              <button
+                type="button"
+                className="cc-nav-button"
+                onClick={handleBack}
+                disabled={history.length === 0}
+                title="Go back one screen"
+              >
+                {translate(loc, NAV.back)}
+              </button>
+              <button
+                type="button"
+                className="cc-nav-button"
+                onClick={handleGoHome}
+                disabled={screen === "home"}
+                title="Return to Boss Room"
+              >
+                {translate(loc, NAV.home)}
+              </button>
+              <button
+                type="button"
+                className="cc-nav-button cc-nav-button-primary"
+                onClick={() => setMenuOpen(true)}
+                title="Open route menu"
+              >
+                {translate(loc, NAV.menu)}
+              </button>
+              <button
+                type="button"
+                className="cc-nav-button"
+                onClick={() => setManualOpen(true)}
+                title="Open the player manual"
+              >
+                <BookOpen size={14} aria-hidden="true" />
+                {translate(loc, { en: "Manual", th: "คู่มือ" })}
+              </button>
+            </div>
+
+            <div className="cc-control-group cc-control-group-secondary" aria-label="Data and language controls">
+              <button
+                type="button"
+                className="cc-nav-button"
+                onClick={() => navigateTo("ledger")}
+                title="Open the company ledger and sync status"
+              >
+                {translate(loc, NAV.ledger)}
+              </button>
+              <LocaleToggle />
+              <SyncDot
+                health={sheetsHealth}
+                onClick={() => setSyncOpen((prev) => !prev)}
+              />
+              <button
+                type="button"
+                className="cc-status"
+                data-state={statusText.toLowerCase()}
+                onClick={() => void dash.refresh()}
+                disabled={dash.loading}
+                title={dash.live ? "Live data from Neon DB. Click to resync." : "Demo or offline data. Click to retry live DB connection."}
+              >
+                <span className="cc-status-prefix">Data</span>
+                <span className="cc-status-label">{statusText}</span>
+              </button>
+            </div>
+
+            <div className="cc-control-group cc-control-group-session" aria-label="Session controls">
+              <button
+                type="button"
+                className="cc-nav-button cc-nav-button-danger"
+                onClick={async () => {
+                  await fetch("/api/auth/logout", { method: "POST" });
+                  window.location.href = "/login";
+                }}
+                title="Sign out and clear your access cookie"
+              >
+                {translate(loc, { en: "Sign Out", th: "ออก" })}
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -694,7 +715,7 @@ export default function CommandCenterPage() {
           <span><kbd>H</kbd> {translate(loc, NAV.home)}</span>
           <span><kbd>M</kbd> {translate(loc, NAV.menu)}</span>
           <span><kbd>?</kbd> {translate(loc, { en: "Manual", th: "คู่มือ" })}</span>
-          <span><kbd>1</kbd>–<kbd>9</kbd><kbd>0</kbd> {translate(loc, { en: "Route", th: "เส้นทาง" })}</span>
+          <span><kbd>1</kbd>–<kbd>9</kbd><kbd>0</kbd><kbd>P</kbd> {translate(loc, { en: "Routes", th: "เส้นทาง" })}</span>
         </div>
       </main>
     </div>
@@ -755,11 +776,17 @@ function HomeScreen({
                   type="button"
                   className="cc-command-button"
                   data-active={selected === route.key ? "true" : "false"}
+                  style={{ "--route-accent": m.accent } as CSSProperties}
+                  aria-current={selected === route.key ? "page" : undefined}
                   onMouseEnter={() => onPreview(route.key)}
                   onFocus={() => onPreview(route.key)}
                   onClick={() => onOpen(route.key)}
+                  title={`Open ${m.title}`}
                 >
-                  <span className="cc-command-shortcut pixel">{route.shortcut}</span>
+                  <span className="cc-command-route-meta">
+                    <span className="cc-command-shortcut pixel">{route.shortcut}</span>
+                    <span>{m.kicker}</span>
+                  </span>
                   <span className="cc-command-label">{m.title}</span>
                   <span className="cc-command-deck">{m.deck}</span>
                 </button>
@@ -790,7 +817,7 @@ function HomeScreen({
               ))}
             </div>
             <button type="button" className="cc-primary-action" onClick={() => onOpen(selected)}>
-              {translate(loc, { en: "Enter", th: "เข้าสู่" })} {activeMeta.title}
+              {translate(loc, { en: "Open", th: "เปิด" })} {activeMeta.title}
             </button>
           </div>
         </MenuWindow>
@@ -1175,10 +1202,14 @@ function RouteMenuOverlay({
                   type="button"
                   className="cc-overlay-button"
                   data-active={selected === route.key ? "true" : "false"}
+                  style={{ "--route-accent": m.accent } as CSSProperties}
+                  aria-current={selected === route.key ? "page" : undefined}
                   onClick={() => onOpen(route.key)}
+                  title={`Open ${m.title}`}
                 >
-                  <span className="pixel">{route.shortcut}</span>
+                  <span className="cc-overlay-shortcut pixel">{route.shortcut}</span>
                   <div>
+                    <span className="cc-overlay-kicker">{m.kicker}</span>
                     <strong>{m.title}</strong>
                     <p>{m.deck}</p>
                   </div>
@@ -1252,14 +1283,14 @@ function SyncDot({
       : health.ok && health.missing.length === 0
         ? "ok"
         : "error";
-  const label = state === "ok" ? "Sync" : state === "error" ? "Err" : "DB";
+  const label = state === "ok" ? "Sheets OK" : state === "error" ? "Sheets Err" : "DB Only";
   return (
     <button
       type="button"
       className="cc-sync-dot"
       data-state={state}
       onClick={onClick}
-      title={state === "ok" ? "Sheets healthy" : state === "error" ? "Sheets error — click for detail" : "Sheets no-op (DB only)"}
+      title={state === "ok" ? "Google Sheets sync is healthy" : state === "error" ? "Google Sheets sync has errors. Click for details." : "Google Sheets is not configured; DB-only mode."}
     >
       <span className="cc-sync-dot-led" />
       <span>{label}</span>

@@ -55,6 +55,7 @@ import type {
   Project,
   SupportActionRecord,
 } from "../_shared/types";
+import { CURRENT_CYCLE } from "@/lib/cycle";
 
 const ASSIGN_PREFIX = "BOARD::ASSIGN:";
 const START_PREFIX = "BOARD::START:";
@@ -124,12 +125,12 @@ interface SupportRecommendation {
   key: string;
   employee: Employee | null;
   action_type: SupportActionType;
+  target_pillar?: SupportActionRecord["target_pillar"];
   title: string;
   note: string;
   reason: string;
 }
 
-const CURRENT_CYCLE = "2026-Q2";
 
 const SOURCE_LABEL: Record<LogSource, string> = {
   director: "Director",
@@ -614,6 +615,7 @@ function buildSupportRecommendations({
       key: "fatigue-load-review",
       employee: fatigueTarget,
       action_type: "load_review",
+      target_pillar: "community",
       title: `Load review for ${fatigueTarget?.display_name ?? "fatigued squad member"}`,
       note: `Project ${project.code} morale logs show fatigue pressure. Review workload split, recovery time, and sprint expectations this week.`,
       reason: "Recent notes point to fatigue or burnout risk.",
@@ -628,6 +630,7 @@ function buildSupportRecommendations({
       key: "ops-unblock",
       employee: opsTarget,
       action_type: "fit_conversation",
+      target_pillar: "purpose",
       title: `Unblock vendor lane for ${opsTarget?.display_name ?? project.code}`,
       note: `Project ${project.code} notes mention procurement or paperwork drag. Run a quick unblock conversation on vendor path, document owners, and decision turnaround.`,
       reason: "Ops-heavy friction is slowing launch or delivery.",
@@ -639,6 +642,7 @@ function buildSupportRecommendations({
       key: "weak-fit-skill-review",
       employee: weakFitTarget,
       action_type: "skill_review",
+      target_pillar: "career",
       title: `Skill review for ${weakFitTarget.display_name}`,
       note: `Project ${project.code} has at least one miscast seat. Review whether this hero needs coaching, a class swap, or a different assignment.`,
       reason: `${SLOT_LABEL[weakFits[0] ?? "technical"]} is staffed but still under-fit.`,
@@ -650,6 +654,7 @@ function buildSupportRecommendations({
       key: "captain-fit-convo",
       employee: captain,
       action_type: "fit_conversation",
+      target_pillar: "purpose",
       title: `Captain alignment for ${captain.display_name}`,
       note: `Project ${project.code} is drifting. Run a short captain-level reset on scope, owners, timeline, and what must move this week.`,
       reason: "Execution progress is fragile and needs clearer command.",
@@ -661,6 +666,7 @@ function buildSupportRecommendations({
       key: "recognition",
       employee: captain,
       action_type: "recognition",
+      target_pillar: "belonging",
       title: `Recognition pulse for ${captain.display_name}`,
       note: `Project ${project.code} is healthy. Capture and amplify what this squad is doing right before momentum fades into invisibility.`,
       reason: "Strong progress and morale deserve visible reinforcement.",
@@ -846,6 +852,26 @@ export function FormationCanvas({ dash }: { dash: DashboardPayload }) {
     event.dataTransfer.setData("text/plain", employee.id);
     event.dataTransfer.setData("application/x-tkc-employee", employee.id);
     event.dataTransfer.effectAllowed = "move";
+
+    // Custom drag image — dark chip so it reads against the dark board
+    const canvas = document.createElement("canvas");
+    canvas.width = 160;
+    canvas.height = 40;
+    const ctx = canvas.getContext("2d");
+    if (ctx) {
+      ctx.fillStyle = "#1a1209";
+      ctx.fillRect(0, 0, 160, 40);
+      ctx.strokeStyle = "#D4A843";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(0, 0, 160, 40);
+      ctx.fillStyle = "#f5f0e8";
+      ctx.font = "bold 12px sans-serif";
+      ctx.fillText(employee.display_name, 10, 18);
+      ctx.fillStyle = "#b8a88a";
+      ctx.font = "10px sans-serif";
+      ctx.fillText(getArchetype(employee).toUpperCase(), 10, 32);
+      event.dataTransfer.setDragImage(canvas, 80, 20);
+    }
   }
 
   function handleDragEnd() {
@@ -1311,6 +1337,7 @@ export function FormationCanvas({ dash }: { dash: DashboardPayload }) {
           employee_id: recommendation.employee.id,
           cycle: CURRENT_CYCLE,
           action_type: recommendation.action_type,
+          target_pillar: recommendation.target_pillar,
           title: recommendation.title,
           note: recommendation.note,
           status: "planned",
@@ -1572,6 +1599,28 @@ export function FormationCanvas({ dash }: { dash: DashboardPayload }) {
             </MenuWindow>
           )}
 
+          {dragging ? (
+            <div
+              onDragOver={handleDragOver}
+              onDrop={handleDropOnRoster}
+              aria-label="Return dragged hero to the pool"
+              style={{
+                border: "2px dashed var(--rpg-yellow)",
+                background: "rgba(212,168,67,0.08)",
+                padding: "10px 14px",
+                textAlign: "center",
+                color: "var(--rpg-yellow)",
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                cursor: "grab",
+                transition: "background 120ms ease",
+              }}
+            >
+              ↩ Return to Pool — drop here to unassign
+            </div>
+          ) : null}
         </main>
       </div>
 
@@ -1787,12 +1836,14 @@ function VirtualizedHeroPool({
               }}
               tabIndex={0}
               role="button"
-              aria-label={`Select ${employee.display_name}`}
+              aria-label={`${employee.display_name} — press Enter to inspect, or drag to a slot`}
+              aria-grabbed={draggingEmployeeId === employee.id}
               style={{
                 cursor: "grab",
                 height: POOL_CARD_HEIGHT,
-                opacity: draggingEmployeeId === employee.id ? 0.3 : 1,
-                transition: "opacity 80ms ease",
+                opacity: draggingEmployeeId === employee.id ? 0.5 : 1,
+                transform: draggingEmployeeId === employee.id ? "scale(0.97)" : "none",
+                transition: "opacity 80ms ease, transform 80ms ease",
               }}
             >
               <PlayerCard
@@ -2397,7 +2448,13 @@ function SlotZone({
   onDropEnter: () => void;
   onDropLeave: () => void;
 }) {
-  const totalSeats = Math.max(needed, filled.length);
+  const dragCounter = useRef(0);
+  const wouldRejectDrop = Boolean(
+    draggingEmployee &&
+      filled.length >= needed &&
+      filled.every((assignment) => assignment.employee_id !== draggingEmployee.id),
+  );
+  const totalSeats = Math.max(needed, filled.length) + (wouldRejectDrop ? 1 : 0);
   const cells = Array.from({ length: totalSeats }, (_, index) => filled[index] ?? null);
   const draggingFit = draggingEmployee ? Math.round(slotCapabilityScore(draggingEmployee, dimension, competencyStandards) * 100) : null;
   const slotAvgFit =
@@ -2410,26 +2467,50 @@ function SlotZone({
           }, 0) / filled.length,
         )
       : null;
+  const isFull = filled.length >= needed;
   const previewTone =
     draggingFit == null
       ? SLOT_COLOR[dimension]
-      : draggingFit >= 80
-        ? "var(--flux-up)"
-        : draggingFit >= 60
-          ? "var(--accent-gold)"
-          : draggingFit >= 45
-            ? "var(--accent-red)"
-            : "var(--text-muted)";
+      : wouldRejectDrop
+        ? "var(--rpg-red)"
+        : draggingFit >= 80
+          ? "var(--flux-up)"
+          : draggingFit >= 60
+            ? "var(--accent-gold)"
+            : draggingFit >= 45
+              ? "var(--accent-red)"
+              : "var(--text-muted)";
+
+  useEffect(() => {
+    if (!draggingEmployee) dragCounter.current = 0;
+  }, [draggingEmployee]);
 
   return (
     <div
       onDragOver={onDragOver}
-      onDragEnter={onDropEnter}
-      onDragLeave={onDropLeave}
-      onDrop={onDrop}
+      onDragEnter={() => {
+        dragCounter.current += 1;
+        if (dragCounter.current === 1) onDropEnter();
+      }}
+      onDragLeave={() => {
+        dragCounter.current -= 1;
+        if (dragCounter.current <= 0) {
+          dragCounter.current = 0;
+          onDropLeave();
+        }
+      }}
+      onDrop={(event) => {
+        dragCounter.current = 0;
+        onDrop(event);
+      }}
       onClick={onOpenSlot}
+      aria-label={`${SLOT_LABEL[dimension]} slot — ${filled.length} of ${needed} filled${isFull ? ", full" : ""}`}
+      data-slot-full={isFull ? "true" : "false"}
       style={{
-        border: `1px solid ${active ? `${previewTone}bb` : "var(--border-subtle)"}`,
+        border:
+          active && wouldRejectDrop
+            ? `1px dashed ${previewTone}cc`
+            : `1px solid ${active ? `${previewTone}bb` : "var(--border-subtle)"}`,
         background:
           active && draggingFit != null
             ? `${previewTone}18`
@@ -2508,11 +2589,11 @@ function SlotZone({
                 }}
               >
                 <span style={{ color: "var(--ink-0)" }}>
-                  {draggingEmployee ? "Drop hero" : "Open slot"}
+                  {draggingEmployee ? (wouldRejectDrop ? "Slot full" : "Drop hero") : "Open slot"}
                 </span>
                 <span style={{ fontSize: 9, color: active && draggingFit != null ? previewTone : "var(--ink-1)" }}>
                   {draggingEmployee && draggingFit != null
-                    ? `${draggingFit}% fit for ${draggingEmployee.display_name}`
+                    ? (wouldRejectDrop ? "Remove someone first" : `${draggingFit}% fit for ${draggingEmployee.display_name}`)
                     : recommended
                       ? `Best next: ${recommended.employee.display_name} · ${recommended.fit}%`
                       : "Click or drag a hero here"}
@@ -2635,7 +2716,8 @@ function AssignedHeroCard({
       }}
       tabIndex={0}
       role="button"
-      aria-label={`Open ${employee.display_name} slot details`}
+      aria-label={`${employee.display_name} — press Enter to inspect, or drag to another slot`}
+      aria-grabbed={isDragging}
       className={isNewlyDropped ? "anim-snap-bounce" : undefined}
       style={{
         minHeight: 66,
@@ -2645,8 +2727,9 @@ function AssignedHeroCard({
         display: "grid",
         gap: 6,
         cursor: "grab",
-        opacity: isDragging ? 0.3 : 1,
-        transition: "border-color 120ms ease, opacity 80ms ease",
+        opacity: isDragging ? 0.5 : 1,
+        transform: isDragging ? "scale(0.97)" : "none",
+        transition: "border-color 120ms ease, opacity 80ms ease, transform 80ms ease",
       }}
       title={`${employee.display_name} · ${ARCHETYPE_LABEL[assignment.archetype]} · ${fit}% fit in ${SLOT_LABEL[dimension]}`}
     >

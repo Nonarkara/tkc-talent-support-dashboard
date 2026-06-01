@@ -29,9 +29,10 @@ import {
   mirrorSkillCatalog,
   mirrorSquadEvent,
 } from "@/lib/sheets-mirror";
+import { CURRENT_CYCLE } from "@/lib/cycle";
 
 interface Body {
-  /** Pre-derived `quests.code`. See `ninjaQuestCode()` in squad-readiness.ts. */
+  /** Pre-derived `quests.code`. Format: `NINJA_<TEAMKEY>` (e.g. `NINJA_ZEN`). */
   code: string;
   /** Human-readable title shown to the boss and in Sheets. */
   title: string;
@@ -110,7 +111,7 @@ export async function POST(request: Request) {
         body.code,
         body.title,
         body.dept_code ?? null,
-        body.cycle ?? "2026-Q2",
+        body.cycle ?? CURRENT_CYCLE,
         JSON.stringify(roleSlots),
         body.notes ?? "",
       ],

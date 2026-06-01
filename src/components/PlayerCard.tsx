@@ -182,6 +182,7 @@ export function PlayerCard({
   // Age from DOB
   const age = employee.date_of_birth
     ? Math.floor(
+        // eslint-disable-next-line react-hooks/purity -- Age is a display-only wall-clock read.
         (Date.now() - new Date(employee.date_of_birth).getTime()) /
           (1000 * 60 * 60 * 24 * 365.25),
       )

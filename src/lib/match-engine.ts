@@ -113,7 +113,7 @@ const SIM_CONFIG = {
   varianceSigma: 12,
 
   // Budget overruns are more common than underruns (Murphy's Law)
-  budgetBias: -5, // pct
+  budgetBias: 5, // pct (positive = over budget)
 
   // Quality tends to follow chemistry
   chemistryQualityCorrelation: 0.6,
@@ -419,13 +419,13 @@ export function simulateMatch(input: SimulationInput): MatchReport {
   if (timelineStatus === "failed") satisfactionBase -= 2;
   const clientSatisfaction = clamp(Math.round(satisfactionBase + normalRandom(rng, 0, 0.3)), 1, 5);
 
-  // Budget variance: overruns more likely, but good teams manage it
-  const budgetBase = SIM_CONFIG.budgetBias + (budgetStatus === "under" ? 5 : budgetStatus === "over" ? -10 : 0);
+  // Budget variance: overruns more likely. Over-budget teams bleed more, under-budget have buffer.
+  const budgetBase = SIM_CONFIG.budgetBias + (budgetStatus === "under" ? -5 : budgetStatus === "over" ? 10 : 0);
   const budgetVariancePct = clamp(Math.round(budgetBase + normalRandom(rng, 0, 10)), -40, 40);
 
-  // Margin achieved: budget variance affects it
+  // Margin achieved: budget overruns (positive variance) reduce margin.
   const marginAchieved = clamp(
-    Math.round((project.grossMarginPct ?? 15) + budgetVariancePct * 0.3 + normalRandom(rng, 0, 3)),
+    Math.round((project.grossMarginPct ?? 15) - budgetVariancePct * 0.3 + normalRandom(rng, 0, 3)),
     5,
     45,
   );

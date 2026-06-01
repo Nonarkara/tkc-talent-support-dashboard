@@ -188,7 +188,9 @@ export function MetricsPanel({ report }: { report: MatrixScenario }) {
 }
 
 function formatMetricNumber(value: number) {
-  return Number.isInteger(value) ? String(value) : value.toFixed(1);
+  const num = Number(value);
+  if (isNaN(num)) return "—";
+  return Number.isInteger(num) ? String(num) : num.toFixed(1);
 }
 
 function MetricCard({

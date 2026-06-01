@@ -192,6 +192,7 @@ interface IdentityRow {
 
 export async function loadTome(employeeId: string): Promise<Tome | null> {
   if (!isDbConfigured()) return null;
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(employeeId)) return null;
 
   // Identity (required — null return if not found). `rpg_class` was a
   // late-pivot column that doesn't exist in this DB; we infer the class

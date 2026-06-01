@@ -1302,3 +1302,184 @@ export async function mirrorTalentAssessment(
     console.error("[sheets-mirror] mirrorTalentAssessment failed:", err);
   }
 }
+
+// ─── v4.8 · Crystal — Four C Framework mirror helpers ───────────────────
+
+export interface FourPillarMirrorPayload {
+  employee_id: string;
+  cycle: string;
+  employee_name: string | null;
+  compensation: number;
+  purpose: number;
+  career: number;
+  community: number;
+  source: string;
+  created_at: string;
+}
+
+export async function mirrorFourPillarResponse(data: FourPillarMirrorPayload): Promise<void> {
+  try {
+    const composite = `${data.employee_id}|${data.cycle}`;
+    await upsertRow("FourPillarResponses", {
+      employee_id: composite,
+      cycle: data.cycle,
+      employee_name: data.employee_name ?? "",
+      compensation: data.compensation,
+      purpose: data.purpose,
+      career: data.career,
+      community: data.community,
+      source: data.source,
+      created_at: data.created_at,
+    });
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error("[sheets-mirror] mirrorFourPillarResponse failed:", err);
+  }
+}
+
+export interface CredoMirrorPayload {
+  employee_id: string;
+  cycle: string;
+  employee_name: string | null;
+  belonging: number;
+  purpose: number;
+  transcendence: number;
+  story: number;
+  overall: number;
+  pulse_source: string;
+  created_at: string;
+}
+
+export async function mirrorCredoScore(data: CredoMirrorPayload): Promise<void> {
+  try {
+    const composite = `${data.employee_id}|${data.cycle}`;
+    await upsertRow("CredoScores", {
+      employee_id: composite,
+      cycle: data.cycle,
+      employee_name: data.employee_name ?? "",
+      belonging: data.belonging,
+      purpose: data.purpose,
+      transcendence: data.transcendence,
+      story: data.story,
+      overall: data.overall,
+      pulse_source: data.pulse_source,
+      created_at: data.created_at,
+    });
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error("[sheets-mirror] mirrorCredoScore failed:", err);
+  }
+}
+
+export interface HouseScoreMirrorPayload {
+  snapshot_at: string;
+  cycle: string;
+  active_heroes: number;
+  compensation: number;
+  purpose: number;
+  career: number;
+  community: number;
+  composite: number;
+  self_reported_count: number;
+  heuristic_count: number;
+  source: string;
+}
+
+export async function mirrorHouseScore(data: HouseScoreMirrorPayload): Promise<void> {
+  try {
+    await appendEvent("HouseScoreHistory", {
+      snapshot_at: data.snapshot_at,
+      cycle: data.cycle,
+      active_heroes: data.active_heroes,
+      compensation: data.compensation,
+      purpose: data.purpose,
+      career: data.career,
+      community: data.community,
+      composite: data.composite,
+      self_reported_count: data.self_reported_count,
+      heuristic_count: data.heuristic_count,
+      source: data.source,
+    });
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error("[sheets-mirror] mirrorHouseScore failed:", err);
+  }
+}
+
+export interface SupportActionMirrorPayload {
+  id: string;
+  created_at: string;
+  employee_id: string;
+  employee_name: string | null;
+  cycle: string;
+  action_type: string;
+  target_pillar: string | null;
+  title: string;
+  note: string | null;
+  status: string;
+  owner_id: string | null;
+  owner_name: string | null;
+}
+
+export async function mirrorSupportAction(data: SupportActionMirrorPayload): Promise<void> {
+  try {
+    await upsertRow("SupportActions", {
+      id: data.id,
+      created_at: data.created_at,
+      employee_id: data.employee_id,
+      employee_name: data.employee_name ?? "",
+      cycle: data.cycle,
+      action_type: data.action_type,
+      target_pillar: data.target_pillar ?? "",
+      title: data.title,
+      note: data.note ?? "",
+      status: data.status,
+      owner_id: data.owner_id ?? "",
+      owner_name: data.owner_name ?? "",
+    });
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error("[sheets-mirror] mirrorSupportAction failed:", err);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Missions — team prototype sprint tracker (one-month deadline 2026-06-27)
+// ---------------------------------------------------------------------------
+
+export interface MissionMirrorPayload {
+  id: number;
+  team_name: string;
+  department: string | null;
+  brief: string | null;
+  owner_name: string | null;
+  deadline: string;
+  demo_url: string | null;
+  tech_stack: string | null;
+  status: string;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export async function mirrorMission(data: MissionMirrorPayload): Promise<void> {
+  try {
+    await upsertRow("Missions", {
+      id: data.id,
+      team_name: data.team_name,
+      department: data.department ?? "",
+      brief: data.brief ?? "",
+      owner_name: data.owner_name ?? "",
+      deadline: data.deadline,
+      demo_url: data.demo_url ?? "",
+      tech_stack: data.tech_stack ?? "",
+      status: data.status,
+      notes: data.notes ?? "",
+      created_at: data.created_at,
+      updated_at: data.updated_at,
+    });
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error("[sheets-mirror] mirrorMission failed:", err);
+  }
+}

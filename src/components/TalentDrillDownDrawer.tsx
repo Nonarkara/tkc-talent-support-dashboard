@@ -461,7 +461,7 @@ function ScoreTile({
           lineHeight: 1,
         }}
       >
-        {value !== null && value !== undefined ? value.toFixed(1) : "—"}
+        {value !== null && value !== undefined ? Number(value).toFixed(1) : "—"}
       </div>
     </div>
   );
@@ -491,7 +491,7 @@ function BreakdownRow({
           <span style={{ marginLeft: 8, fontSize: 10, color: "#8a7a5e" }}>({weight})</span>
         </div>
         <div style={{ fontSize: 12, fontFamily: "var(--font-mono, ui-monospace)", color: "#b8a88a" }}>
-          {value !== null ? `${value.toFixed(1)} / ${ceiling}` : `— / ${ceiling}`}
+          {value !== null ? `${Number(value).toFixed(1)} / ${ceiling}` : `— / ${ceiling}`}
         </div>
       </div>
       <div style={{ marginTop: 4, height: 4, background: "rgba(255,255,255,0.06)", position: "relative" }}>
